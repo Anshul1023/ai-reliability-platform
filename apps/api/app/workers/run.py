@@ -19,8 +19,22 @@ async def project_sync_forever():
         await asyncio.sleep(6 * 3600)  # every 6 hours
 
 
+async def seed_catalog():
+    """Insert/refresh the data source catalog into the data_sources table."""
+    try:
+        from app.ai.data_sources import seed_data_sources
+        from app.core.database import SessionLocal
+
+        async with SessionLocal() as db:
+            written = await seed_data_sources(db)
+        print("data sources seeded", written)
+    except Exception as exc:  # noqa: BLE001
+        print("data sources seed failed", repr(exc))
+
+
 async def main():
     print("worker started")
+    await seed_catalog()
     monitor_task = asyncio.create_task(monitoring_forever())
     sync_task = asyncio.create_task(project_sync_forever())
     while True:

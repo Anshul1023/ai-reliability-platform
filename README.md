@@ -101,9 +101,14 @@ task system such as Celery/RQ/Arq.
 ## AI chat (RAG)
 
 The dashboard's **AI Chat** page answers questions about any project, grounded in live
-context: repository metadata, README, file tree, monitored services, and recent incidents
-(`POST /ai/chat`). It works out of the box in demo mode (deterministic answers from real
-data, no key needed). For real LLM answers set an OpenAI-compatible provider:
+context: repository metadata, README, file tree, monitored services, deployments, incidents
+(+ timeline and past AI runs), and the stored JSON documents (`POST /ai/chat`). It works out
+of the box in demo mode (deterministic answers from real data, no key needed). For real LLM
+answers set an OpenAI-compatible provider:
+
+**Data source catalog** — the agent knows *where each fact lives*. `GET /ai/sources` returns
+the catalog (seeded into the `data_sources` table and injected into the chat system prompt),
+so answers cite their source (e.g. `deployments` table, `services` table, `project_data` JSON).
 
 ```env
 AI_PROVIDER=openai

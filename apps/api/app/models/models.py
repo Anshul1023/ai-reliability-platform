@@ -63,6 +63,24 @@ class AgentRun(Base):
     result: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
+class DataSource(Base):
+    """The AI's data source catalog — where each piece of data lives.
+
+    Seeded from app.ai.data_sources.DATA_SOURCES; the agent reads this to
+    know which table / API / external host provides which data.
+    """
+    __tablename__ = "data_sources"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    key: Mapped[str] = mapped_column(String(64), unique=True)
+    label: Mapped[str] = mapped_column(String(255))
+    kind: Mapped[str] = mapped_column(String(32))
+    location: Mapped[str] = mapped_column(String(512))
+    fields: Mapped[list] = mapped_column(JSONB, default=list)
+    description: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class ProjectData(Base):
     """Rich per-project data stored as JSON documents (the future vector-RAG corpus).
 
