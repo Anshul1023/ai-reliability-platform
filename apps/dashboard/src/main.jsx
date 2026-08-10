@@ -103,7 +103,8 @@ function AboutPage(){
   setBusy(false);
  };
  if(!p)return <div className="page"><p className="muted">Loading profile…</p></div>;
- const secAnim={initial:{opacity:0,y:70},whileInView:{opacity:1,y:0},viewport:{once:false,amount:.15},transition:{duration:.7,ease:"easeOut"}};
+ const secAnim={initial:{opacity:0,y:120,scale:.93,filter:"blur(6px)"},whileInView:{opacity:1,y:0,scale:1,filter:"blur(0px)"},viewport:{once:false,margin:"-40px",amount:0.15},transition:{duration:.85,ease:[.22,1,.36,1]}};
+ const heroFade={initial:{opacity:1,y:0,scale:1,filter:"blur(0px)"},whileInView:{opacity:0,y:-160,scale:.88,filter:"blur(10px)"},viewport:{once:false,amount:0.4},transition:{duration:.9,ease:[.22,1,.36,1]}};
  const driftItems=["/about/mask.jpg","/about/story.jpg","/about/abstract.jpg","/about/desk.jpg","/about/mountain.jpg","/about/space.jpg","/about/office.jpg","/about/code.jpg","/about/ai.jpg","/about/fitness.jpg"].map((img,i)=>({image:img,title:`tile${i}`}));
  const expItems=p.experience.map((e,i)=>({image:["/about/fitness.jpg","/about/office.jpg","/about/code.jpg"][i]||"/about/desk.jpg",label:e.company,link:p.links.linkedin}));
  const half=Math.ceil(p.skills.length/2);
@@ -111,7 +112,7 @@ function AboutPage(){
  const menuItems=[["Story","story"],["Experience","experience"],["Skills","skills"],["Projects","projects"],["Contact","contact"]].map(([l,id])=>({label:l,link:`#${id}`}));
  return <div className="about">
   <StaggeredMenu items={menuItems} socialItems={[{label:"GitHub",link:p.links.github},{label:"LinkedIn",link:p.links.linkedin},{label:"Email",link:`mailto:${p.email}`}]} accentColor="#5a7dff" colors={["#141a2b","#1e2638"]} isFixed/>
-  <section className="abHero" id="top">
+  <motion.section {...heroFade} className="abHero" id="top">
    <div className="abHeroBg"><DriftWall items={driftItems} columns={5} tileWidth={210} tileHeight={140} gap={16} speed={36} fade={0.55} dim={0.72} tilt={14} turn={-12} overlayColor="#080a14"/></div>
    <div className="abHeroContent">
     <motion.span initial={{opacity:0,scale:.85}} animate={{opacity:1,scale:1}} transition={{duration:.5}} className="badge aboutTag">Full Stack Developer</motion.span>
@@ -128,7 +129,7 @@ function AboutPage(){
     <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:1.2,duration:.7}} className="aboutCta"><a className="titleBtn" href="#contact">💬 Work with me</a><a className="titleBtn ghost" href={p.links.portfolio} target="_blank" rel="noreferrer">View my portfolio ↗</a></motion.div>
    </div>
    <div className="abHeroScroll">SCROLL<span>↓</span></div>
-  </section>
+  </motion.section>
   <motion.section {...secAnim} className="abSec abStory" id="story">
    <div className="abWordmark"><DepthText text="MY STORY" layers={26} depth={2.2} depthColor="#3d5af1" faceColor="#1a2236" fontSize="clamp(4rem,14vw,11rem)"/></div>
    <div className="abSecInner">
