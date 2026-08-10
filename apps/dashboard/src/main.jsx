@@ -93,7 +93,7 @@ function AboutPage(){
  const [sent,setSent]=useState(false);
  const [busy,setBusy]=useState(false);
  useEffect(()=>{api.profile().then(setP).catch(()=>{})},[]);
- useEffect(()=>{api.projects().then(list=>{setAllProjects(list.filter(x=>x.repo&&x.repo.includes("/")).map((x,i)=>({label:x.name,image:imageForRepo(x.repo,i),link:`https://github.com/${x.repo}`}))) }).catch(()=>{})},[]);
+ useEffect(()=>{api.projects().then(list=>{setAllProjects(list.filter(x=>x.repo&&x.repo.includes("/")).map((x,i)=>({label:x.name,text:x.name,image:imageForRepo(x.repo,i),link:`https://github.com/${x.repo}`,title:x.name}))) }).catch(()=>{})},[]);
  const tilt=e=>{const c=e.currentTarget;const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5;const y=(e.clientY-r.top)/r.height-.5;c.style.transform=`perspective(800px) rotateY(${x*7}deg) rotateX(${-y*7}deg) translateY(-4px)`};
  const untilt=e=>{e.currentTarget.style.transform=""};
  const sendContact=async()=>{
@@ -112,7 +112,7 @@ function AboutPage(){
  return <div className="about">
   <StaggeredMenu items={menuItems} socialItems={[{label:"GitHub",link:p.links.github},{label:"LinkedIn",link:p.links.linkedin},{label:"Email",link:`mailto:${p.email}`}]} accentColor="#5a7dff" colors={["#141a2b","#1e2638"]} isFixed/>
   <section className="abHero" id="top">
-   <div className="abHeroBg"><DriftWall items={driftItems} columns={5} tileWidth={210} tileHeight={140} gap={16} speed={36} fade={0.5} dim={0.55} tilt={14} turn={-12}/></div>
+   <div className="abHeroBg"><DriftWall items={driftItems} columns={5} tileWidth={210} tileHeight={140} gap={16} speed={36} fade={0.55} dim={0.72} tilt={14} turn={-12} overlayColor="#080a14"/></div>
    <div className="abHeroContent">
     <motion.span initial={{opacity:0,scale:.85}} animate={{opacity:1,scale:1}} transition={{duration:.5}} className="badge aboutTag">Full Stack Developer</motion.span>
     <h1 className="aboutName"><FoldText text="Anshul Rawat" hinge="bottom" trigger="mount" splitBy="char" duration={0.7} stagger={0.06} fontSize="clamp(2.8rem,8.5vw,6rem)" fontWeight={800} color="#eaf0ff"/></h1>
@@ -132,14 +132,14 @@ function AboutPage(){
   <motion.section {...secAnim} className="abSec abStory" id="story">
    <div className="abWordmark"><DepthText text="MY STORY" layers={26} depth={2.2} depthColor="#3d5af1" faceColor="#1a2236" fontSize="clamp(4rem,14vw,11rem)"/></div>
    <div className="abSecInner">
-    <div className="abHeadWrap"><SplitText text="My Story" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">{p.tagline}</p></div>
-    <div className="storyExpand"><ScrollExpand src="/about/story.jpg" title="My story" scrollHint="Scroll inside ↓" scrollDistance={1} startWidth={46} startHeight={62}><div className="storyOverlay"><p>{p.summary}</p><a className="titleBtn" href="#contact">Let's build something</a></div></ScrollExpand></div>
+    <div className="abHeadWrap"><SplitText text="My Story" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">From code to production — the journey that shaped how I <b>build resilient systems</b>.</p></div>
+    <div className="storyExpand"><ScrollExpand src="/about/story.jpg" title="My story" scrollHint="Scroll inside ↓" scrollDistance={1} startWidth={46} startHeight={62}><div className="storyOverlay"><p className="storyLead">I turn ideas into products that <em>feel fast</em> and <em>never break</em>.</p><p>{p.summary}</p><div className="storyStats"><div className="storyStat"><b>{p.experience.length}</b><span>Roles</span></div><div className="storyStat"><b>{p.projects.length}</b><span>Projects</span></div><div className="storyStat"><b>{p.skills.length}</b><span>Skills</span></div><div className="storyStat"><b>{p.experience.reduce((s,e)=>s+e.points.length,0)}+</b><span>Achievements</span></div></div><a className="titleBtn" href="#contact">Let's build something</a></div></ScrollExpand></div>
    </div>
   </motion.section>
   <motion.section {...secAnim} className="abSec abExp" id="experience">
    <div className="abWordmark"><DepthText text="EXPERIENCE" layers={26} depth={2.2} depthColor="#14b8a6" faceColor="#14202c" fontSize="clamp(3.4rem,11vw,9rem)"/></div>
    <div className="abSecInner">
-    <div className="abHeadWrap"><SplitText text="Where I've Worked" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">Three roles, one obsession: building products that feel fast and never break.</p></div>
+    <div className="abHeadWrap"><SplitText text="Where I've Worked" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub"><span className="hl">Three roles</span>, one obsession: building products that <b>feel fast</b> and never break. From startup to agency, I've shipped across the stack.</p></div>
     <AccordionGallery items={expItems} height={440} defaultIndex={0} grayscale={false} accentColor="#5eead4" overlayColor="#0b0f1c"/>
     <div className="timeline">{p.experience.map((e,i)=><div className="tlItem" key={i} onMouseMove={tilt} onMouseLeave={untilt}><div className="tlDot"/><div className="tlCard"><div className="tlHead"><b>{e.role}</b><span>{e.period}</span></div><small>{e.company}</small><ul>{e.points.map((pt,j)=><li key={j}>{pt}</li>)}</ul></div></div>)}</div>
     <div className="eduRow" style={{marginTop:8}}>{p.education.map((e,i)=><div className="eduCard" key={i}><GraduationCap size={16}/><div><b>{e.degree}</b><small>{e.school} · {e.period}</small></div></div>)}</div>
@@ -148,7 +148,7 @@ function AboutPage(){
   <motion.section {...secAnim} className="abSec abSkills" id="skills">
    <div className="abWordmark"><DepthText text="SKILLS" layers={26} depth={2.2} depthColor="#8b5cf6" faceColor="#1d1830" fontSize="clamp(4rem,14vw,11rem)"/></div>
    <div className="abSecInner">
-    <div className="abHeadWrap"><SplitText text="The Stack I Ship With" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">Endless marquee of the tools I use daily — hover to pause.</p></div>
+    <div className="abHeadWrap"><SplitText text="The Stack I Ship With" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">A <span className="hl2">live marquee</span> of the tools I use daily — <b>{p.skills.length} technologies</b>, from React to Redis. Hover to pause, scroll to see them all.</p></div>
     {rows.map((row,i)=><LogoLoop key={i} logos={row} speed={i===0?70:-80} direction={i===0?"left":"right"} logoHeight={46} gap={22} pauseOnHover renderItem={s=><span className="skChip">✦ {s}</span>} fadeOut/>)}
     <div className="langRow" style={{marginTop:22}}>{p.languages.map((l,i)=><span className="lang" key={i}>🗣 {l}</span>)}</div>
    </div>
@@ -156,15 +156,15 @@ function AboutPage(){
   <motion.section {...secAnim} className="abSec abProjects" id="projects">
    <div className="abWordmark"><DepthText text="PROJECTS" layers={26} depth={2.2} depthColor="#f59e0b" faceColor="#2c2413" fontSize="clamp(3.4rem,11vw,9rem)"/></div>
    <div className="abSecInner">
-    <div className="abHeadWrap"><SplitText text="Every Project, One Place" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">All {allProjects.length||""} repos from my GitHub, in a 3D carousel — drag or scroll to explore, click to open on GitHub.</p></div>
-    <div className="carouselWrap">{allProjects.length?<CircularGallery items={allProjects} bend={2.4} textColor="#cfe0ff" borderRadius={0.08} font="bold 24px sans-serif"/>:<p className="muted">Loading projects…</p>}</div>
+    <div className="abHeadWrap"><SplitText text="Every Project, One Place" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">Drag through <b>all {allProjects.length}</b> repos from my GitHub — each card shows the <span className="hl2">repo name</span>. Click any to open on GitHub.</p></div>
+    <div className="carouselWrap">{allProjects.length?<CircularGallery items={allProjects} bend={2.4} textColor="#cfe0ff" borderRadius={0.08} font="bold 26px Inter, system-ui, sans-serif" scrollSpeed={3} scrollEase={0.03}/>:<p className="muted">Loading projects…</p>}</div>
     <div className="abProjectsMeta">{allProjects.slice(0,8).map((x,i)=><span className="aboutChip" key={i} onClick={()=>window.open(x.link,"_blank")} style={{cursor:"pointer"}}>{x.label}</span>)}</div>
    </div>
   </motion.section>
   <motion.section {...secAnim} className="abSec abContact" id="contact">
    <div className="abWordmark"><DepthText text="CONTACT" layers={26} depth={2.2} depthColor="#14b8a6" faceColor="#14202c" fontSize="clamp(3.4rem,11vw,9rem)"/></div>
    <div className="abSecInner">
-    <div className="abHeadWrap"><SplitText text="Let's Build Together" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">Have a project, a role, or just want to say hi? Send a message — it lands straight in my inbox.</p></div>
+    <div className="abHeadWrap"><SplitText text="Let's Build Together" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">Have a project, a role, or just want to say hi? Your message lands <b>straight in my inbox</b> — I reply within 24 hours.</p></div>
     <div className="contactWrap">
      <div className="contactInfo">
       <div className="contactLine"><Mail size={15}/><div><b>Email</b><a href={`mailto:${p.email}`}>{p.email}</a></div></div>
