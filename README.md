@@ -22,7 +22,8 @@ using Redis for caching/rate limiting/locks/PubSub/queues, and running AI-assist
 ## Deployment
 
 Production deployment (Render + Vercel) is a two-click process from this repo — see
-[docs/DEPLOY.md](docs/DEPLOY.md) for the full guide and env checklist.
+[docs/DEPLOY.md](docs/DEPLOY.md) for the full guide and env checklist. For a **free,
+no-credit-card** backend, Hugging Face Spaces works out of the box (`apps/api/Dockerfile.hf`).
 
 ## Quick start
 

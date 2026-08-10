@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     # When set, write endpoints require this key (Authorization: Bearer or X-API-Key).
     # Empty = auth disabled (local development only). Set it for any public deployment.
     api_key: str = ""
+    # The owner's email — used for identity display (who is allowed to make changes).
+    owner_email: str = ""
     rate_limit_requests: int = 120
     rate_limit_window_seconds: int = 60
     cache_ttl_seconds: int = 30

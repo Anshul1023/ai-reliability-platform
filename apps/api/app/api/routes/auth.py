@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
+from app.core.config import settings
 from app.core.security import get_current_user
 router = APIRouter(prefix="/auth", tags=["auth"])
 @router.get("/me")
 async def me(user=Depends(get_current_user)):
-    return user
+    return {**user, "email": settings.owner_email or None}

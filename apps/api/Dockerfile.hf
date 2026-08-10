@@ -1,0 +1,19 @@
+# Hugging Face Spaces deployment (free, always-on, no credit card).
+# In Hugging Face Spaces, set the Dockerfile path to: apps/api/Dockerfile.hf
+FROM python:3.12-slim
+WORKDIR /app
+
+# Redis runs inside the same container (locks, rate limits, queue, uptime ring).
+RUN apt-get update && apt-get install -y --no-install-recommends redis-server \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY apps/api/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY apps/api/app ./app
+COPY apps/api/hf_start.sh .
+RUN chmod +x hf_start.sh
+
+ENV REDIS_URL=redis://localhost:6379/0
+
+CMD ["./hf_start.sh"]

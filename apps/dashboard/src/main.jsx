@@ -32,11 +32,16 @@ function Incidents({liveTick}){const [data,setData]=useState([]);useEffect(()=>{
 function AIPage(){return <div className="page"><div className="title"><div><h1>AI Investigation</h1><p>Evidence-backed incident analysis.</p></div><Badge tone="purple"><Sparkles size={13}/> Agent online</Badge></div><div className="stats"><Stat title="Investigations today" value="18" sub="16 completed"/><Stat title="Average confidence" value="86%" sub="+4.2% this week"/><Stat title="Evidence sources" value="142" sub="GitHub + metrics + logs"/><Stat title="Awaiting approval" value="2" sub="Human review required"/></div><Card title="Current investigation"><div className="ai"><Bot size={22}/><div><b>Payment API incident</b><p>Checking recent deployments, metrics and previous incident patterns…</p><div className="progress"><i/></div></div></div></Card></div>}
 function SettingsPage(){
  const [key,setKey]=useState(getApiKey());
+ const [email,setEmail]=useState(localStorage.getItem("pulseops_owner_email")||"");
  const [saved,setSaved]=useState(false);
- const save=()=>{setApiKey(key.trim());setSaved(true);setTimeout(()=>setSaved(false),2000)};
+ const save=()=>{setApiKey(key.trim());localStorage.setItem("pulseops_owner_email",email.trim());setSaved(true);setTimeout(()=>setSaved(false),2000)};
  return <div className="page"><div className="title"><div><h1>Settings</h1><p>Integrations and workspace preferences.</p></div></div>
+ <Card title="Owner identity" action={email?<Badge tone="green">Signed in as {email}</Badge>:<Badge>Not set</Badge>}>
+  <p className="muted">Only you can make changes — the API key is your write credential, and this email marks you as the owner. Stored only in this browser.</p>
+  <div className="row"><input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Your email (owner)…"/></div>
+ </Card>
  <Card title="API access" action={key?<Badge tone="green">Configured</Badge>:<Badge>Not set</Badge>}>
-  <p className="muted">API key for write actions (starting investigations, AI analysis). Stored only in this browser — never in the app bundle. Reads stay public.</p>
+  <p className="muted">API key for write actions (chat, investigations, proposing changes). Stored only in this browser — never in the app bundle. Reads stay public.</p>
   <div className="row"><input type="password" value={key} onChange={e=>setKey(e.target.value)} placeholder="Paste your API key…"/><button onClick={save}>{saved?"Saved ✓":"Save"}</button></div>
  </Card>
  <Card title="GitHub integration"><div className="row"><Github size={20}/><div><b>GitHub</b><small>Demo connection · read-only</small></div><button>Manage</button></div></Card>
@@ -154,6 +159,6 @@ function App(){
  },[]);
  const nav=[["Overview",LayoutDashboard],["Projects",Box],["Incidents",AlertTriangle],["AI Investigation",Bot],["AI Chat",MessageSquare],["Settings",Settings]];
  let content=selected?<ProjectDetails p={selected} back={()=>setSelected(null)} liveTick={liveTick}/>:page==="Overview"?<Overview liveTick={liveTick}/>:page==="Projects"?<Projects open={setSelected} liveTick={liveTick}/>:page==="Incidents"?<Incidents liveTick={liveTick}/>:page==="AI Investigation"?<AIPage/>:page==="AI Chat"?<ChatPage/>:<SettingsPage/>;
- return <div className="app"><aside><div className="brand"><Activity size={18}/> PulseOps</div><div className="workspace"><b>Acme Engineering</b><small>Production</small></div><nav>{nav.map(([n,I])=><button className={page===n&&!selected?"active":""} onClick={()=>{setPage(n);setSelected(null)}} key={n}><I size={17}/>{n}</button>)}</nav><div className="user">AS · Ansh Sharma</div></aside><main><header><span>{selected?.name||page}</span><div className="top"><div className="topSearch"><Search size={14}/><input placeholder="Search…"/></div><Bell size={17}/><span className="avatar">AS</span></div></header>{content}</main></div>
+ return <div className="app"><aside><div className="brand"><Activity size={18}/> PulseOps</div><div className="workspace"><b>Acme Engineering</b><small>Production</small></div><nav>{nav.map(([n,I])=><button className={page===n&&!selected?"active":""} onClick={()=>{setPage(n);setSelected(null)}} key={n}><I size={17}/>{n}</button>)}</nav><div className="user">AS · Ansh Sharma</div></aside><main><header><span>{selected?.name||page}</span><div className="top"><div className="topSearch"><Search size={14}/><input placeholder="Search…"/></div><Bell size={17}/><span className="avatar">AS</span></div></header>{content}</main>{page!=="AI Chat"||selected?<button className="chatFab" onClick={()=>{setPage("AI Chat");setSelected(null)}} title="Ask the AI about any project"><MessageSquare size={17}/> Ask AI</button>:null}</div>
 }
 createRoot(document.getElementById("root")).render(<App/>);

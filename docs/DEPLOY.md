@@ -28,6 +28,26 @@ The code lives in this repo; the platform itself is deployed on:
 
 4. Deploy. The API's `/health` should return `{"status":"ok",...}`.
 
+## Free alternative (no credit card): Hugging Face Spaces backend
+
+If Render asks for a card, use a free Hugging Face Space for the API + worker + Redis
+(one container, always-on, no card required):
+
+1. Create a free account at https://huggingface.co (the token is optional — set it in
+   the Space's secrets if you want it).
+2. **New Space** → SDK: **Docker** → hardware: **CPU basic (free)**.
+3. Link the Space to this GitHub repo. In **Settings → Dockerfile**, set the path to
+   `apps/api/Dockerfile.hf` (it starts Redis + the worker + the API automatically).
+4. Set **Secrets** (Settings → Variables and secrets) on the Space:
+   `DATABASE_URL` (Supabase), `API_KEY`, `CORS_ORIGINS` (your Vercel dashboard URL),
+   `GITHUB_TOKEN`, `GITHUB_OWNER`, `OPENAI_API_KEY`, `AI_MODEL`, `AI_BASE_URL`.
+5. Your API URL will be `https://<your-username>-<space-name>.hf.space` — use it as
+   `VITE_API_URL` on Vercel.
+
+Caveat: the Space sleeps after ~48h of inactivity (free tier). It wakes when someone
+visits the dashboard. For true 24/7 monitoring, Oracle Cloud's Always Free VM or a paid
+host is the upgrade path.
+
 ## 2. Vercel (dashboard)
 
 1. Go to https://vercel.com → **Add New → Project** → import this repository.
