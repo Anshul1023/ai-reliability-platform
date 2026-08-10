@@ -211,8 +211,12 @@ function buildTree(paths){
  }
  return root;
 }
-function FileTree({paths,onOpenFile}){
+function FileTree({paths,onOpenFile,autoOpen}){
  const [open,setOpen]=useState({});
+ useEffect(()=>{
+  if(!autoOpen)return;
+  setOpen(s=>{const o={...s};for(const p of paths||[]){const i=p.indexOf("/");if(i>0)o[p.slice(0,i)]=true}return o});
+ },[paths,autoOpen]);
  const root=buildTree(paths);
  const render=(node,name,path,lev)=>{
   const folders=Object.entries(node.dirs);
@@ -257,27 +261,38 @@ function ProjectGraph({projectId,projectName,docs}){
  const incidents=Array.isArray(m.incidents)?m.incidents:[];
  const svcs=services.slice(0,2);
  const color=s=>s==="Healthy"?"#36a667":s==="Degraded"?"#d79b2b":"#c54d4d";
+ const dirs={};
+ for(const f of files){const i=f.indexOf("/");if(i>0){const d=f.slice(0,i);if(!dirs[d])dirs[d]={files:0,subs:new Set()};const rest=f.slice(i+1);if(rest.indexOf("/")<0)dirs[d].files++;else dirs[d].subs.add(rest.slice(0,rest.indexOf("/")))}}
+ const folders=Object.entries(dirs).map(([name,c])=>[name,c.files+c.subs.size]).sort((a,b)=>b[1]-a[1]).slice(0,6);
+ const fx=[80,180,280,80,180,280],fy=[200,200,200,252,252,252];
+ const short=n=>n.length>11?n.slice(0,10)+"…":n;
  return <div className="pgraph">
-  <svg viewBox="0 0 360 185">
+  <svg viewBox="0 0 360 300">
    {svcs.map((s,i)=>(<path key={"e"+i} className="pedge" d={i===0?"M180 46 C 220 58, 250 66, 284 85":"M180 46 C 220 70, 250 100, 284 137"}/>))}
    <path className="pedge" d="M180 46 C 140 60, 110 75, 78 93"/>
+   {folders.map((f,i)=>(<path key={"fe"+i} className="pedge" style={{animationDelay:(i*0.12)+"s"}} d={`M180 46 C 180 120, ${fx[i]} 140, ${fx[i]} ${fy[i]-8}`}/>))}
    <g className="pnode" style={{animationDelay:"0s"}}>
-    <rect x="110" y="6" width="140" height="40" rx="10" fill="#eef2ff" stroke="#c9d3f7"/>
+    <rect x="110" y="6" width="140" height="40" rx="10" fill="#e6ecff" stroke="#bcc9f2"/>
     <circle cx="132" cy="26" r="4" className="pdot" fill="#36a667"/>
     <text x="180" y="25" textAnchor="middle" fontSize="11" fontWeight="700" fill="#3a4a8f">{projectName||(repo.full_name||"Project").split("/").pop()}</text>
     <text x="180" y="38" textAnchor="middle" fontSize="8.5" fill="#7d88b8">{repo.full_name||"loading…"}</text>
    </g>
    <g className="pnode" style={{animationDelay:".12s"}}>
-    <rect x="8" y="95" width="130" height="42" rx="10" fill="#fff" stroke="#e0e5ee"/>
+    <rect x="8" y="95" width="130" height="42" rx="10" fill="#fbfdff" stroke="#d5def6"/>
     <text x="73" y="109" textAnchor="middle" fontSize="10" fontWeight="700" fill="#182234">GitHub</text>
     <text x="73" y="122" textAnchor="middle" fontSize="8.5" fill="#687386">{repo.language||"—"}</text>
     <text x="73" y="133" textAnchor="middle" fontSize="8.5" fill="#8992a2">{repo.default_branch?"branch: "+repo.default_branch:""}</text>
    </g>
    {svcs.map((s,i)=>(<g className="pnode" style={{animationDelay:`.2${i}s`}} key={"s"+i}>
-    <rect x="226" y={i===0?88:140} width="126" height="38" rx="10" fill="#fff" stroke="#e0e5ee"/>
+    <rect x="226" y={i===0?88:140} width="126" height="38" rx="10" fill="#fbfdff" stroke="#d5def6"/>
     <circle cx="240" cy={i===0?103:155} r="4" className="pdot" fill={color(s.status)}/>
     <text x="256" y={i===0?101:153} fontSize="9.5" fontWeight="700" fill="#182234">{s.name}</text>
     <text x="256" y={i===0?114:166} fontSize="8.5" fill="#687386">{s.status} · <SvcLatency n={s.latency_ms}/>ms</text>
+   </g>))}
+   {folders.map((f,i)=>(<g className="pnode" style={{animationDelay:(0.24+i*0.1)+"s"}} key={"f"+i}>
+    <rect x={fx[i]-42} y={fy[i]-20} width="84" height="40" rx="9" fill="#fbfdff" stroke="#c9d3f7"/>
+    <text x={fx[i]} y={fy[i]-3} textAnchor="middle" fontSize="9" fontWeight="700" fill="#33405e">📁 {short(f[0])}</text>
+    <text x={fx[i]} y={fy[i]+11} textAnchor="middle" fontSize="8" fill="#7d88b8">{f[1]} files</text>
    </g>))}
   </svg>
   {(tech.length||files.length||incidents.length)?<div className="pchips">{tech.slice(0,7).map((t,i)=><span className="pchip" key={i}>{t}</span>)}{files.length?<span className="pchip ghost">📄 {files.length} files</span>:null}{incidents.length?<span className="pchip warn">⚠ {incidents.length} incident{incidents.length>1?"s":""}</span>:null}</div>:null}
@@ -323,7 +338,7 @@ function ChatDrawer({onClose}){
   <div className="chatDrawerBody">
    <ProjectPicker projects={projects} value={projectId} onChange={setProjectId}/>
    {project?<div className="drawerSection"><ProjectGraph projectId={projectId} projectName={project.name} docs={docs}/></div>:null}
-   {project?<div className="drawerSection filesSec"><div className="drawerSecHead"><b>📂 Repository files</b><span className="muted">{files.length?files.length+" files":"…"}</span></div><div className="drawerTree">{files.length?<FileTree paths={files} onOpenFile={openFile}/>:<p className="muted" style={{padding:8}}>Loading files…</p>}</div>{curFile?<div className="filePreview"><div className="fpHead"><code className="mono">{curFile}</code><button onClick={()=>setCurFile(null)} aria-label="Close preview">✕</button></div><pre>{fileContent}</pre></div>:null}</div>:null}
+   {project?<div className="drawerSection filesSec"><div className="drawerSecHead"><b>📂 Repository files</b><span className="muted">{files.length?files.length+" files":"…"}</span></div><div className="drawerTree">{files.length?<FileTree paths={files} onOpenFile={openFile} autoOpen/>:<p className="muted" style={{padding:8}}>Loading files…</p>}</div>{curFile?<div className="filePreview"><div className="fpHead"><code className="mono">{curFile}</code><button onClick={()=>setCurFile(null)} aria-label="Close preview">✕</button></div><pre>{fileContent}</pre></div>:null}</div>:null}
    <div className="chatbox" ref={boxRef}>{(msgs.length?msgs:[{role:"assistant",content:"Hey! I'm Dev — your senior dev sidekick. Pick a project to see its live graph + repo tree, or just ask about any of them. 💡"}]).map((m,i)=><MsgBubble m={m} key={i}/>)}{busy?<Typing/>:null}</div>
   </div>
   <div className="chatbar"><input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")send()}} placeholder="Ask Dev about a project…"/><button onClick={send} disabled={busy||!input.trim()}>{busy?<span className="miniSpin"/>:"Send"}</button></div>
