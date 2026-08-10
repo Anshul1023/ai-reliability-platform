@@ -40,6 +40,16 @@ PROFILE = {
     ],
     "experience": [
         {
+            "role": "Software Engineer",
+            "company": "Odds Fitness, Delhi",
+            "period": "May 2026 – Present",
+            "points": [
+                "Building the B2C longevity & fitness product across iOS and Android — end-to-end features, integrations and scalable product experiences.",
+                "Built AI agents and AI-powered workflows (RAG, embeddings, vector search) to automate tasks and power user-facing intelligence.",
+                "Automated internal workflows with Slack integration and marketing automation tools, applying best practices with Claude Code and OpenClaw.",
+            ],
+        },
+        {
             "role": "Full Stack Developer Intern",
             "company": "SGSN Associates Pvt Ltd, Rishikesh",
             "period": "Aug 2025 – Nov 2025",

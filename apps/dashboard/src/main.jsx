@@ -2,8 +2,12 @@ import React,{useEffect,useState} from "react";
 import {createRoot} from "react-dom/client";
 import {LayoutDashboard,Box,AlertTriangle,Bot,Settings,Activity,Github,ChevronRight,Plus,Search,Bell,CheckCircle2,Sparkles,MessageSquare,RefreshCw,User,BarChart3,Phone,Mail,MapPin,Linkedin,GraduationCap,Send} from "lucide-react";
 import {ResponsiveContainer,AreaChart,Area,BarChart,Bar,XAxis,YAxis,Tooltip} from "recharts";
+import {motion} from "framer-motion";
+import {MaskedHeading,FoldText,ScrollExpand,AccordionGallery,CircularGallery} from "./reactbits";
 import {api,API_WS,getApiKey,setApiKey} from "./services/api";
 import "./styles.css";
+
+const VIS="https://raw.githubusercontent.com/Anshul1023/anshul-rawat-portfolio/Ansh/frontend/public/visuals/";
 
 const demo=[{time:"09:00",error:1.1},{time:"10:00",error:1.4},{time:"11:00",error:1.2},{time:"12:00",error:2.1},{time:"13:00",error:3.2},{time:"14:00",error:2.4},{time:"15:00",error:1.1}];
 
@@ -80,12 +84,6 @@ function AboutPage(){
  const [sent,setSent]=useState(false);
  const [busy,setBusy]=useState(false);
  useEffect(()=>{api.profile().then(setP).catch(()=>{})},[]);
- useEffect(()=>{
-  if(!p)return;
-  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.12});
-  document.querySelectorAll(".rv").forEach(el=>io.observe(el));
-  return()=>io.disconnect();
- },[p]);
  const tilt=e=>{const c=e.currentTarget;const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5;const y=(e.clientY-r.top)/r.height-.5;c.style.transform=`perspective(800px) rotateY(${x*7}deg) rotateX(${-y*7}deg) translateY(-4px)`};
  const untilt=e=>{e.currentTarget.style.transform=""};
  const sendContact=async()=>{
@@ -95,29 +93,52 @@ function AboutPage(){
   setBusy(false);
  };
  if(!p)return <div className="page"><p className="muted">Loading profile…</p></div>;
+ const fade={initial:{opacity:0,y:30},whileInView:{opacity:1,y:0},viewport:{once:true,margin:"-70px"},transition:{duration:.6,ease:"easeOut"}};
+ const projects=[
+  {label:"PulseOps — AI Reliability",image:VIS+"project-dashboard.svg",link:"https://github.com/Anshul1023/ai-reliability-platform"},
+  {label:"Anshul Rawat Portfolio",image:VIS+"hero-editorial.svg",link:"https://github.com/Anshul1023/anshul-rawat-portfolio"},
+  {label:"FastAPI Web Accelerator",image:VIS+"project-systems.svg",link:"https://github.com/Anshul1023/Fastapi"},
+  {label:"Browser Camera",image:VIS+"project-browser.svg",link:"https://github.com/Anshul1023/browser-camera"},
+  {label:"Snake Game",image:VIS+"project-game.svg",link:"https://github.com/Anshul1023/JavaScript-Snake-game"},
+  {label:"AgentFlow AI",image:VIS+"project-ai.svg",link:"https://github.com/Anshul1023/AgentFlow-Ai"}
+ ];
+ const carousel=[
+  {image:VIS+"project-ai.svg",text:"Odds Fitness"},
+  {image:VIS+"project-systems.svg",text:"SGSN Associates"},
+  {image:VIS+"project-media.svg",text:"Interpe"}
+ ];
  return <div className="about">
   <section className="aboutHero"><div className="orb o1"/><div className="orb o2"/><div className="orb o3"/>
    <div className="aboutHeroInner">
-    <span className="rv badge aboutTag">Full Stack Developer</span>
-    <h1 className="rv">Hi, I'm <span className="grad">Anshul Rawat</span></h1>
-    <p className="rv aboutTagline">{p.tagline}</p>
-    <div className="rv aboutChips">
+    <motion.span initial={{opacity:0,scale:.85}} animate={{opacity:1,scale:1}} transition={{duration:.5}} className="badge aboutTag">Full Stack Developer</motion.span>
+    <h1 className="aboutName"><FoldText text="Anshul Rawat" hinge="bottom" trigger="mount" splitBy="char" duration={0.7} stagger={0.06} fontSize={62} fontWeight={800} color="#eaf0ff"/></h1>
+    <div className="aboutMaskWrap"><MaskedHeading text="BUILDING THINGS THAT LAST" src={VIS+"project-dashboard.svg"} trigger="view" reveal="wipe" textScale={0.075} weight={800} tracking={-0.02}/></div>
+    <motion.p initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:.9,duration:.7}} className="aboutTagline">{p.tagline}</motion.p>
+    <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:1.05,duration:.7}} className="aboutChips">
      <a className="aboutChip" href={`tel:${p.phone.replace(/\s/g,"")}`}><Phone size={13}/>{p.phone}</a>
      <a className="aboutChip" href={`mailto:${p.email}`}><Mail size={13}/>{p.email}</a>
      <span className="aboutChip"><MapPin size={13}/>{p.location}</span>
      <a className="aboutChip" href={p.links.github} target="_blank" rel="noreferrer"><Github size={13}/>GitHub</a>
      <a className="aboutChip" href={p.links.linkedin} target="_blank" rel="noreferrer"><Linkedin size={13}/>LinkedIn</a>
-    </div>
-    <div className="rv aboutCta"><a className="titleBtn" href="#contact">💬 Work with me</a><a className="titleBtn ghost" href={p.links.portfolio} target="_blank" rel="noreferrer">View my portfolio ↗</a></div>
+    </motion.div>
+    <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:1.2,duration:.7}} className="aboutCta"><a className="titleBtn" href="#contact">💬 Work with me</a><a className="titleBtn ghost" href={p.links.portfolio} target="_blank" rel="noreferrer">View my portfolio ↗</a></motion.div>
    </div>
   </section>
   <section className="aboutBody">
-   <div className="rv aboutSection"><h2><span className="bar"/>My story</h2><p className="aboutText">{p.summary}</p></div>
-   <div className="rv aboutSection"><h2><span className="bar"/>Experience</h2><div className="timeline">{p.experience.map((e,i)=><div className="tlItem" key={i} onMouseMove={tilt} onMouseLeave={untilt}><div className="tlDot"/><div className="tlCard"><div className="tlHead"><b>{e.role}</b><span>{e.period}</span></div><small>{e.company}</small><ul>{e.points.map((pt,j)=><li key={j}>{pt}</li>)}</ul></div></div>)}</div></div>
-   <div className="rv aboutSection"><h2><span className="bar"/>Skills</h2><div className="skillCloud">{p.skills.map((s,i)=><span className="rv skill" key={i} style={{animationDelay:(i*40)+"ms"}}>{s}</span>)}</div></div>
-   <div className="rv aboutSection"><h2><span className="bar"/>Projects</h2><div className="projGrid">{p.projects.map((pr,i)=><a className="rv projCard" key={i} href={pr.url||p.links.github} target="_blank" rel="noreferrer" onMouseMove={tilt} onMouseLeave={untilt}><b>{pr.name}</b><p>{pr.desc}</p><small>{pr.url?"Open on GitHub ↗":"Personal project"}</small></a>)}</div></div>
-   <div className="rv aboutSection"><h2><span className="bar"/>Education & languages</h2><div className="eduRow">{p.education.map((e,i)=><div className="eduCard" key={i}><GraduationCap size={16}/><div><b>{e.degree}</b><small>{e.school} · {e.period}</small></div></div>)}</div><div className="langRow">{p.languages.map((l,i)=><span className="lang" key={i}>🗣 {l}</span>)}</div></div>
-   <div className="rv aboutSection" id="contact"><h2><span className="bar"/>Contact me</h2>
+   <motion.div {...fade} className="aboutSection"><h2><span className="bar"/>My story</h2>
+    <div className="storyExpand"><ScrollExpand src={VIS+"story-flow.svg"} title="My story" scrollHint="Scroll inside ↓" scrollDistance={1} startWidth={46} startHeight={62}><div className="storyOverlay"><p>{p.summary}</p><a className="titleBtn" href="#contact">Let's build something</a></div></ScrollExpand></div>
+   </motion.div>
+   <motion.div {...fade} className="aboutSection"><h2><span className="bar"/>Experience</h2>
+    <div className="carouselWrap"><CircularGallery items={carousel} bend={2.4} textColor="#cfe0ff" borderRadius={0.08} font="bold 28px sans-serif"/></div>
+    <div className="timeline">{p.experience.map((e,i)=><div className="tlItem" key={i} onMouseMove={tilt} onMouseLeave={untilt}><div className="tlDot"/><div className="tlCard"><div className="tlHead"><b>{e.role}</b><span>{e.period}</span></div><small>{e.company}</small><ul>{e.points.map((pt,j)=><li key={j}>{pt}</li>)}</ul></div></div>)}</div>
+   </motion.div>
+   <motion.div {...fade} className="aboutSection"><h2><span className="bar"/>Skills</h2><div className="skillCloud">{p.skills.map((s,i)=><motion.span className="skill" key={i} initial={{opacity:0,y:10}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*0.035,duration:.4}}>{s}</motion.span>)}</div></motion.div>
+   <motion.div {...fade} className="aboutSection"><h2><span className="bar"/>Projects</h2>
+    <AccordionGallery items={projects} height={380} defaultIndex={1} grayscale={false} accentColor="#5eead4" overlayColor="#0b0f1c"/>
+    <div className="projGrid" style={{marginTop:14}}>{p.projects.map((pr,i)=><a className="projCard" key={i} href={pr.url||p.links.github} target="_blank" rel="noreferrer" onMouseMove={tilt} onMouseLeave={untilt}><b>{pr.name}</b><p>{pr.desc}</p><small>{pr.url?"Open on GitHub ↗":"Personal project"}</small></a>)}</div>
+   </motion.div>
+   <motion.div {...fade} className="aboutSection"><h2><span className="bar"/>Education & languages</h2><div className="eduRow">{p.education.map((e,i)=><div className="eduCard" key={i}><GraduationCap size={16}/><div><b>{e.degree}</b><small>{e.school} · {e.period}</small></div></div>)}</div><div className="langRow">{p.languages.map((l,i)=><span className="lang" key={i}>🗣 {l}</span>)}</div></motion.div>
+   <motion.div {...fade} className="aboutSection" id="contact"><h2><span className="bar"/>Contact me</h2>
     <div className="contactWrap">
      <div className="contactInfo"><p className="muted">Have a project, a role, or just want to say hi? Send a message — it lands straight in my inbox.</p>
       <div className="contactLine"><Mail size={15}/><div><b>Email</b><a href={`mailto:${p.email}`}>{p.email}</a></div></div>
@@ -134,7 +155,7 @@ function AboutPage(){
       {sent?<p className="sentOk"><CheckCircle2 size={14}/> Message sent! I'll get back to you.</p>:null}
      </div>
     </div>
-   </div>
+   </motion.div>
   </section>
  </div>;
 }
