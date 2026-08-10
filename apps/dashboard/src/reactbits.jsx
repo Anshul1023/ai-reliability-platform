@@ -609,13 +609,12 @@ export function AccordionGallery({
       const size = Math.max(140, usable * Math.min(Math.max(expandRatio, 0.2), 0.9) * 1.22);
       mediaSizeRef.current = size;
       el.style.setProperty("--ag-media-size", `${size}px`);
-      applyLayout(!firstRunRef.current);
     };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [applyLayout, gap, count, expandRatio, vertical]);
+  }, [gap, count, expandRatio, vertical]);
 
   useEffect(() => { applyLayout(!firstRunRef.current); firstRunRef.current = false; }, [applyLayout]);
   useEffect(() => () => { tlRef.current?.kill(); }, []);

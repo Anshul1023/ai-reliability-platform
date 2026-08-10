@@ -4,8 +4,10 @@ import {LayoutDashboard,Box,AlertTriangle,Bot,Settings,Activity,Github,ChevronRi
 import {ResponsiveContainer,AreaChart,Area,BarChart,Bar,XAxis,YAxis,Tooltip} from "recharts";
 import {motion} from "framer-motion";
 import {MaskedHeading,FoldText,ScrollExpand,AccordionGallery,CircularGallery} from "./reactbits";
+import {SplitText,DepthText,LogoLoop,StaggeredMenu,DriftWall,Folder} from "./aboutbits";
 import {api,API_WS,getApiKey,setApiKey} from "./services/api";
 import "./styles.css";
+import "./about.css";
 
 const demo=[{time:"09:00",error:1.1},{time:"10:00",error:1.4},{time:"11:00",error:1.2},{time:"12:00",error:2.1},{time:"13:00",error:3.2},{time:"14:00",error:2.4},{time:"15:00",error:1.1}];
 
@@ -76,12 +78,22 @@ function AnalyticsPage(){
  </div>;
 }
 
+function imageForRepo(repo,i){
+ const k=(repo||"").toLowerCase();
+ const map=[["portfolio","/about/portfolio.jpg"],["reliability","/about/pulseops.jpg"],["fastapi","/about/fastapi.jpg"],["camera","/about/camera.jpg"],["snake","/about/game.jpg"],["agentflow","/about/ai.jpg"],["agent","/about/ai.jpg"],["interview","/about/office.jpg"],["adaptive","/about/space.jpg"],["engine","/about/space.jpg"],["school","/about/office.jpg"],["billing","/about/pulseops.jpg"],["workflow","/about/code.jpg"],["crafty","/about/portfolio.jpg"],["canvas","/about/portfolio.jpg"],["resume","/about/code.jpg"],["audio","/about/desk.jpg"],["browser","/about/camera.jpg"],["usage","/about/mountain.jpg"],["download","/about/mountain.jpg"]];
+ for(const [key,img] of map){if(k.includes(key))return img}
+ const pool=["/about/mask.jpg","/about/story.jpg","/about/abstract.jpg","/about/desk.jpg","/about/mountain.jpg","/about/space.jpg","/about/office.jpg","/about/code.jpg","/about/ai.jpg"];
+ return pool[(i||0)%pool.length];
+}
+
 function AboutPage(){
  const [p,setP]=useState(null);
+ const [allProjects,setAllProjects]=useState([]);
  const [form,setForm]=useState({name:"",topic:"",email:"",message:""});
  const [sent,setSent]=useState(false);
  const [busy,setBusy]=useState(false);
  useEffect(()=>{api.profile().then(setP).catch(()=>{})},[]);
+ useEffect(()=>{api.projects().then(list=>{setAllProjects(list.filter(x=>x.repo&&x.repo.includes("/")).map((x,i)=>({label:x.name,image:imageForRepo(x.repo,i),link:`https://github.com/${x.repo}`}))) }).catch(()=>{})},[]);
  const tilt=e=>{const c=e.currentTarget;const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5;const y=(e.clientY-r.top)/r.height-.5;c.style.transform=`perspective(800px) rotateY(${x*7}deg) rotateX(${-y*7}deg) translateY(-4px)`};
  const untilt=e=>{e.currentTarget.style.transform=""};
  const sendContact=async()=>{
@@ -91,25 +103,19 @@ function AboutPage(){
   setBusy(false);
  };
  if(!p)return <div className="page"><p className="muted">Loading profile…</p></div>;
- const fade={initial:{opacity:0,y:30},whileInView:{opacity:1,y:0},viewport:{once:true,margin:"-70px"},transition:{duration:.6,ease:"easeOut"}};
- const projects=[
-  {label:"PulseOps — AI Reliability",image:"/about/pulseops.jpg",link:"https://github.com/Anshul1023/ai-reliability-platform"},
-  {label:"Anshul Rawat Portfolio",image:"/about/portfolio.jpg",link:"https://github.com/Anshul1023/anshul-rawat-portfolio"},
-  {label:"FastAPI Web Accelerator",image:"/about/fastapi.jpg",link:"https://github.com/Anshul1023/Fastapi"},
-  {label:"Browser Camera",image:"/about/camera.jpg",link:"https://github.com/Anshul1023/browser-camera"},
-  {label:"Snake Game",image:"/about/game.jpg",link:"https://github.com/Anshul1023/JavaScript-Snake-game"},
-  {label:"AgentFlow AI",image:"/about/ai.jpg",link:"https://github.com/Anshul1023/AgentFlow-Ai"}
- ];
- const carousel=[
-  {image:"/about/fitness.jpg",text:"Odds Fitness"},
-  {image:"/about/office.jpg",text:"SGSN Associates"},
-  {image:"/about/code.jpg",text:"Interpe"}
- ];
+ const secAnim={initial:{opacity:0,y:70},whileInView:{opacity:1,y:0},viewport:{once:false,amount:.15},transition:{duration:.7,ease:"easeOut"}};
+ const driftItems=["/about/mask.jpg","/about/story.jpg","/about/abstract.jpg","/about/desk.jpg","/about/mountain.jpg","/about/space.jpg","/about/office.jpg","/about/code.jpg","/about/ai.jpg","/about/fitness.jpg"].map((img,i)=>({image:img,title:`tile${i}`}));
+ const expItems=p.experience.map((e,i)=>({image:["/about/fitness.jpg","/about/office.jpg","/about/code.jpg"][i]||"/about/desk.jpg",label:e.company,link:p.links.linkedin}));
+ const half=Math.ceil(p.skills.length/2);
+ const rows=[p.skills.slice(0,half),p.skills.slice(half)];
+ const menuItems=[["Story","story"],["Experience","experience"],["Skills","skills"],["Projects","projects"],["Contact","contact"]].map(([l,id])=>({label:l,link:`#${id}`}));
  return <div className="about">
-  <section className="aboutHero"><div className="orb o1"/><div className="orb o2"/><div className="orb o3"/>
-   <div className="aboutHeroInner">
+  <StaggeredMenu items={menuItems} socialItems={[{label:"GitHub",link:p.links.github},{label:"LinkedIn",link:p.links.linkedin},{label:"Email",link:`mailto:${p.email}`}]} accentColor="#5a7dff" colors={["#141a2b","#1e2638"]} isFixed/>
+  <section className="abHero" id="top">
+   <div className="abHeroBg"><DriftWall items={driftItems} columns={5} tileWidth={210} tileHeight={140} gap={16} speed={36} fade={0.5} dim={0.55} tilt={14} turn={-12}/></div>
+   <div className="abHeroContent">
     <motion.span initial={{opacity:0,scale:.85}} animate={{opacity:1,scale:1}} transition={{duration:.5}} className="badge aboutTag">Full Stack Developer</motion.span>
-    <h1 className="aboutName"><FoldText text="Anshul Rawat" hinge="bottom" trigger="mount" splitBy="char" duration={0.7} stagger={0.06} fontSize={62} fontWeight={800} color="#eaf0ff"/></h1>
+    <h1 className="aboutName"><FoldText text="Anshul Rawat" hinge="bottom" trigger="mount" splitBy="char" duration={0.7} stagger={0.06} fontSize="clamp(2.8rem,8.5vw,6rem)" fontWeight={800} color="#eaf0ff"/></h1>
     <div className="aboutMaskWrap"><MaskedHeading text="BUILDING THINGS THAT LAST" src="/about/mask.jpg" trigger="view" reveal="wipe" textScale={0.075} weight={800} tracking={-0.02}/></div>
     <motion.p initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:.9,duration:.7}} className="aboutTagline">{p.tagline}</motion.p>
     <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:1.05,duration:.7}} className="aboutChips">
@@ -121,28 +127,51 @@ function AboutPage(){
     </motion.div>
     <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:1.2,duration:.7}} className="aboutCta"><a className="titleBtn" href="#contact">💬 Work with me</a><a className="titleBtn ghost" href={p.links.portfolio} target="_blank" rel="noreferrer">View my portfolio ↗</a></motion.div>
    </div>
+   <div className="abHeroScroll">SCROLL<span>↓</span></div>
   </section>
-  <section className="aboutBody">
-   <motion.div {...fade} className="aboutSection"><h2><span className="bar"/>My story</h2>
+  <motion.section {...secAnim} className="abSec abStory" id="story">
+   <div className="abWordmark"><DepthText text="MY STORY" layers={26} depth={2.2} depthColor="#3d5af1" faceColor="#1a2236" fontSize="clamp(4rem,14vw,11rem)"/></div>
+   <div className="abSecInner">
+    <div className="abHeadWrap"><SplitText text="My Story" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">{p.tagline}</p></div>
     <div className="storyExpand"><ScrollExpand src="/about/story.jpg" title="My story" scrollHint="Scroll inside ↓" scrollDistance={1} startWidth={46} startHeight={62}><div className="storyOverlay"><p>{p.summary}</p><a className="titleBtn" href="#contact">Let's build something</a></div></ScrollExpand></div>
-   </motion.div>
-   <motion.div {...fade} className="aboutSection"><h2><span className="bar"/>Experience</h2>
-    <div className="carouselWrap"><CircularGallery items={carousel} bend={2.4} textColor="#cfe0ff" borderRadius={0.08} font="bold 28px sans-serif"/></div>
+   </div>
+  </motion.section>
+  <motion.section {...secAnim} className="abSec abExp" id="experience">
+   <div className="abWordmark"><DepthText text="EXPERIENCE" layers={26} depth={2.2} depthColor="#14b8a6" faceColor="#14202c" fontSize="clamp(3.4rem,11vw,9rem)"/></div>
+   <div className="abSecInner">
+    <div className="abHeadWrap"><SplitText text="Where I've Worked" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">Three roles, one obsession: building products that feel fast and never break.</p></div>
+    <AccordionGallery items={expItems} height={440} defaultIndex={0} grayscale={false} accentColor="#5eead4" overlayColor="#0b0f1c"/>
     <div className="timeline">{p.experience.map((e,i)=><div className="tlItem" key={i} onMouseMove={tilt} onMouseLeave={untilt}><div className="tlDot"/><div className="tlCard"><div className="tlHead"><b>{e.role}</b><span>{e.period}</span></div><small>{e.company}</small><ul>{e.points.map((pt,j)=><li key={j}>{pt}</li>)}</ul></div></div>)}</div>
-   </motion.div>
-   <motion.div {...fade} className="aboutSection"><h2><span className="bar"/>Skills</h2><div className="skillCloud">{p.skills.map((s,i)=><motion.span className="skill" key={i} initial={{opacity:0,y:10}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*0.035,duration:.4}}>{s}</motion.span>)}</div></motion.div>
-   <motion.div {...fade} className="aboutSection"><h2><span className="bar"/>Projects</h2>
-    <AccordionGallery items={projects} height={380} defaultIndex={1} grayscale={false} accentColor="#5eead4" overlayColor="#0b0f1c"/>
-    <div className="projGrid" style={{marginTop:14}}>{p.projects.map((pr,i)=><a className="projCard" key={i} href={pr.url||p.links.github} target="_blank" rel="noreferrer" onMouseMove={tilt} onMouseLeave={untilt}><b>{pr.name}</b><p>{pr.desc}</p><small>{pr.url?"Open on GitHub ↗":"Personal project"}</small></a>)}</div>
-   </motion.div>
-   <motion.div {...fade} className="aboutSection"><h2><span className="bar"/>Education & languages</h2><div className="eduRow">{p.education.map((e,i)=><div className="eduCard" key={i}><GraduationCap size={16}/><div><b>{e.degree}</b><small>{e.school} · {e.period}</small></div></div>)}</div><div className="langRow">{p.languages.map((l,i)=><span className="lang" key={i}>🗣 {l}</span>)}</div></motion.div>
-   <motion.div {...fade} className="aboutSection" id="contact"><h2><span className="bar"/>Contact me</h2>
+    <div className="eduRow" style={{marginTop:8}}>{p.education.map((e,i)=><div className="eduCard" key={i}><GraduationCap size={16}/><div><b>{e.degree}</b><small>{e.school} · {e.period}</small></div></div>)}</div>
+   </div>
+  </motion.section>
+  <motion.section {...secAnim} className="abSec abSkills" id="skills">
+   <div className="abWordmark"><DepthText text="SKILLS" layers={26} depth={2.2} depthColor="#8b5cf6" faceColor="#1d1830" fontSize="clamp(4rem,14vw,11rem)"/></div>
+   <div className="abSecInner">
+    <div className="abHeadWrap"><SplitText text="The Stack I Ship With" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">Endless marquee of the tools I use daily — hover to pause.</p></div>
+    {rows.map((row,i)=><LogoLoop key={i} logos={row} speed={i===0?70:-80} direction={i===0?"left":"right"} logoHeight={46} gap={22} pauseOnHover renderItem={s=><span className="skChip">✦ {s}</span>} fadeOut/>)}
+    <div className="langRow" style={{marginTop:22}}>{p.languages.map((l,i)=><span className="lang" key={i}>🗣 {l}</span>)}</div>
+   </div>
+  </motion.section>
+  <motion.section {...secAnim} className="abSec abProjects" id="projects">
+   <div className="abWordmark"><DepthText text="PROJECTS" layers={26} depth={2.2} depthColor="#f59e0b" faceColor="#2c2413" fontSize="clamp(3.4rem,11vw,9rem)"/></div>
+   <div className="abSecInner">
+    <div className="abHeadWrap"><SplitText text="Every Project, One Place" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">All {allProjects.length||""} repos from my GitHub, in a 3D carousel — drag or scroll to explore, click to open on GitHub.</p></div>
+    <div className="carouselWrap">{allProjects.length?<CircularGallery items={allProjects} bend={2.4} textColor="#cfe0ff" borderRadius={0.08} font="bold 24px sans-serif"/>:<p className="muted">Loading projects…</p>}</div>
+    <div className="abProjectsMeta">{allProjects.slice(0,8).map((x,i)=><span className="aboutChip" key={i} onClick={()=>window.open(x.link,"_blank")} style={{cursor:"pointer"}}>{x.label}</span>)}</div>
+   </div>
+  </motion.section>
+  <motion.section {...secAnim} className="abSec abContact" id="contact">
+   <div className="abWordmark"><DepthText text="CONTACT" layers={26} depth={2.2} depthColor="#14b8a6" faceColor="#14202c" fontSize="clamp(3.4rem,11vw,9rem)"/></div>
+   <div className="abSecInner">
+    <div className="abHeadWrap"><SplitText text="Let's Build Together" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">Have a project, a role, or just want to say hi? Send a message — it lands straight in my inbox.</p></div>
     <div className="contactWrap">
-     <div className="contactInfo"><p className="muted">Have a project, a role, or just want to say hi? Send a message — it lands straight in my inbox.</p>
+     <div className="contactInfo">
       <div className="contactLine"><Mail size={15}/><div><b>Email</b><a href={`mailto:${p.email}`}>{p.email}</a></div></div>
       <div className="contactLine"><Phone size={15}/><div><b>Phone</b><a href={`tel:${p.phone.replace(/\s/g,"")}`}>{p.phone}</a></div></div>
       <div className="contactLine"><MapPin size={15}/><div><b>Location</b><span>{p.location}</span></div></div>
       <div className="contactLine"><Github size={15}/><div><b>GitHub</b><a href={p.links.github} target="_blank" rel="noreferrer">{p.links.github}</a></div></div>
+      <div className="abFolder"><Folder color="#5a7dff" size={1.25} items={["📄","✨","💙"]}/></div>
      </div>
      <div className="contactForm">
       <input placeholder="Your name…" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
@@ -153,8 +182,8 @@ function AboutPage(){
       {sent?<p className="sentOk"><CheckCircle2 size={14}/> Message sent! I'll get back to you.</p>:null}
      </div>
     </div>
-   </motion.div>
-  </section>
+   </div>
+  </motion.section>
  </div>;
 }
 
