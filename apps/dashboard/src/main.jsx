@@ -69,20 +69,39 @@ function CurvedText({text,className="",size=20,curve=26}){
 
 function StoryReel(){
  const ref=useRef(null);
+ const trackRef=useRef(null);
+ const [travel,setTravel]=useState(0);
+ const cards=[
+  {t:"img",img:"/about/mask.jpg",n:"01",head:"Ship fast",d:"Fast products win. I obsess over every millisecond, every frame."},
+  {t:"gif",gif:"/about/cat.gif",head:"I build with AI",d:"RAG agents, vector search and automation at Odds Fitness — the boring work does itself."},
+  {t:"img",img:"/about/desk.jpg",n:"02",head:"Own the full stack",d:"From React pixels to Postgres queries — the whole path is mine."},
+  {t:"txt",head:"Observe everything",d:"Prometheus, Grafana, error rates. I trust metrics, not vibes."},
+  {t:"img",img:"/about/code.jpg",n:"03",head:"Production first",d:"Docker, CI/CD, Redis caching — shipped and monitored, never just demoed."},
+  {t:"gif",gif:"/about/yes.gif",head:"And when it works",d:"That feeling when the deploy goes green and latency drops."},
+  {t:"img",img:"/about/office.jpg",n:"04",head:"Team player",d:"From startup to agency — I ship alongside great people."},
+  {t:"txt",head:"Scale quietly",d:"Simple systems that hold up under load."}
+ ];
+ useEffect(()=>{
+  const measure=()=>{
+   const t=trackRef.current;if(!t)return;
+   setTravel(Math.max(0,(t.scrollWidth||0)-window.innerWidth));
+  };
+  measure();
+  const ro=new ResizeObserver(measure);
+  if(trackRef.current)ro.observe(trackRef.current);
+  window.addEventListener("resize",measure);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>setTimeout(measure,80));
+  return ()=>{ro.disconnect();window.removeEventListener("resize",measure)};
+ },[]);
  const {scrollYProgress}=useScroll({target:ref,offset:["start start","end end"]});
- const x=useTransform(scrollYProgress,[0,1],["0%","-72%"]);
- const imgs=["/about/mask.jpg","/about/story.jpg","/about/desk.jpg","/about/mountain.jpg","/about/space.jpg","/about/office.jpg","/about/code.jpg","/about/ai.jpg"];
- const words=["SHIP FAST","NEVER BREAK","OBSERVE EVERYTHING","AUTOMATE THE BORING","SCALE QUIETLY"];
- const notes=["Fast products win.","Downtime is a choice.","Metrics tell the truth.","AI does the busywork.","Simple scales best."];
+ const x=useTransform(scrollYProgress,[0,1],[0,-travel]);
  const tilt=e=>{const c=e.currentTarget;const r=c.getBoundingClientRect();c.style.transform=`perspective(900px) rotateY(${((e.clientX-r.left)/r.width-.5)*10}deg) rotateX(${-((e.clientY-r.top)/r.height-.5)*8}deg) translateY(-6px) scale(1.04)`};
  const untilt=e=>{e.currentTarget.style.transform=""};
- useEffect(()=>{let alive=true;const rem=()=>{if(alive)window.dispatchEvent(new Event("resize"))};if(document.fonts&&document.fonts.ready)document.fonts.ready.then(rem);window.addEventListener("load",rem);return ()=>{alive=false;window.removeEventListener("load",rem)}},[]);
- return <div className="storyReel" ref={ref}>
+ return <div className="storyReel" ref={ref} style={travel?{height:`calc(100vh + ${travel}px)`}:undefined}>
   <div className="storyReelSticky">
    <div className="reelHead"><span className="reelTag">The journey in motion</span><b className="reelHint">Keep scrolling <span>→</span></b></div>
-   <motion.div className="storyReelTrack" style={{x}}>
-    {imgs.map((img,i)=><div className="reelCard reelImg" key={"i"+i} onMouseMove={tilt} onMouseLeave={untilt}><img src={img} alt=""/><span className="reelCap">0{i+1} — {words[i%words.length]}</span></div>)}
-    {words.map((w,i)=><div className="reelCard reelText" key={"w"+i}><span className="reelStar">✦</span><b>{w}</b><small>{notes[i]}</small></div>)}
+   <motion.div className="storyReelTrack" ref={trackRef} style={{x}}>
+    {cards.map((c,i)=>c.t==="img"?<div className="reelCard reelImg" key={i} onMouseMove={tilt} onMouseLeave={untilt}><img src={c.img} alt=""/><div className="reelCap"><span className="reelNum">{c.n}</span><b>{c.head}</b><small>{c.d}</small></div></div>:c.t==="gif"?<div className="reelCard reelGif" key={i} onMouseMove={tilt} onMouseLeave={untilt}><img src={c.gif} alt=""/><div className="reelCap reelCapDark"><b>{c.head}</b><small>{c.d}</small></div></div>:<div className="reelCard reelText" key={i}><span className="reelStar">✦</span><b>{c.head}</b><small>{c.d}</small></div>)}
     <div className="reelCard reelEnd"><b>That's my story.</b><small>One commit at a time.</small><a className="titleBtn" href="#contact">Let's build together</a></div>
    </motion.div>
   </div>
@@ -91,13 +110,26 @@ function StoryReel(){
 
 function ExpReel({experience,education}){
  const ref=useRef(null);
- const {scrollYProgress}=useScroll({target:ref,offset:["start start","end end"]});
- const x=useTransform(scrollYProgress,[0,1],["0%","-50%"]);
+ const trackRef=useRef(null);
+ const [travel,setTravel]=useState(0);
  const imgs=["/about/fitness.jpg","/about/office.jpg","/about/code.jpg"];
- useEffect(()=>{let alive=true;const rem=()=>{if(alive)window.dispatchEvent(new Event("resize"))};if(document.fonts&&document.fonts.ready)document.fonts.ready.then(rem);window.addEventListener("load",rem);return ()=>{alive=false;window.removeEventListener("load",rem)}},[]);
- return <div className="expReel" ref={ref}>
+ useEffect(()=>{
+  const measure=()=>{
+   const t=trackRef.current;if(!t)return;
+   setTravel(Math.max(0,(t.scrollWidth||0)-window.innerWidth));
+  };
+  measure();
+  const ro=new ResizeObserver(measure);
+  if(trackRef.current)ro.observe(trackRef.current);
+  window.addEventListener("resize",measure);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>setTimeout(measure,80));
+  return ()=>{ro.disconnect();window.removeEventListener("resize",measure)};
+ },[]);
+ const {scrollYProgress}=useScroll({target:ref,offset:["start start","end end"]});
+ const x=useTransform(scrollYProgress,[0,1],[0,-travel]);
+ return <div className="expReel" ref={ref} style={travel?{height:`calc(100vh + ${travel}px)`}:undefined}>
   <div className="expReelSticky">
-   <motion.div className="expTrack" style={{x}}>
+   <motion.div className="expTrack" ref={trackRef} style={{x}}>
     {experience.map((e,i)=><div className="expCard" key={i}>
      <div className="expMedia"><img src={imgs[i%imgs.length]} alt=""/><span className="expPeriod">{e.period}</span></div>
      <div className="expBody"><b>{e.role}</b><small>{e.company}</small><ul>{e.points.map((pt,j)=><li key={j}>{pt}</li>)}</ul></div>
@@ -208,23 +240,30 @@ function AboutPage(){
 
  return <div className="about">
   <section className="abHero" id="top">
-   <div className="abHeroBg"><DriftWall items={driftItems} columns={5} tileWidth={210} tileHeight={140} gap={16} speed={36} fade={0.55} dim={0.72} tilt={14} turn={-12} overlayColor="#080a14"/></div>
-   <div className="abHeroContent">
-    <motion.span initial={{opacity:0,scale:.85}} animate={{opacity:1,scale:1}} transition={{duration:.5}} className="badge aboutTag">Full Stack Developer</motion.span>
-    <h1 className="aboutName"><FoldText text="Anshul Rawat" hinge="bottom" trigger="mount" splitBy="char" duration={0.7} stagger={0.06} fontSize="clamp(2.8rem,8.5vw,6rem)" fontWeight={800} color="#eaf0ff"/></h1>
-    <div className="aboutMaskWrap"><MaskedHeading text="BUILDING THINGS THAT LAST" fill="linear-gradient(90deg,#7aa2ff 0%,#5eead4 45%,#9db4ff 70%,#5b7cff 100%)" trigger="view" reveal="rise" duration={1.2} stagger={0.09} textScale={0.09} weight={900} tracking={-0.03} fillScale={1.15} parallax={28} drift={22}/></div>
-    <motion.p initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:.9,duration:.7}} className="aboutTagline">{p.tagline}</motion.p>
-    <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:1,duration:.7}} className="aboutHighlights">
-     <span><b>{p.experience.length}</b> Roles</span><span>·</span><span><b>{p.projects.length}</b> Projects</span><span>·</span><span><b>{p.skills.length}</b> Skills</span><span>·</span><span><b>B.Tech CSE</b> · Uttaranchal Univ.</span><span>·</span><span><b>Docker · FastAPI · React · Redis</b></span>
+   <div className="abHeroBg"><DriftWall items={driftItems} columns={5} tileWidth={210} tileHeight={140} gap={16} speed={36} fade={0.55} dim={0.8} tilt={14} turn={-12} overlayColor="#080a14"/></div>
+   <div className="abHeroGrid">
+    <div className="abHeroText">
+     <motion.span initial={{opacity:0,scale:.85}} animate={{opacity:1,scale:1}} transition={{duration:.5}} className="badge aboutTag">Full Stack Developer</motion.span>
+     <h1 className="aboutName"><FoldText text="Anshul Rawat" hinge="bottom" trigger="mount" splitBy="char" duration={0.7} stagger={0.06} fontSize="clamp(3.6rem,9vw,7.4rem)" fontWeight={800} color="#eaf0ff"/></h1>
+     <div className="aboutMaskWrap"><MaskedHeading text="BUILDING THINGS THAT LAST" align="left" fill="linear-gradient(90deg,#7aa2ff 0%,#5eead4 45%,#9db4ff 70%,#5b7cff 100%)" trigger="view" reveal="rise" duration={1.2} stagger={0.09} textScale={0.09} weight={900} tracking={-0.03} fillScale={1.15} parallax={28} drift={22}/></div>
+     <motion.p initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:.9,duration:.7}} className="aboutTagline">{p.tagline}</motion.p>
+     <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:1,duration:.7}} className="aboutHighlights">
+      <span><b>{p.experience.length}</b> Roles</span><span>·</span><span><b>{p.projects.length}</b> Projects</span><span>·</span><span><b>{p.skills.length}</b> Skills</span><span>·</span><span><b>B.Tech CSE</b> · Uttaranchal Univ.</span><span>·</span><span><b>Docker · FastAPI · React · Redis</b></span>
+     </motion.div>
+     <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:1.05,duration:.7}} className="aboutChips">
+      <a className="aboutChip" href={`tel:${p.phone.replace(/\s/g,"")}`}><Phone size={13}/>{p.phone}</a>
+      <a className="aboutChip" href={`mailto:${p.email}`}><Mail size={13}/>{p.email}</a>
+      <span className="aboutChip"><MapPin size={13}/>{p.location}</span>
+      <a className="aboutChip" href={p.links.github} target="_blank" rel="noreferrer"><Github size={13}/>GitHub</a>
+      <a className="aboutChip" href={p.links.linkedin} target="_blank" rel="noreferrer"><Linkedin size={13}/>LinkedIn</a>
+     </motion.div>
+     <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:1.2,duration:.7}} className="aboutCta"><a className="titleBtn" href="#contact">💬 Work with me</a><a className="titleBtn ghost" href={p.links.portfolio} target="_blank" rel="noreferrer">View my portfolio ↗</a></motion.div>
+    </div>
+    <motion.div initial={{opacity:0,x:70}} animate={{opacity:1,x:0}} transition={{delay:.55,duration:.9,ease:[.22,1,.36,1]}} className="abHeroArt">
+     <div className="abArtCard abArtMain" onMouseMove={tilt} onMouseLeave={untilt}><img src="/about/code.jpg" alt=""/><span className="abArtTag">FastAPI · Redis · Docker</span></div>
+     <div className="abArtCard abArtGif" onMouseMove={tilt} onMouseLeave={untilt}><img src="/about/cat.gif" alt=""/><span className="abArtTag">always shipping</span></div>
+     <div className="abArtCard abArtSmall" onMouseMove={tilt} onMouseLeave={untilt}><img src="/about/mountain.jpg" alt=""/><span className="abArtTag">from Faridabad</span></div>
     </motion.div>
-    <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:1.05,duration:.7}} className="aboutChips">
-     <a className="aboutChip" href={`tel:${p.phone.replace(/\s/g,"")}`}><Phone size={13}/>{p.phone}</a>
-     <a className="aboutChip" href={`mailto:${p.email}`}><Mail size={13}/>{p.email}</a>
-     <span className="aboutChip"><MapPin size={13}/>{p.location}</span>
-     <a className="aboutChip" href={p.links.github} target="_blank" rel="noreferrer"><Github size={13}/>GitHub</a>
-     <a className="aboutChip" href={p.links.linkedin} target="_blank" rel="noreferrer"><Linkedin size={13}/>LinkedIn</a>
-    </motion.div>
-    <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:1.2,duration:.7}} className="aboutCta"><a className="titleBtn" href="#contact">💬 Work with me</a><a className="titleBtn ghost" href={p.links.portfolio} target="_blank" rel="noreferrer">View my portfolio ↗</a></motion.div>
    </div>
    <div className="abHeroScroll">SCROLL<span>↓</span></div>
   </section>

@@ -95,7 +95,7 @@
 
 /* ===== About page: full-bleed layout (no cards) ===== */
 .about{max-width:none;margin:0;padding:0}
-.abSec{position:relative;width:100%;padding:clamp(56px,9vw,120px) clamp(18px,6vw,84px);overflow:hidden}
+.abSec{position:relative;width:100%;padding:clamp(44px,6vw,84px) clamp(18px,6vw,84px);overflow:hidden}
 .abWordmark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:.5;z-index:0;transform:scale(1.08)}
 .abWordmark .depth-text{font-size:clamp(4rem,14vw,11rem)}
 .abSecInner{position:relative;z-index:2}
@@ -108,28 +108,39 @@
 .abSub .hl{color:#5eead4;font-weight:700}
 .abSub .hl2{color:#7aa2ff;font-weight:700}
 /* hero */
-.abHero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.abHero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden}
 .abHeroBg{position:absolute;inset:0;z-index:0}
 .abHeroBg .drift-wall{height:100%}
-.abHero::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 62% 58% at 50% 44%,rgba(10,12,22,.62) 0%,rgba(10,12,22,.82) 55%,#0b0c14 100%)}
-.abHero::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(10,12,22,.72) 0%,rgba(10,12,22,.25) 32%,rgba(10,12,22,.25) 68%,#0b0c14 100%)}
-.abHeroContent{position:relative;z-index:2;text-align:center;max-width:1100px;padding:24px 20px}
-.aboutName{min-height:96px;margin:10px 0 8px}
-.aboutName .fold-text{font-size:clamp(2.8rem,8.5vw,6rem);letter-spacing:-.03em;text-shadow:0 6px 40px rgba(90,125,255,.4)}
-.aboutTag{margin-bottom:10px;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
-.aboutTagline{font-size:clamp(1.05rem,2vw,1.35rem);max-width:760px;margin:18px auto 0;color:#c3cce3;line-height:1.65}
-.aboutChips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:26px 0 30px}
+.abHero::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 72% 62% at 32% 42%,rgba(10,12,22,.52) 0%,rgba(10,12,22,.78) 60%,#0b0c14 100%)}
+.abHero::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(10,12,22,.78) 0%,rgba(10,12,22,.3) 34%,rgba(10,12,22,.3) 66%,#0b0c14 100%)}
+.abHeroGrid{position:relative;z-index:2;width:100%;max-width:1440px;margin:0 auto;padding:108px clamp(22px,5vw,72px) 84px;display:grid;grid-template-columns:1.12fr .88fr;gap:clamp(30px,5vw,84px);align-items:center}
+.abHeroText{text-align:left}
+.aboutName{min-height:96px;margin:10px 0 6px}
+.aboutName .fold-text{font-size:clamp(3.6rem,9vw,7.4rem);letter-spacing:-.03em;text-shadow:0 6px 40px rgba(90,125,255,.4)}
+.aboutTag{margin-bottom:12px;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.aboutTagline{font-size:clamp(1.15rem,2.1vw,1.5rem);max-width:620px;margin:18px 0 0;color:#c3cce3;line-height:1.65;text-align:left}
+.aboutHighlights{display:flex;flex-wrap:wrap;gap:4px 10px;justify-content:flex-start;font-size:clamp(.85rem,1.2vw,1rem);color:#a0b0d8;margin:14px 0 0;max-width:640px}
+.abHeroText .aboutChips{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-start;margin:26px 0 30px}
+.abHeroText .aboutCta{display:flex;gap:14px;justify-content:flex-start;flex-wrap:wrap}
+/* hero art collage */
+.abHeroArt{position:relative;height:clamp(400px,64vh,580px);width:100%}
+.abArtCard{position:absolute;border-radius:20px;overflow:hidden;box-shadow:0 34px 70px -22px rgba(0,0,0,.7);border:1px solid rgba(122,162,255,.2);transform-style:preserve-3d;transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s;cursor:pointer}
+.abArtCard img{width:100%;height:100%;object-fit:cover;display:block}
+.abArtMain{width:62%;height:74%;top:4%;right:2%;z-index:1}
+.abArtGif{width:46%;height:42%;bottom:0;left:0;z-index:2;border:4px solid #0c0d14;border-radius:18px}
+.abArtSmall{width:36%;height:30%;top:0;left:7%;z-index:3;transform:rotate(-5deg);border-radius:16px}
+.abArtCard:hover{transform:translateY(-8px) scale(1.03);box-shadow:0 46px 90px -22px rgba(90,125,255,.45)}
+.abArtTag{position:absolute;left:12px;bottom:10px;z-index:2;font-size:11px;font-weight:700;letter-spacing:.06em;color:#eaf0ff;background:rgba(8,10,20,.68);backdrop-filter:blur(6px);padding:5px 11px;border-radius:99px}
 .aboutChip{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:99px;border:1px solid rgba(122,162,255,.4);background:rgba(20,26,44,.65);backdrop-filter:blur(8px);color:#dbe6ff;font-size:13.5px;text-decoration:none;transition:.25s}
 .aboutChip:hover{border-color:#5a7dff;background:rgba(42,53,80,.85);transform:translateY(-3px);box-shadow:0 8px 22px rgba(90,125,255,.3)}
-.aboutCta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-.aboutHighlights{display:flex;flex-wrap:wrap;gap:4px 10px;justify-content:center;font-size:clamp(.85rem,1.2vw,1rem);color:#a0b0d8;margin:8px auto 0;max-width:780px}
+.aboutCta{display:flex;gap:14px;justify-content:flex-start;flex-wrap:wrap}
 .aboutHighlights b{color:#dbe6ff;font-weight:700}
 .aboutHighlights span{white-space:nowrap}
 .abHeroScroll{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:2;color:#8fa0c8;font-size:12px;letter-spacing:.12em;display:flex;flex-direction:column;align-items:center;gap:6px;animation:bob 2.2s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,7px)}}
 /* story — full-page curved text */
 .abStory{background:radial-gradient(ellipse 72% 58% at 50% 36%,rgba(90,125,255,.12),transparent 72%)}
-.storyText{padding-top:clamp(70px,9vw,110px)}
+.storyText{padding-top:clamp(56px,8vw,96px)}
 .storyText{max-width:1200px;width:100%;margin:0 auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:clamp(20px,3.4vw,34px);padding:clamp(48px,7vw,90px) 0}
 .storyScroll{color:#7f90bd;font-size:11px;letter-spacing:.4em;text-transform:uppercase;display:flex;align-items:center;gap:12px;animation:bobSoft 2.4s ease-in-out infinite}
 .storyScroll span{font-size:16px;color:#5eead4;letter-spacing:0}
@@ -192,21 +203,27 @@
  .abWordmark{opacity:.3}
 }
 
-/* story reel — scroll-driven horizontal 3D filmstrip */
-.storyReel{height:260vh;position:relative}
-.storyReelSticky{position:sticky;top:62px;height:calc(100vh - 62px);display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+/* story reel — pinned horizontal 3D filmstrip (exact travel: no page scroll until it completes) */
+.storyReel{position:relative}
+.storyReelSticky{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;justify-content:center;overflow:hidden;padding-top:64px}
 .reelHead{display:flex;align-items:baseline;justify-content:space-between;padding:0 clamp(18px,5vw,60px);margin-bottom:clamp(16px,3vw,28px)}
 .reelTag{font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:#7f90bd}
 .reelHint{font-family:"Syne",Inter,sans-serif;font-size:clamp(1rem,1.8vw,1.4rem);color:#eaf0ff;display:flex;align-items:center;gap:12px}
 .reelHint span{color:#5eead4;animation:bobSoft 1.8s ease-in-out infinite;display:inline-block}
 .storyReelTrack{display:flex;gap:clamp(16px,2.4vw,30px);align-items:center;padding:0 clamp(18px,5vw,60px);width:max-content;will-change:transform}
-.reelCard{flex:0 0 auto;width:clamp(280px,32vw,400px);height:clamp(300px,46vh,430px);border-radius:20px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;transform-style:preserve-3d;transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s}
+.reelCard{flex:0 0 auto;width:clamp(300px,36vw,440px);height:clamp(310px,48vh,450px);border-radius:20px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;transform-style:preserve-3d;transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s}
 .reelImg{background:#141a2b;box-shadow:0 30px 60px -22px rgba(0,0,0,.65)}
 .reelImg img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.9) contrast(1.05)}
-.reelImg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(8,10,20,.88))}
+.reelImg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(8,10,20,.92))}
 .reelImg:hover{transform:rotateY(-9deg) translateY(-8px) scale(1.03);box-shadow:0 40px 80px -20px rgba(90,125,255,.35)}
-.reelCap{position:absolute;left:18px;bottom:16px;z-index:2;color:#eaf0ff;font-family:"Syne",Inter,sans-serif;font-weight:700;font-size:clamp(1rem,1.6vw,1.3rem);letter-spacing:.02em}
-.reelText{background:linear-gradient(160deg,rgba(90,125,255,.14),rgba(20,26,44,.55));border:1px solid rgba(90,125,255,.22);flex-direction:column;gap:14px;text-align:center;padding:28px}
+.reelCap{position:absolute;left:20px;right:20px;bottom:18px;z-index:2;display:flex;flex-direction:column;gap:3px}
+.reelCap b{font-family:"Syne",Inter,sans-serif;font-weight:700;font-size:clamp(1.1rem,1.8vw,1.45rem);color:#eaf0ff;letter-spacing:.01em}
+.reelCap small{color:#c3cce3;font-size:13.5px;line-height:1.5;margin-top:3px}
+.reelNum{font-size:11px;letter-spacing:.32em;color:#5eead4;margin-bottom:4px}
+.reelGif{width:clamp(280px,33vw,400px)}
+.reelGif img{width:100%;height:100%;object-fit:cover;display:block}
+.reelGif::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 34%,rgba(6,8,16,.94))}
+.reelText{width:clamp(270px,30vw,370px);background:linear-gradient(160deg,rgba(90,125,255,.14),rgba(20,26,44,.55));border:1px solid rgba(90,125,255,.22);flex-direction:column;gap:14px;text-align:center;padding:28px}
 .reelText .reelStar{color:#5eead4;font-size:1.6rem}
 .reelText b{font-family:"Syne",Inter,sans-serif;font-size:clamp(1.5rem,2.6vw,2.2rem);color:#eaf0ff;line-height:1.1}
 .reelText small{color:#93a5cf;font-size:14px;max-width:220px;line-height:1.5}
@@ -222,9 +239,9 @@
 .swName{font-family:"Syne",Inter,sans-serif;font-weight:800;font-size:clamp(2.2rem,5vw,4.2rem);line-height:1.05;display:block;background:linear-gradient(92deg,#eaf0ff,#7aa2ff 60%,#5eead4);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:14px;word-break:break-word}
 .skillWheelCenter small{color:#7f90bd;font-size:13px;letter-spacing:.06em}
 
-/* experience — horizontal scroll track */
-.expReel{height:250vh;position:relative}
-.expReelSticky{position:sticky;top:62px;height:calc(100vh - 62px);display:flex;align-items:center;overflow:hidden}
+/* experience — pinned horizontal scroll track */
+.expReel{position:relative}
+.expReelSticky{position:sticky;top:0;height:100vh;display:flex;align-items:center;overflow:hidden;padding-top:64px}
 .expTrack{display:flex;gap:clamp(18px,2.6vw,34px);align-items:center;padding:0 clamp(18px,5vw,60px);width:max-content;will-change:transform}
 .expCard{flex:0 0 auto;width:clamp(330px,40vw,520px);background:linear-gradient(165deg,rgba(26,33,56,.9),rgba(15,19,33,.95));border:1px solid rgba(90,125,255,.16);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 30px 60px -24px rgba(0,0,0,.6);transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s}
 .expCard:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 44px 80px -24px rgba(90,125,255,.35);border-color:rgba(90,125,255,.4)}
