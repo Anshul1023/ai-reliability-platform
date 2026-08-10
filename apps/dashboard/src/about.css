@@ -122,6 +122,9 @@
 .aboutChip{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:99px;border:1px solid rgba(122,162,255,.4);background:rgba(20,26,44,.65);backdrop-filter:blur(8px);color:#dbe6ff;font-size:13.5px;text-decoration:none;transition:.25s}
 .aboutChip:hover{border-color:#5a7dff;background:rgba(42,53,80,.85);transform:translateY(-3px);box-shadow:0 8px 22px rgba(90,125,255,.3)}
 .aboutCta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.aboutHighlights{display:flex;flex-wrap:wrap;gap:4px 10px;justify-content:center;font-size:clamp(.85rem,1.2vw,1rem);color:#a0b0d8;margin:8px auto 0;max-width:780px}
+.aboutHighlights b{color:#dbe6ff;font-weight:700}
+.aboutHighlights span{white-space:nowrap}
 .abHeroScroll{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:2;color:#8fa0c8;font-size:12px;letter-spacing:.12em;display:flex;flex-direction:column;align-items:center;gap:6px;animation:bob 2.2s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,7px)}}
 /* story */
@@ -154,7 +157,7 @@
 .abSkills .logoloop{overflow:hidden;padding:4px 0}
 /* projects */
 .abProjects{background:linear-gradient(180deg,#0c0d14,#10131f)}
-.carouselWrap{height:min(62vh,560px);margin:10px 0 8px;border-radius:22px;overflow:hidden}
+.carouselWrap{height:min(62vh,560px);margin:10px 0 8px;overflow:visible}
 .abProjectsMeta{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:22px}
 .abProjectsMeta .aboutChip{font-size:13px}
 /* contact */
