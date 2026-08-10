@@ -89,16 +89,22 @@ function ProjectDetails({p,back,liveTick}){
  const [services,setServices]=useState([]);
  const [deployments,setDeployments]=useState([]);
  const [incidents,setIncidents]=useState([]);
+ const [pdata,setPdata]=useState(null);
+ const [preview,setPreview]=useState(null);
  useEffect(()=>{
-  setRepo(null);setCommits([]);setServices([]);setDeployments([]);setIncidents([]);
+  setRepo(null);setCommits([]);setServices([]);setDeployments([]);setIncidents([]);setPdata(null);setPreview(null);
   api.github(p.repo).then(setRepo).catch(()=>{});
   api.commits(p.repo).then(setCommits).catch(()=>{});
   api.services(p.id).then(setServices).catch(()=>{});
   api.deployments(p.id).then(setDeployments).catch(()=>{});
   api.incidents().then(x=>setIncidents(x.filter(i=>i.project_id===p.id))).catch(()=>{});
+  api.projectData(p.id).then(setPdata).catch(()=>{});
  },[p,liveTick]);
  const short=s=>s?s.slice(0,7):"";
  const open=incidents.filter(i=>i.status!=="Resolved").length;
+ const filesDoc=(pdata||[]).find(d=>d.data_type==="files");
+ const filesPaths=Array.isArray(filesDoc&&filesDoc.payload)?filesDoc.payload:[];
+ const openFile=async path=>{try{const c=await api.contents(p.repo,path);if(c.type==="file")setPreview({path,content:atob(c.content||"")})}catch(e){}};
  return <div className="page"><button className="back" onClick={back}>← Projects</button>
  <div className="title"><div><h1>{p.name}</h1><p><Github size={14}/> {p.repo}</p></div><Badge tone={p.status==="Healthy"?"green":"yellow"}>{p.status}</Badge></div>
  <div className="pgraphWrap"><ProjectGraph projectId={p.id} projectName={p.name}/></div>
@@ -119,6 +125,10 @@ function ProjectDetails({p,back,liveTick}){
  </div>
  <Card title="Services"><div className="rows">{services.length?services.map(s=><div className="row" key={s.id}><span className={"dot "+(s.status==="Healthy"?"":"warn")}/><b>{s.name}</b><span>{s.status}</span><small>{Math.round(s.latency_ms)}ms</small></div>):<p className="muted">No monitored services yet — Vercel/Railway monitoring comes next.</p>}</div></Card>
  <Card title="Deployments"><div className="rows">{deployments.length?deployments.map(d=><div className="row" key={d.id}><code className="mono">{short(d.sha)}</code><div><b>{d.message}</b><small>{d.author} · {new Date(d.created_at).toLocaleString()}</small></div><Badge tone={d.status==="Passed"?"green":"red"}>{d.status}</Badge></div>):<p className="muted">No deployments recorded yet.</p>}</div></Card>
+ <Card title="Repository files" action={filesPaths.length?<Badge tone="blue">{filesPaths.length} files</Badge>:null}>
+  <FileTree paths={filesPaths} onOpenFile={openFile}/>
+  {preview?<div className="filePreview"><div className="fpHead"><code className="mono">{preview.path}</code><button onClick={()=>setPreview(null)}>✕</button></div><pre>{preview.content.slice(0,8000)}</pre></div>:null}
+ </Card>
  </div>}
 function ChatPage(){
  const [projects,setProjects]=useState([]);
@@ -150,11 +160,11 @@ function ChatPage(){
  const browse=async()=>{
   if(!project){setNote("Select a project first.");return}
   setNote("");setCurFile(null);setEdit("");
-  try{setFiles(await api.contents(project.repo,""))}catch(e){setNote("Browse failed: "+e.message);setFiles(null)}
+  try{const pd=await api.projectData(projectId);const fd=pd.find(d=>d.data_type==="files");setFiles((fd&&Array.isArray(fd.payload))?fd.payload:[])}catch(e){setNote("Browse failed: "+e.message);setFiles(null)}
  };
- const openFile=async f=>{
+ const openFile=async path=>{
   if(!project)return;
-  try{const c=await api.contents(project.repo,f.path);if(c.type!=="file")return;setCurFile(f.path);setEdit(atob(c.content||""))}catch(e){setNote("Read failed: "+e.message)}
+  try{const c=await api.contents(project.repo,path);if(c.type!=="file")return;setCurFile(path);setEdit(atob(c.content||""))}catch(e){setNote("Read failed: "+e.message)}
  };
  const propose=async()=>{
   if(!project||!curFile)return;
@@ -174,7 +184,7 @@ function ChatPage(){
     <p className="muted">Chat and changes need the API key from Settings.</p>
    </Card>
    <Card title="Repository files">
-    {files?(files.length?files.map(f=><div className="row" key={f.path}><button className="fileBtn" onClick={()=>{if(f.type==="file")openFile(f)}}>{f.type==="dir"?"📁":"📄"} {f.name}</button></div>):<p className="muted">Empty repository.</p>):<p className="muted">Browse a repo to see its files, then edit and propose a change — it opens a pull request, never pushes to main directly.</p>}
+    {files?(files.length?<FileTree paths={files} onOpenFile={openFile}/>:<p className="muted">Empty repository.</p>):<p className="muted">Browse a repo to see its files, then edit and propose a change — it opens a pull request, never pushes to main directly.</p>}
     {curFile?<div><div className="row"><code className="mono">{curFile}</code></div><textarea className="editor" value={edit} onChange={e=>setEdit(e.target.value)} rows={10}/><div className="row"><input placeholder="Change message (PR title)…" value={prMsg} onChange={e=>setPrMsg(e.target.value)}/><button onClick={propose}>Propose change (PR)</button></div></div>:null}
     {note?<p className="muted">{note}</p>:null}
    </Card>
@@ -182,6 +192,39 @@ function ChatPage(){
  </div>
 </div>
 }
+
+function buildTree(paths){
+ const root={dirs:{},files:[]};
+ for(const p of paths||[]){
+  if(!p)continue;
+  const parts=p.split("/");let node=root;let acc="";
+  for(let i=0;i<parts.length-1;i++){
+   const d=parts[i];acc=acc?acc+"/"+d:d;
+   if(!node.dirs[d])node.dirs[d]={dirs:{},files:[],path:acc};
+   node=node.dirs[d];
+  }
+  node.files.push({name:parts[parts.length-1],path:p});
+ }
+ return root;
+}
+function FileTree({paths,onOpenFile}){
+ const [open,setOpen]=useState({});
+ const root=buildTree(paths);
+ const render=(node,name,path,lev)=>{
+  const folders=Object.entries(node.dirs);
+  const key=path||"__root__";
+  const isOpen=!!open[key];
+  return <div key={key}>
+   {name?<div className="treeRow folder" style={{paddingLeft:lev*14+8}} onClick={()=>setOpen(s=>({...s,[key]:!s[key]}))}><ChevronRight size={12} className={"treeChev"+(isOpen?" open":"")}/><span>📁</span><b>{name}</b><small>{folders.length+node.files.length}</small></div>:null}
+   <div className={"treeChildren"+(isOpen||!name?" open":"")}><div className="treeInner">
+    {folders.map(([n,c])=>render(c,n,c.path,lev+1))}
+    {node.files.map((f,i)=><div className="treeRow file" key={f.path} style={{paddingLeft:lev*14+26,animationDelay:(i*18)+"ms"}} onClick={()=>onOpenFile&&onOpenFile(f.path)}><span>📄</span><span>{f.name}</span></div>)}
+   </div></div>
+  </div>;
+ };
+ return <div className="tree">{render(root,null,"",0)}</div>;
+}
+function SvcLatency({n}){const v=useCountUp(n,900);return <>{Math.round(v)}</>}
 
 function ProjectGraph({projectId,projectName}){
  const [docs,setDocs]=useState(null);
@@ -219,7 +262,7 @@ function ProjectGraph({projectId,projectName}){
     <rect x="226" y={i===0?88:140} width="126" height="38" rx="10" fill="#fff" stroke="#e0e5ee"/>
     <circle cx="240" cy={i===0?103:155} r="4" className="pdot" fill={color(s.status)}/>
     <text x="256" y={i===0?101:153} fontSize="9.5" fontWeight="700" fill="#182234">{s.name}</text>
-    <text x="256" y={i===0?114:166} fontSize="8.5" fill="#687386">{s.status} · {Math.round(s.latency_ms)}ms</text>
+    <text x="256" y={i===0?114:166} fontSize="8.5" fill="#687386">{s.status} · <SvcLatency n={s.latency_ms}/>ms</text>
    </g>))}
   </svg>
   {(tech.length||files.length||incidents.length)?<div className="pchips">{tech.slice(0,7).map((t,i)=><span className="pchip" key={i}>{t}</span>)}{files.length?<span className="pchip ghost">📄 {files.length} files</span>:null}{incidents.length?<span className="pchip warn">⚠ {incidents.length} incident{incidents.length>1?"s":""}</span>:null}</div>:null}

@@ -97,3 +97,22 @@ nav button.active,nav button:hover{background:#dbe4fd;color:#2f4ad0}
 .rows .row:nth-child(8){animation-delay:.28s}
 @keyframes rowIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
 @media(max-width:900px){.miniProjects{grid-template-columns:1fr 1fr}.filters .search{width:100%}.filterCount{margin-left:0}}
+
+/* ---- animated file tree ---- */
+.tree{display:flex;flex-direction:column;font-size:11px}
+.treeRow{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:7px;cursor:pointer;user-select:none;transition:background .12s ease}
+.treeRow:hover{background:#eef2ff}
+.treeRow.folder b{font-weight:700;color:#33405e}
+.treeRow.folder small{margin-left:auto;font-size:9px;color:#8a94a8;background:#f1f3f8;border-radius:99px;padding:1px 7px}
+.treeRow.file{cursor:pointer;animation:rowIn .25s ease both}
+.treeRow.file span:last-child{color:#45506b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.treeChev{transition:transform .25s ease;color:#8a94a8;flex:none}
+.treeChev.open{transform:rotate(90deg)}
+.treeChildren{display:grid;grid-template-rows:0fr;transition:grid-template-rows .32s cubic-bezier(.2,.7,.3,1)}
+.treeChildren.open{grid-template-rows:1fr}
+.treeInner{overflow:hidden;min-height:0}
+.filePreview{margin-top:10px;border:1px solid #dfe5f2;border-radius:10px;background:#f7f9fd;animation:bubbleIn .3s ease both;overflow:hidden}
+.fpHead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;border-bottom:1px solid #e7ebf2;background:#fff}
+.fpHead code{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fpHead button{border:0;background:#f1f3f8;border-radius:6px;width:24px;height:24px;cursor:pointer;color:#687386;flex:none}
+.filePreview pre{margin:0;padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;line-height:1.6;max-height:340px;overflow:auto;color:#2a3450;white-space:pre-wrap;word-break:break-word}
