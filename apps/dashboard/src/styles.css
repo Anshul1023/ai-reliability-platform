@@ -471,3 +471,7 @@ h1,h2,h3,.head h3,b,strong{letter-spacing:-.02em}
 .row b{display:block;font-size:13.5px}
 .row small{color:#8b9bd4}
 .row p{font-size:13.5px;color:#c2cadf}
+
+/* header feedback button */
+.fbBtn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:99px;border:1px solid #3a4a8f;background:#232b40;color:#cfe0ff;font-size:12.5px;cursor:pointer;transition:.2s}
+.fbBtn:hover{border-color:#5a7dff;background:#2a3550;transform:translateY(-1px)}

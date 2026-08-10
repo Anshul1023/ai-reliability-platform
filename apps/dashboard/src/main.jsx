@@ -32,25 +32,23 @@ function Typing(){
 }
 function getVisitorId(){let v=localStorage.getItem("pulseops_visitor");if(!v){v="v_"+Math.random().toString(36).slice(2,10);localStorage.setItem("pulseops_visitor",v)}return v}
 
-function FeedbackPopup({isOwner}){
- const [visible,setVisible]=useState(false);
+function FeedbackModal({open,setOpen}){
  const [name,setName]=useState("");
- const [msg,setMsg]=useState("");
  const [busy,setBusy]=useState(false);
  const [done,setDone]=useState(false);
- useEffect(()=>{
-  if(isOwner||localStorage.getItem("pulseops_feedback_done"))return;
-  const t=setTimeout(()=>setVisible(true),3200);
-  return()=>clearTimeout(t);
- },[isOwner]);
+ const close=()=>{setOpen(false);setDone(false);setName("")};
  const submit=async()=>{
-  if(!msg.trim()||busy)return;
+  if(busy||!name.trim())return;
   setBusy(true);
-  try{await api.feedback({name:name.trim()||"Anonymous",message:msg.trim(),visitor_id:getVisitorId()});localStorage.setItem("pulseops_feedback_done","1");setDone(true);setTimeout(()=>setVisible(false),2200)}catch(e){}
+  try{
+   await Promise.race([api.feedback({name:name.trim(),message:"",visitor_id:getVisitorId()}),new Promise(r=>setTimeout(r,8000))]);
+   setDone(true);
+   setTimeout(close,1600);
+  }catch(e){}
   setBusy(false);
  };
- if(!visible)return null;
- return <div className="fbModal"><div className="fbCard">{done?<div className="fbDone"><CheckCircle2 size={30}/><b>Thanks!</b><p className="muted">Your feedback means a lot. 💙</p></div>:<><h3>💬 Leave some feedback</h3><p className="muted">Help me make this dashboard better for everyone.</p><input placeholder="Your name (optional)" value={name} onChange={e=>setName(e.target.value)}/><textarea placeholder="What do you think?…" value={msg} onChange={e=>setMsg(e.target.value)} rows={3}/><div className="fbActions"><button className="ppChange" onClick={()=>{localStorage.setItem("pulseops_feedback_done","1");setVisible(false)}}>Skip</button><button className="titleBtn" onClick={submit} disabled={busy||!msg.trim()}>{busy?"Sending…":"Send feedback"}</button></div></>}</div></div>;
+ if(!open)return null;
+ return <div className="fbModal" onClick={e=>{if(e.target===e.currentTarget)close()}}><div className="fbCard">{done?<div className="fbDone"><CheckCircle2 size={30}/><b>Thanks, {name.trim()||"friend"}! 🎉</b><p className="muted">Appreciate you stopping by.</p></div>:<><h3>Hi there! 👋</h3><p className="muted">Leave your name so I know who visited — that's all, I promise.</p><input placeholder="Your name…" value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")submit()}} autoFocus/><div className="fbActions"><button className="ppChange" onClick={close}>Skip</button><button className="titleBtn" onClick={submit} disabled={busy||!name.trim()}>{busy?"Saving…":"Save name"}</button></div></>}</div></div>;
 }
 
 function AnalyticsPage(){
@@ -83,10 +81,11 @@ function AboutPage(){
  const [busy,setBusy]=useState(false);
  useEffect(()=>{api.profile().then(setP).catch(()=>{})},[]);
  useEffect(()=>{
+  if(!p)return;
   const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.12});
   document.querySelectorAll(".rv").forEach(el=>io.observe(el));
   return()=>io.disconnect();
- },[]);
+ },[p]);
  const tilt=e=>{const c=e.currentTarget;const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5;const y=(e.clientY-r.top)/r.height-.5;c.style.transform=`perspective(800px) rotateY(${x*7}deg) rotateX(${-y*7}deg) translateY(-4px)`};
  const untilt=e=>{e.currentTarget.style.transform=""};
  const sendContact=async()=>{
@@ -511,6 +510,7 @@ function App(){
  const [page,setPage]=useState(()=>new URLSearchParams(location.search).get("page")||"Overview");
  const [selected,setSelected]=useState(null);
  const [chatOpen,setChatOpen]=useState(false);
+ const [fbOpen,setFbOpen]=useState(false);
  const [liveTick,setLiveTick]=useState(0);
  useEffect(()=>{const id=new URLSearchParams(location.search).get("project");if(id)api.project(id).then(setSelected).catch(()=>{})},[]);
  useEffect(()=>{api.recordView({path:location.pathname+location.search,visitor_id:getVisitorId(),referrer:document.referrer||null}).catch(()=>{})},[]);
@@ -525,6 +525,6 @@ function App(){
  },[]);
  const nav=[["Overview",LayoutDashboard],["Projects",Box],["Incidents",AlertTriangle],["AI Investigation",Bot],["AI Chat",MessageSquare],["About",User],["Analytics",BarChart3],["Settings",Settings]];
  let content=selected?<ProjectDetails p={selected} back={()=>setSelected(null)} liveTick={liveTick}/>:page==="Overview"?<Overview liveTick={liveTick}/>:page==="Projects"?<Projects open={setSelected} liveTick={liveTick}/>:page==="Incidents"?<Incidents liveTick={liveTick}/>:page==="AI Investigation"?<AIPage/>:page==="AI Chat"?<ChatPage/>:page==="About"?<AboutPage/>:page==="Analytics"?<AnalyticsPage/>:<SettingsPage/>;
- return <div className="app"><aside><div className="brand"><Activity size={18}/> PulseOps</div><div className="workspace"><b>Acme Engineering</b><small>Production</small></div><nav>{nav.map(([n,I])=><button className={page===n&&!selected?"active":""} onClick={()=>{setPage(n);setSelected(null)}} key={n}><I size={17}/>{n}</button>)}</nav><div className="user">AS · Ansh Sharma</div></aside> <main><header><span>{selected?.name||page}</span><div className="top">{isOwner?<Badge tone="green">Owner</Badge>:<Badge tone="blue">Public view</Badge>}<div className="topSearch"><Search size={14}/><input placeholder="Search…"/></div><Bell size={17}/><span className="avatar">AS</span></div></header>{content}</main><button className="chatFab" onClick={()=>setChatOpen(true)} title="Ask the AI about any project"><MessageSquare size={17}/> Ask AI</button>{chatOpen?<ChatDrawer onClose={()=>setChatOpen(false)}/>:null}<FeedbackPopup isOwner={isOwner}/></div>
+ return <div className="app"><aside><div className="brand"><Activity size={18}/> PulseOps</div><div className="workspace"><b>Acme Engineering</b><small>Production</small></div><nav>{nav.map(([n,I])=><button className={page===n&&!selected?"active":""} onClick={()=>{setPage(n);setSelected(null)}} key={n}><I size={17}/>{n}</button>)}</nav><div className="user">AS · Ansh Sharma</div></aside> <main><header><span>{selected?.name||page}</span><div className="top">{isOwner?<Badge tone="green">Owner</Badge>:<Badge tone="blue">Public view</Badge>}<div className="topSearch"><Search size={14}/><input placeholder="Search…"/></div><button className="fbBtn" onClick={()=>setFbOpen(true)} title="Leave your name so I know who visited"><MessageSquare size={13}/> Feedback</button><Bell size={17}/><span className="avatar">AS</span></div></header>{content}</main><button className="chatFab" onClick={()=>setChatOpen(true)} title="Ask the AI about any project"><MessageSquare size={17}/> Ask AI</button>{chatOpen?<ChatDrawer onClose={()=>setChatOpen(false)}/>:null}<FeedbackModal open={fbOpen} setOpen={setFbOpen}/></div>
 }
 createRoot(document.getElementById("root")).render(<App/>);

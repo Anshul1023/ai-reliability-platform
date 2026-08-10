@@ -98,9 +98,7 @@ async def analytics_views(
 async def submit_feedback(fb: FeedbackIn, db=Depends(get_db)):
     """Visitor feedback (public)."""
     name = (fb.name or "Anonymous").strip()[:120]
-    message = (fb.message or "").strip()
-    if not message:
-        raise HTTPException(422, "Message is required")
+    message = (fb.message or "").strip() or "Visited the dashboard"
     db.add(Feedback(name=name, message=message[:2000], visitor_id=fb.visitor_id))
     await db.commit()
     return {"ok": True}
