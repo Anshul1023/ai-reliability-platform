@@ -226,15 +226,26 @@ function FileTree({paths,onOpenFile}){
 }
 function SvcLatency({n}){const v=useCountUp(n,900);return <>{Math.round(v)}</>}
 
-function ProjectGraph({projectId,projectName}){
- const [docs,setDocs]=useState(null);
+function ProjectPicker({projects,value,onChange}){
+ const [open,setOpen]=useState(false);
+ const [q,setQ]=useState("");
+ const sel=projects.find(p=>p.id===value)||null;
+ const list=projects.filter(p=>!q||p.name.toLowerCase().includes(q.toLowerCase())||p.repo.toLowerCase().includes(q.toLowerCase()));
+ return <div className="ppick">
+  {sel?<div className="ppickSel"><span className={"dot "+(sel.status==="Healthy"?"":"warn")}/><div><b>{sel.name}</b><small>{sel.repo}</small></div><div className="ppickActions"><a className="ppOpen" href={`/?project=${sel.id}`} target="_blank" rel="noreferrer" title="Open in dashboard">↗</a><button className="ppChange" onClick={()=>setOpen(true)}>Change</button></div></div>:<button className="ppSel" onClick={()=>setOpen(true)}>Select a project…</button>}
+  {open?<div className="ppList"><div className="ppSearch"><Search size={13}/><input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search projects…"/></div><div className="ppItems">{list.map(p=><button key={p.id} className={"ppItem"+(p.id===value?" on":"")} onClick={()=>{onChange(p.id);setOpen(false);setQ("")}}><span className={"dot "+(p.status==="Healthy"?"":"warn")}/><span><b>{p.name}</b><small>{p.repo}</small></span></button>)}{list.length===0?<p className="muted">No matches.</p>:null}</div></div>:null}
+ </div>;
+}
+
+function ProjectGraph({projectId,projectName,docs}){
+ const [localDocs,setLocalDocs]=useState(null);
  useEffect(()=>{
-  if(!projectId){setDocs(null);return}
-  setDocs(null);
-  api.projectData(projectId).then(setDocs).catch(()=>setDocs(null));
- },[projectId]);
+  if(docs!==undefined||!projectId){setLocalDocs(null);return}
+  setLocalDocs(null);
+  api.projectData(projectId).then(setLocalDocs).catch(()=>setLocalDocs(null));
+ },[projectId,docs]);
  if(!projectId)return null;
- const m={};(docs||[]).forEach(d=>{m[d.data_type]=d.payload});
+ const m={};(docs||localDocs||[]).forEach(d=>{m[d.data_type]=d.payload});
  const repo=m.repository||{};
  const services=Array.isArray(m.services)?m.services:[];
  const tech=Array.isArray((m.tech||{}).tech)?m.tech.tech:[];
@@ -272,12 +283,16 @@ function ProjectGraph({projectId,projectName}){
 function ChatDrawer({onClose}){
  const [projects,setProjects]=useState([]);
  const [projectId,setProjectId]=useState(null);
+ const [docs,setDocs]=useState(null);
  const [msgs,setMsgs]=useState([]);
  const [input,setInput]=useState("");
  const [busy,setBusy]=useState(false);
+ const [curFile,setCurFile]=useState(null);
+ const [fileContent,setFileContent]=useState("");
  const boxRef=React.useRef(null);
  useEffect(()=>{api.projects().then(setProjects).catch(()=>{})},[]);
  useEffect(()=>{const el=boxRef.current;if(el)el.scrollTop=el.scrollHeight},[msgs,busy]);
+ useEffect(()=>{if(!projectId){setDocs(null);setCurFile(null);return}setDocs(null);setCurFile(null);api.projectData(projectId).then(setDocs).catch(()=>setDocs(null))},[projectId]);
  const send=async()=>{
   if(!input.trim()||busy)return;
   const history=[...msgs,{role:"user",content:input,time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}];
@@ -288,15 +303,20 @@ function ChatDrawer({onClose}){
   }catch(e){setMsgs([...history,{role:"assistant",content:"Error: "+e.message}])}
   setBusy(false);
  };
+ const project=projects.find(p=>p.id===projectId)||null;
+ const m={};(docs||[]).forEach(d=>{m[d.data_type]=d.payload});
+ const files=Array.isArray(m.files)?m.files:[];
+ const openFile=async path=>{
+  if(!project)return;
+  try{const c=await api.contents(project.repo,path);if(c.type!=="file")return;setCurFile(path);setFileContent(atob(c.content||""))}catch(e){setCurFile(path);setFileContent("// Could not read "+path+"\n"+e.message)}
+ };
  return <div className="chatDrawer">
-  <div className="chatDrawerHead"><b><span className="headDot"/><MessageSquare size={15}/> Ask Dev</b><button className="chatClose" onClick={onClose} aria-label="Close chat">✕</button></div>
+  <div className="chatDrawerHead"><b><span className="headDot"/><MessageSquare size={15}/> Ask Dev</b><div className="drawerHeadActions"><a className="ppOpen dash" href="/" target="_blank" rel="noreferrer" title="Open full dashboard in new tab">Dashboard ↗</a><button className="chatClose" onClick={onClose} aria-label="Close chat">✕</button></div></div>
   <div className="chatDrawerBody">
-   <select value={projectId||""} onChange={e=>setProjectId(e.target.value?Number(e.target.value):null)}>
-    <option value="">All projects…</option>
-    {projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
-   </select>
-   <ProjectGraph projectId={projectId} projectName={projects.find(p=>p.id===projectId)?.name}/>
-   <div className="chatbox" ref={boxRef}>{(msgs.length?msgs:[{role:"assistant",content:"Hey! I'm Dev — your senior dev sidekick. Ask me about any project: code, services, incidents, or what to build next. 💡"}]).map((m,i)=><MsgBubble m={m} key={i}/>)}{busy?<Typing/>:null}</div>
+   <ProjectPicker projects={projects} value={projectId} onChange={setProjectId}/>
+   {project?<div className="drawerSection"><ProjectGraph projectId={projectId} projectName={project.name} docs={docs}/></div>:null}
+   {project?<div className="drawerSection filesSec"><div className="drawerSecHead"><b>📂 Repository files</b><span className="muted">{files.length?files.length+" files":"…"}</span></div><div className="drawerTree">{files.length?<FileTree paths={files} onOpenFile={openFile}/>:<p className="muted" style={{padding:8}}>Loading files…</p>}</div>{curFile?<div className="filePreview"><div className="fpHead"><code className="mono">{curFile}</code><button onClick={()=>setCurFile(null)} aria-label="Close preview">✕</button></div><pre>{fileContent}</pre></div>:null}</div>:null}
+   <div className="chatbox" ref={boxRef}>{(msgs.length?msgs:[{role:"assistant",content:"Hey! I'm Dev — your senior dev sidekick. Pick a project to see its live graph + repo tree, or just ask about any of them. 💡"}]).map((m,i)=><MsgBubble m={m} key={i}/>)}{busy?<Typing/>:null}</div>
   </div>
   <div className="chatbar"><input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")send()}} placeholder="Ask Dev about a project…"/><button onClick={send} disabled={busy||!input.trim()}>{busy?<span className="miniSpin"/>:"Send"}</button></div>
  </div>;

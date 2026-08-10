@@ -116,3 +116,40 @@ nav button.active,nav button:hover{background:#dbe4fd;color:#2f4ad0}
 .fpHead code{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fpHead button{border:0;background:#f1f3f8;border-radius:6px;width:24px;height:24px;cursor:pointer;color:#687386;flex:none}
 .filePreview pre{margin:0;padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;line-height:1.6;max-height:340px;overflow:auto;color:#2a3450;white-space:pre-wrap;word-break:break-word}
+
+/* ---- drawer project picker card ---- */
+.ppick{display:flex;flex-direction:column;gap:8px;flex:none}
+.ppickSel{display:flex;align-items:center;gap:10px;border:1px solid #dde3fa;border-radius:12px;background:linear-gradient(135deg,#f7f9ff 0%,#eef2ff 100%);padding:11px 13px;box-shadow:0 2px 8px rgba(82,97,213,.08);animation:bubbleIn .3s ease both}
+.ppickSel .dot{width:9px;height:9px;flex:none}
+.ppickSel>div:nth-child(2){flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ppickSel b{font-size:12.5px;color:#2a3450}
+.ppickSel small{font-size:9.5px;color:#7d88b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ppickActions{display:flex;gap:6px;align-items:center;flex:none}
+.ppOpen{width:26px;height:26px;display:grid;place-items:center;border-radius:7px;background:#fff;border:1px solid #dfe4eb;color:#5261cf;text-decoration:none;font-size:12px;transition:all .15s ease}
+.ppOpen:hover{background:#5261cf;color:#fff;border-color:#5261cf;transform:translateY(-1px)}
+.ppOpen.dash{width:auto;height:28px;padding:0 9px;font-size:9.5px;font-weight:700;gap:4px;display:flex;align-items:center;white-space:nowrap}
+.ppChange{border:1px solid #dfe4eb;background:#fff;border-radius:7px;padding:5px 9px;font-size:9.5px;font-weight:700;color:#5261cf;cursor:pointer;transition:all .15s ease}
+.ppChange:hover{background:#eef2ff;border-color:#c9d3f7}
+.ppSel{width:100%;text-align:left;border:1px dashed #c9d3f7;background:#f7f9ff;border-radius:12px;padding:12px 13px;font-size:11.5px;font-weight:700;color:#5261cf;cursor:pointer;transition:all .15s ease}
+.ppSel:hover{background:#eef2ff;border-color:#5261cf}
+.ppList{border:1px solid #e7ebf0;border-radius:12px;background:#fff;overflow:hidden;animation:bubbleIn .25s ease both;box-shadow:0 8px 24px rgba(15,23,42,.12)}
+.ppSearch{display:flex;align-items:center;gap:7px;padding:9px 11px;border-bottom:1px solid #f0f2f5;color:#8a94a8}
+.ppSearch input{border:0;outline:0;flex:1;font-size:11px;background:transparent}
+.ppItems{max-height:220px;overflow:auto;display:flex;flex-direction:column}
+.ppItem{display:flex;align-items:center;gap:9px;border:0;background:transparent;text-align:left;padding:9px 12px;font-size:11px;cursor:pointer;border-bottom:1px solid #f6f7fa}
+.ppItem:last-child{border-bottom:0}
+.ppItem:hover,.ppItem.on{background:#eef2ff}
+.ppItem .dot{width:8px;height:8px;flex:none}
+.ppItem span:last-child{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.ppItem b{color:#2a3450;font-size:11px}
+.ppItem small{color:#8992a2;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drawerHeadActions{display:flex;align-items:center;gap:8px}
+.drawerSection{flex:none;border:1px solid #e7ebf0;border-radius:12px;background:#fff;overflow:hidden;animation:bubbleIn .3s ease both}
+.drawerSection .pgraph{margin:0;border:0;border-radius:0;background:linear-gradient(180deg,#fbfcff 0%,#f2f5fb 100%)}
+.filesSec{display:flex;flex-direction:column;max-height:190px}
+.drawerSecHead{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid #f0f2f5;background:#fff}
+.drawerSecHead b{font-size:10.5px;color:#33405e}
+.drawerTree{flex:1;overflow:auto;padding:6px 4px}
+.drawerTree .treeRow{font-size:10.5px}
+.drawerTree .treeRow.file span:last-child{font-size:10px}
+.drawerTree .filePreview{margin:8px}
