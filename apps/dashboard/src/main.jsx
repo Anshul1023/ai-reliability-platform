@@ -72,8 +72,10 @@ function ProjectDetails({p,back,liveTick}){
  <Card title="Deployments"><div className="rows">{deployments.length?deployments.map(d=><div className="row" key={d.id}><code className="mono">{short(d.sha)}</code><div><b>{d.message}</b><small>{d.author} · {new Date(d.created_at).toLocaleString()}</small></div><Badge tone={d.status==="Passed"?"green":"red"}>{d.status}</Badge></div>):<p className="muted">No deployments recorded yet.</p>}</div></Card>
  </div>}
 function App(){
- const [page,setPage]=useState("Overview"),[selected,setSelected]=useState(null);
+ const [page,setPage]=useState(()=>new URLSearchParams(location.search).get("page")||"Overview");
+ const [selected,setSelected]=useState(null);
  const [liveTick,setLiveTick]=useState(0);
+ useEffect(()=>{const id=new URLSearchParams(location.search).get("project");if(id)api.project(id).then(setSelected).catch(()=>{})},[]);
  useEffect(()=>{
   let ws;
   try{
