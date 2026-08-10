@@ -1,5 +1,7 @@
 # AI Reliability Platform
 
+![CI](https://github.com/Anshul1023/ai-reliability-platform/actions/workflows/ci.yml/badge.svg)
+
 A production-oriented monorepo for monitoring GitHub-backed applications, detecting incidents,
 using Redis for caching/rate limiting/locks/PubSub/queues, and running AI-assisted incident analysis.
 
