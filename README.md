@@ -19,6 +19,11 @@ using Redis for caching/rate limiting/locks/PubSub/queues, and running AI-assist
 - Realtime: FastAPI WebSocket + Redis Pub/Sub
 - Infrastructure: Docker Compose + Nginx + Prometheus
 
+## Deployment
+
+Production deployment (Render + Vercel) is a two-click process from this repo — see
+[docs/DEPLOY.md](docs/DEPLOY.md) for the full guide and env checklist.
+
 ## Quick start
 
 ### Docker
