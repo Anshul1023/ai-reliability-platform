@@ -7,11 +7,9 @@ export function getApiKey(){return localStorage.getItem(KEY_STORE)||""}
 export function setApiKey(k){k?localStorage.setItem(KEY_STORE,k):localStorage.removeItem(KEY_STORE)}
 
 async function get(path){const r=await fetch(BASE+path);if(!r.ok)throw new Error(await r.text());return r.json()}
-async function post(path){
-  const headers={};
-  const key=getApiKey();
-  if(key)headers.Authorization=`Bearer ${key}`;
-  const r=await fetch(BASE+path,{method:"POST",headers});
+async function authHeaders(json){const headers={};const key=getApiKey();if(key)headers.Authorization=`Bearer ${key}`;if(json)headers["Content-Type"]="application/json";return headers}
+async function post(path,json){
+  const r=await fetch(BASE+path,{method:"POST",headers:await authHeaders(json),...(json?{body:JSON.stringify(json)}:{})});
   if(!r.ok)throw new Error(await r.text());
   return r.json();
 }
@@ -26,5 +24,9 @@ export const api={
   metrics:id=>get(`/metrics/${id}`),
   github:repo=>get(`/github/repository?repo=${encodeURIComponent(repo)}`),
   commits:repo=>get(`/github/commits?repo=${encodeURIComponent(repo)}`),
+  contents:(repo,path="")=>get(`/github/contents?repo=${encodeURIComponent(repo)}&path=${encodeURIComponent(path)}`),
+  proposeChange:(data)=>post("/github/change-proposal",data),
+  chat:(messages,projectId)=>post("/ai/chat",{messages,project_id:projectId}),
+  sync:()=>post("/projects/sync"),
   investigate:id=>post(`/incidents/${id}/investigate`)
 }

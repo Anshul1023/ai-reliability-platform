@@ -1,6 +1,6 @@
 import React,{useEffect,useState} from "react";
 import {createRoot} from "react-dom/client";
-import {LayoutDashboard,Box,AlertTriangle,Bot,Settings,Activity,Github,ChevronRight,Plus,Search,Bell,CheckCircle2,Sparkles} from "lucide-react";
+import {LayoutDashboard,Box,AlertTriangle,Bot,Settings,Activity,Github,ChevronRight,Plus,Search,Bell,CheckCircle2,Sparkles,MessageSquare,RefreshCw} from "lucide-react";
 import {ResponsiveContainer,AreaChart,Area,XAxis,YAxis,Tooltip} from "recharts";
 import {api,API_WS,getApiKey,setApiKey} from "./services/api";
 import "./styles.css";
@@ -77,6 +77,67 @@ function ProjectDetails({p,back,liveTick}){
  <Card title="Services"><div className="rows">{services.length?services.map(s=><div className="row" key={s.id}><span className={"dot "+(s.status==="Healthy"?"":"warn")}/><b>{s.name}</b><span>{s.status}</span><small>{Math.round(s.latency_ms)}ms</small></div>):<p className="muted">No monitored services yet — Vercel/Railway monitoring comes next.</p>}</div></Card>
  <Card title="Deployments"><div className="rows">{deployments.length?deployments.map(d=><div className="row" key={d.id}><code className="mono">{short(d.sha)}</code><div><b>{d.message}</b><small>{d.author} · {new Date(d.created_at).toLocaleString()}</small></div><Badge tone={d.status==="Passed"?"green":"red"}>{d.status}</Badge></div>):<p className="muted">No deployments recorded yet.</p>}</div></Card>
  </div>}
+function ChatPage(){
+ const [projects,setProjects]=useState([]);
+ const [projectId,setProjectId]=useState(null);
+ const [msgs,setMsgs]=useState([]);
+ const [input,setInput]=useState("");
+ const [busy,setBusy]=useState(false);
+ const [files,setFiles]=useState(null);
+ const [curFile,setCurFile]=useState(null);
+ const [edit,setEdit]=useState("");
+ const [prMsg,setPrMsg]=useState("");
+ const [note,setNote]=useState("");
+ const [synced,setSynced]=useState(null);
+ useEffect(()=>{api.projects().then(setProjects).catch(()=>{})},[]);
+ const project=projects.find(p=>p.id===projectId)||null;
+ const send=async()=>{
+  if(!input.trim()||busy)return;
+  const history=[...msgs,{role:"user",content:input}];
+  setMsgs(history);setInput("");setBusy(true);
+  try{
+   const res=await api.chat(history.map(m=>({role:m.role,content:m.content})),projectId);
+   setMsgs([...history,{role:"assistant",content:res.reply,provider:res.provider}]);
+  }catch(e){setMsgs([...history,{role:"assistant",content:"Error: "+e.message}])}
+  setBusy(false);
+ };
+ const doSync=async()=>{setSynced(null);try{const r=await api.sync();setSynced(`Sync: ${r.added} added, ${r.skipped} already present, ${r.repos_found} repos found.`);api.projects().then(setProjects).catch(()=>{})}catch(e){setSynced("Sync failed: "+e.message)}};
+ const browse=async()=>{
+  if(!project){setNote("Select a project first.");return}
+  setNote("");setCurFile(null);setEdit("");
+  try{setFiles(await api.contents(project.repo,""))}catch(e){setNote("Browse failed: "+e.message);setFiles(null)}
+ };
+ const openFile=async f=>{
+  if(!project)return;
+  try{const c=await api.contents(project.repo,f.path);if(c.type!=="file")return;setCurFile(f.path);setEdit(atob(c.content||""))}catch(e){setNote("Read failed: "+e.message)}
+ };
+ const propose=async()=>{
+  if(!project||!curFile)return;
+  setNote("");
+  try{const r=await api.proposeChange({repo:project.repo,path:curFile,content:edit,message:prMsg||`Update ${curFile}`});setNote(`✅ PR #${r.pr_number} opened: ${r.pr_url}`)}catch(e){setNote("Change failed: "+e.message)}
+ };
+ return <div className="page"><div className="title"><div><h1>AI Chat</h1><p>Ask anything about your projects — grounded in real repo + monitoring data.</p></div><button onClick={doSync}><RefreshCw size={13}/> Sync projects</button></div>
+ {synced?<p className="muted">{synced}</p>:null}
+ <div className="grid2">
+  <Card title="Conversation" action={<Badge tone="purple"><Sparkles size={13}/> RAG</Badge>}>
+   <div className="chatbox">{(msgs.length?msgs:[{role:"assistant",content:"Hi! Select a project and ask me anything about it — code, services, incidents, or propose a change."}]).map((m,i)=><div className={"bubble "+(m.role==="user"?"me":"bot")} key={i}><span>{m.role==="user"?"You":"Agent"}</span>{m.content}{m.provider?<small> · {m.provider}</small>:null}</div>)}</div>
+   <div className="chatbar"><input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")send()}} placeholder="Ask about a project…"/><button onClick={send} disabled={busy}>{busy?"Thinking…":"Send"}</button></div>
+  </Card>
+  <div>
+   <Card title="Project" action={project?<Badge tone="green">{project.name}</Badge>:null}>
+    <div className="row"><select value={projectId||""} onChange={e=>{setProjectId(e.target.value?Number(e.target.value):null);setFiles(null);setCurFile(null)}}><option value="">Select a project…</option>{projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select><button onClick={browse}>Browse repo</button></div>
+    <p className="muted">Chat and changes need the API key from Settings.</p>
+   </Card>
+   <Card title="Repository files">
+    {files?(files.length?files.map(f=><div className="row" key={f.path}><button className="fileBtn" onClick={()=>{if(f.type==="file")openFile(f)}}>{f.type==="dir"?"📁":"📄"} {f.name}</button></div>):<p className="muted">Empty repository.</p>):<p className="muted">Browse a repo to see its files, then edit and propose a change — it opens a pull request, never pushes to main directly.</p>}
+    {curFile?<div><div className="row"><code className="mono">{curFile}</code></div><textarea className="editor" value={edit} onChange={e=>setEdit(e.target.value)} rows={10}/><div className="row"><input placeholder="Change message (PR title)…" value={prMsg} onChange={e=>setPrMsg(e.target.value)}/><button onClick={propose}>Propose change (PR)</button></div></div>:null}
+    {note?<p className="muted">{note}</p>:null}
+   </Card>
+  </div>
+ </div>
+</div>
+}
+
 function App(){
  const [page,setPage]=useState(()=>new URLSearchParams(location.search).get("page")||"Overview");
  const [selected,setSelected]=useState(null);
@@ -91,8 +152,8 @@ function App(){
   }catch(e){}
   return()=>{try{ws&&ws.close()}catch(e){}};
  },[]);
- const nav=[["Overview",LayoutDashboard],["Projects",Box],["Incidents",AlertTriangle],["AI Investigation",Bot],["Settings",Settings]];
- let content=selected?<ProjectDetails p={selected} back={()=>setSelected(null)} liveTick={liveTick}/>:page==="Overview"?<Overview liveTick={liveTick}/>:page==="Projects"?<Projects open={setSelected} liveTick={liveTick}/>:page==="Incidents"?<Incidents liveTick={liveTick}/>:page==="AI Investigation"?<AIPage/>:<SettingsPage/>;
+ const nav=[["Overview",LayoutDashboard],["Projects",Box],["Incidents",AlertTriangle],["AI Investigation",Bot],["AI Chat",MessageSquare],["Settings",Settings]];
+ let content=selected?<ProjectDetails p={selected} back={()=>setSelected(null)} liveTick={liveTick}/>:page==="Overview"?<Overview liveTick={liveTick}/>:page==="Projects"?<Projects open={setSelected} liveTick={liveTick}/>:page==="Incidents"?<Incidents liveTick={liveTick}/>:page==="AI Investigation"?<AIPage/>:page==="AI Chat"?<ChatPage/>:<SettingsPage/>;
  return <div className="app"><aside><div className="brand"><Activity size={18}/> PulseOps</div><div className="workspace"><b>Acme Engineering</b><small>Production</small></div><nav>{nav.map(([n,I])=><button className={page===n&&!selected?"active":""} onClick={()=>{setPage(n);setSelected(null)}} key={n}><I size={17}/>{n}</button>)}</nav><div className="user">AS · Ansh Sharma</div></aside><main><header><span>{selected?.name||page}</span><div className="top"><div className="topSearch"><Search size={14}/><input placeholder="Search…"/></div><Bell size={17}/><span className="avatar">AS</span></div></header>{content}</main></div>
 }
 createRoot(document.getElementById("root")).render(<App/>);

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
 from app.core.database import get_db
+from app.core.security import require_api_key
 from app.models.models import Deployment, Incident, Project, Service
 from app.schemas.schemas import ProjectOut
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -27,6 +28,11 @@ async def projects_summary(db=Depends(get_db)):
         "deployments": {pid: n for pid, n in dep},
         "incidents": {pid: n for pid, n in inc},
     }
+
+@router.post("/sync")
+async def sync_projects(_=Depends(require_api_key)):
+    from app.services.sync_service import sync_projects_from_github
+    return await sync_projects_from_github()
 
 @router.get("/{project_id}", response_model=ProjectOut)
 async def get_project(project_id: int, db=Depends(get_db)):

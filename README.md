@@ -92,11 +92,37 @@ React Dashboard
 For a larger deployment, replace the simple Redis list queue with Redis Streams or a dedicated
 task system such as Celery/RQ/Arq.
 
+## AI chat (RAG)
+
+The dashboard's **AI Chat** page answers questions about any project, grounded in live
+context: repository metadata, README, file tree, monitored services, and recent incidents
+(`POST /ai/chat`). It works out of the box in demo mode (deterministic answers from real
+data, no key needed). For real LLM answers set an OpenAI-compatible provider:
+
+```env
+AI_PROVIDER=openai
+OPENAI_API_KEY=<your key>
+AI_MODEL=llama-3.3-70b-versatile
+AI_BASE_URL=https://api.groq.com/openai/v1   # Groq free tier; see .env.example for others
+```
+
+## Making changes from the dashboard
+
+The chat page can browse any repo's files and propose changes. Changes are committed to a
+new branch and opened as a **pull request** — the platform never pushes to `main` directly.
+This requires `GITHUB_TOKEN` with `repo` scope.
+
+## Auto-sync
+
+New GitHub repos appear in the dashboard automatically: the worker syncs on startup and
+every 6 hours (`POST /projects/sync` triggers it manually). With `GITHUB_TOKEN` set, private
+repos are included; otherwise the public repos of `GITHUB_OWNER` are used.
+
 ## Security notes
 
 The included GitHub and AI integrations are intentionally read-only/demo by default.
 Production action execution should require authentication, authorization, audit logging and
-explicit human approval.
+explicit human approval. Write endpoints are protected by the `API_KEY` (see below).
 
 ### API authentication
 
