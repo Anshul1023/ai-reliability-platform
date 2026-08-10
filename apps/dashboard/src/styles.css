@@ -212,3 +212,11 @@ select,.editor,.row input,.chatbar input,.chatDrawer .chatbar input{background:#
 .pgraph{border-color:#b6c3ea}
 .treeRow.folder small{background:#e4ecff}
 .pchip{background:#e8edff}
+
+/* ---- clickable folder nodes in the project graph ---- */
+.pfolder{cursor:pointer}
+.pfolder rect{transition:fill .15s ease,stroke .15s ease}
+.pfolder:hover rect{fill:#e8edff;stroke:#93a6dd}
+.pfolder:hover text:first-of-type{fill:#2f4ad0}
+.pfolder.active rect{fill:#dce4fd;stroke:#3b5bdb}
+.pfolder.active text:first-of-type{fill:#2f4ad0;font-weight:800}
