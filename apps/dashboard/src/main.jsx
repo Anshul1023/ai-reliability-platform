@@ -9,7 +9,18 @@ const demo=[{time:"09:00",error:1.1},{time:"10:00",error:1.4},{time:"11:00",erro
 
 function Badge({children,tone="neutral"}){return <span className={"badge "+tone}>{children}</span>}
 function Card({title,children,action}){return <section className="card"><div className="head"><h3>{title}</h3>{action}</div>{children}</section>}
-function Stat({title,value,sub}){return <div className="card stat"><span>{title}</span><b>{value}</b><small>{sub}</small></div>}
+function useCountUp(target,dur=650){
+ const [v,setV]=useState(0);
+ useEffect(()=>{
+  let raf;const t0=performance.now();
+  const step=t=>{const k=Math.min(1,(t-t0)/dur);const e=1-Math.pow(1-k,3);setV(target*e);if(k<1)raf=requestAnimationFrame(step)};
+  raf=requestAnimationFrame(step);
+  return()=>cancelAnimationFrame(raf);
+ },[target,dur]);
+ return v;
+}
+function CountUp({n,dur}){const v=useCountUp(n,dur);return <>{n%1===0?Math.round(v):Math.round(v*100)/100}</>}
+function Stat({title,value,sub,count,suffix}){const v=useCountUp(count??0);return <div className="card stat"><span>{title}</span><b>{count!==undefined?(count%1===0?Math.round(v):Math.round(v*100)/100)+(suffix||""):value}</b><small>{sub}</small></div>}
 function MsgBubble({m}){
  return <div className={"bubble "+(m.role==="user"?"me":"bot")}>
   <span className="bAvatar">{m.role==="user"?<User size={13}/>:<Bot size={13}/>}</span>
@@ -22,9 +33,12 @@ function Typing(){
 
 function Overview({liveTick}){
  const [incidents,setIncidents]=useState([]);
+ const [projects,setProjects]=useState([]);
  useEffect(()=>{api.incidents().then(setIncidents).catch(()=>{})},[liveTick]);
+ useEffect(()=>{api.projects().then(setProjects).catch(()=>{})},[liveTick]);
  return <div className="page"><div className="title"><div><h1>Overview</h1><p>Production health across connected projects.</p></div><button><Plus size={15}/> Add project</button></div>
- <div className="stats"><Stat title="System uptime" value="99.96%" sub="+0.04% this month"/><Stat title="Active incidents" value={incidents.length||2} sub="1 critical · 1 warning"/><Stat title="Avg latency" value="242 ms" sub="-8.4% vs yesterday"/><Stat title="Deployments" value="24" sub="22 passed · 2 failed"/></div>
+ <div className="stats"><Stat title="System uptime" count={99.96} suffix="%" sub="+0.04% this month"/><Stat title="Active incidents" count={incidents.length||2} sub="1 critical · 1 warning"/><Stat title="Avg latency" count={242} suffix=" ms" sub="-8.4% vs yesterday"/><Stat title="Deployments" count={24} sub="22 passed · 2 failed"/></div>
+ <div className="topProjects"><Card title="Top projects" action={<Badge tone="blue">Live</Badge>}><div className="miniProjects">{(projects.length?projects:[{id:1,name:"Demo Production API",repo:"demo/reliability-api",status:"Healthy",uptime:99.96}]).slice(0,6).map(p=><div className="miniProject" key={p.id}><span className={"dot "+(p.status==="Healthy"?"":"warn")}/><div><b>{p.name}</b><small>{p.repo}</small></div><span className="miniUptime"><CountUp n={p.uptime}/>%</span></div>)}</div></Card></div>
  <div className="grid2"><Card title="Error rate" action={<Badge tone="green">Normal</Badge>}><div className="chart"><ResponsiveContainer width="100%" height={250}><AreaChart data={demo}><XAxis dataKey="time"/><YAxis/><Tooltip/><Area dataKey="error" type="monotone" fill="currentColor" fillOpacity=".08" strokeWidth={2}/></AreaChart></ResponsiveContainer></div></Card>
  <Card title="Service health"><div className="rows">{["API Gateway","Payments API","AI Worker","PostgreSQL","Redis"].map((x,i)=><div className="row" key={x}><span className={"dot "+(i===2?"warn":"")}/><b>{x}</b><span>{i===2?"Degraded":"Healthy"}</span><small>{i===2?"612":"220"}ms</small></div>)}</div></Card></div>
  <Card title="Active incidents"><div className="rows">{(incidents.length?incidents:[{id:1042,title:"Payment API latency spike",service:"Payments API",severity:"Critical",status:"Investigating"}]).map(x=><div className="row" key={x.id}><AlertTriangle size={15}/><div><b>{x.title}</b><small>{x.service}</small></div><Badge tone="red">{x.status}</Badge></div>)}</div></Card>
@@ -33,11 +47,25 @@ function Overview({liveTick}){
 function Projects({open,liveTick}){
  const [data,setData]=useState([]);
  const [summary,setSummary]=useState({services:{},deployments:{},incidents:{}});
+ const [q,setQ]=useState("");const [status,setStatus]=useState("All");const [sort,setSort]=useState("name");
  useEffect(()=>{api.projects().then(setData).catch(()=>{})},[liveTick]);
  useEffect(()=>{api.summary().then(setSummary).catch(()=>{})},[liveTick]);
- return <div className="page"><div className="title"><div><h1>Projects</h1><p>Connected repositories and production systems.</p></div><button><Plus size={15}/> Connect repository</button></div><div className="projectGrid">{(data.length?data:[{id:1,name:"Demo Production API",repo:"demo/reliability-api",status:"Healthy",uptime:99.96}]).map(p=><div className="card project" key={p.id} onClick={()=>open(p)}><div className="projectTop"><Github size={20}/><Badge tone={p.status==="Healthy"?"green":"yellow"}>{p.status}</Badge></div><h3>{p.name}</h3><small>{p.repo}</small><div className="metrics"><div><span>Uptime</span><b>{p.uptime}%</b></div><div><span>Services</span><b>{summary.services[p.id]||0}</b></div><div><span>Incidents</span><b>{summary.incidents[p.id]||0}</b></div></div><strong>Open project <ChevronRight size={14}/></strong></div>)}</div></div>
+ const base=data.length?data:[{id:1,name:"Demo Production API",repo:"demo/reliability-api",status:"Healthy",uptime:99.96}];
+ const list=base.filter(p=>(status==="All"||p.status===status)&&(!q||p.name.toLowerCase().includes(q.toLowerCase())||p.repo.toLowerCase().includes(q.toLowerCase())));
+ const sorted=[...list].sort((a,b)=>sort==="uptime"?b.uptime-a.uptime:a.name.localeCompare(b.name));
+ return <div className="page"><div className="title"><div><h1>Projects</h1><p>Connected repositories and production systems.</p></div><button><Plus size={15}/> Connect repository</button></div>
+ <div className="filters"><div className="search"><Search size={14}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search projects…"/></div><select value={status} onChange={e=>setStatus(e.target.value)}><option>All</option><option>Healthy</option><option>Degraded</option><option>Down</option></select><select value={sort} onChange={e=>setSort(e.target.value)}><option value="name">Sort: Name</option><option value="uptime">Sort: Uptime</option></select><span className="muted filterCount">{sorted.length} project{sorted.length===1?"":"s"}</span></div>
+ <div className="projectGrid">{sorted.map(p=><div className="card project" key={p.id} onClick={()=>open(p)}><div className="projectTop"><Github size={20}/><Badge tone={p.status==="Healthy"?"green":"yellow"}>{p.status}</Badge></div><h3>{p.name}</h3><small>{p.repo}</small><div className="metrics"><div><span>Uptime</span><b><CountUp n={p.uptime}/>%</b></div><div><span>Services</span><b>{summary.services[p.id]||0}</b></div><div><span>Incidents</span><b>{summary.incidents[p.id]||0}</b></div></div><strong>Open project <ChevronRight size={14}/></strong></div>)}{sorted.length===0?<p className="muted full">No projects match your filters.</p>:null}</div></div>
 }
-function Incidents({liveTick}){const [data,setData]=useState([]);useEffect(()=>{api.incidents().then(setData).catch(()=>{})},[liveTick]);return <div className="page"><div className="title"><div><h1>Incidents</h1><p>Investigate production anomalies.</p></div><div className="search"><Search size={14}/><input placeholder="Search incidents"/></div></div><Card title="Incident timeline"><div className="rows">{(data.length?data:[{id:1042,title:"Payment API latency spike",service:"Payments API",severity:"Critical",status:"Investigating"}]).map(x=><div className="row" key={x.id}><div className="incidentIcon"><AlertTriangle size={15}/></div><div><b>{x.title}</b><small>INC-{x.id} · {x.service}</small></div><Badge tone={x.severity==="Critical"?"red":"yellow"}>{x.status}</Badge><ChevronRight size={15}/></div>)}</div></Card></div>}
+function Incidents({liveTick}){
+ const [data,setData]=useState([]);
+ const [q,setQ]=useState("");const [sev,setSev]=useState("All");const [st,setSt]=useState("All");
+ useEffect(()=>{api.incidents().then(setData).catch(()=>{})},[liveTick]);
+ const base=data.length?data:[{id:1042,title:"Payment API latency spike",service:"Payments API",severity:"Critical",status:"Investigating"}];
+ const list=base.filter(i=>(sev==="All"||i.severity===sev)&&(st==="All"||i.status===st)&&(!q||(i.title||"").toLowerCase().includes(q.toLowerCase())||(i.service||"").toLowerCase().includes(q.toLowerCase())));
+ return <div className="page"><div className="title"><div><h1>Incidents</h1><p>Investigate production anomalies.</p></div></div>
+ <div className="filters"><div className="search"><Search size={14}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search incidents…"/></div><select value={sev} onChange={e=>setSev(e.target.value)}><option>All</option><option>Critical</option><option>Warning</option><option>Info</option></select><select value={st} onChange={e=>setSt(e.target.value)}><option>All</option><option>Investigating</option><option>Resolved</option></select><span className="muted filterCount">{list.length} incident{list.length===1?"":"s"}</span></div>
+ <Card title="Incident timeline" action={<Badge>{list.length} shown</Badge>}><div className="rows">{list.map(x=><div className="row" key={x.id}><div className="incidentIcon"><AlertTriangle size={15}/></div><div><b>{x.title}</b><small>INC-{x.id} · {x.service}</small></div><Badge tone={x.severity==="Critical"?"red":"yellow"}>{x.status}</Badge><ChevronRight size={15}/></div>)}{list.length===0?<p className="muted">No incidents match your filters.</p>:null}</div></Card></div>}
 function AIPage(){return <div className="page"><div className="title"><div><h1>AI Investigation</h1><p>Evidence-backed incident analysis.</p></div><Badge tone="purple"><Sparkles size={13}/> Agent online</Badge></div><div className="stats"><Stat title="Investigations today" value="18" sub="16 completed"/><Stat title="Average confidence" value="86%" sub="+4.2% this week"/><Stat title="Evidence sources" value="142" sub="GitHub + metrics + logs"/><Stat title="Awaiting approval" value="2" sub="Human review required"/></div><Card title="Current investigation"><div className="ai"><Bot size={22}/><div><b>Payment API incident</b><p>Checking recent deployments, metrics and previous incident patterns…</p><div className="progress"><i/></div></div></div></Card></div>}
 function SettingsPage(){
  const [key,setKey]=useState(getApiKey());
@@ -73,7 +101,8 @@ function ProjectDetails({p,back,liveTick}){
  const open=incidents.filter(i=>i.status!=="Resolved").length;
  return <div className="page"><button className="back" onClick={back}>← Projects</button>
  <div className="title"><div><h1>{p.name}</h1><p><Github size={14}/> {p.repo}</p></div><Badge tone={p.status==="Healthy"?"green":"yellow"}>{p.status}</Badge></div>
- <div className="stats"><Stat title="Uptime" value={p.uptime+"%"} sub="Last 30 days"/><Stat title="Services" value={services.length} sub={services.length?"Monitored":"Not monitored yet"}/><Stat title="Deployments" value={deployments.length} sub="Tracked here"/><Stat title="Open incidents" value={open} sub="Needs attention"/></div>
+ <div className="pgraphWrap"><ProjectGraph projectId={p.id} projectName={p.name}/></div>
+ <div className="stats"><Stat title="Uptime" count={p.uptime} suffix="%" sub="Last 30 days"/><Stat title="Services" count={services.length} sub={services.length?"Monitored":"Not monitored yet"}/><Stat title="Deployments" count={deployments.length} sub="Tracked here"/><Stat title="Open incidents" count={open} sub="Needs attention"/></div>
  <div className="grid2">
   <Card title="GitHub repository" action={repo?<Badge tone="green">Connected</Badge>:null}>
    {repo?<div className="rows">
