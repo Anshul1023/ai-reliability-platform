@@ -51,10 +51,13 @@ host is the upgrade path.
 ## 2. Vercel (dashboard)
 
 1. Go to https://vercel.com → **Add New → Project** → import this repository.
-2. Vercel picks up `vercel.json` (root directory `apps/dashboard`, build `npm run build`, output `dist`).
-3. Add an environment variable at build time:
-   - `VITE_API_URL` → your Render API URL, e.g. `https://ai-reliability-api.onrender.com`
-4. Deploy. Open the dashboard, go to **Settings → API access**, and paste the same `API_KEY`.
+2. When Vercel asks, set **Root Directory** to `apps/dashboard` (the monorepo root directory is a
+   project setting, **not** a `vercel.json` property).
+   - Already created the project? Go to **Project Settings → Build & Deployment → Root Directory** → `apps/dashboard`.
+3. Vercel auto-detects Vite and reads `apps/dashboard/vercel.json` (build `npm run build`, output `dist`).
+4. Add an environment variable at build time:
+   - `VITE_API_URL` → your backend URL (Hugging Face Space or Render), e.g. `https://your-user-ai-reliability-api.hf.space`
+5. Deploy. Open the dashboard, go to **Settings → API access**, and paste the same `API_KEY`.
 
 ## 3. After deploy
 

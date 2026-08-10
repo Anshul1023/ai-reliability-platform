@@ -1,5 +1,4 @@
 {
-  "rootDirectory": "apps/dashboard",
   "buildCommand": "npm run build",
   "outputDirectory": "dist"
 }
