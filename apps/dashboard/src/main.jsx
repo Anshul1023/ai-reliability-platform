@@ -146,6 +146,7 @@ function ChatPage(){
  const [prMsg,setPrMsg]=useState("");
  const [note,setNote]=useState("");
  const [synced,setSynced]=useState(null);
+ const [fileQ,setFileQ]=useState("");
  useEffect(()=>{api.projects().then(setProjects).catch(()=>{})},[]);
  const project=projects.find(p=>p.id===projectId)||null;
  const boxRef=React.useRef(null);
@@ -188,11 +189,12 @@ function ChatPage(){
   </Card>
   <div>
    <Card title="Project" action={project?<Badge tone="green">{project.name}</Badge>:null}>
-    <div className="row"><select value={projectId||""} onChange={e=>{setProjectId(e.target.value?Number(e.target.value):null);setFiles(null);setCurFile(null)}}><option value="">Select a project…</option>{projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select><button onClick={browse}>Browse repo</button></div>
+    <div className="row"><select value={projectId||""} onChange={e=>{setProjectId(e.target.value?Number(e.target.value):null);setFiles(null);setCurFile(null);setFileQ("")}}><option value="">Select a project…</option>{projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select><button onClick={browse}>Browse repo</button></div>
     <p className="muted">Chat and changes need the API key from Settings.</p>
    </Card>
    <Card title="Repository files">
-    {files?(files.length?<FileTree paths={files} onOpenFile={openFile}/>:<p className="muted">Empty repository.</p>):<p className="muted">Browse a repo to see its files, then edit and propose a change — it opens a pull request, never pushes to main directly.</p>}
+    {files?<div className="treeSearch"><Search size={12}/><input value={fileQ} onChange={e=>setFileQ(e.target.value)} placeholder="Search files by name…"/>{fileQ?<button onClick={()=>setFileQ("")} aria-label="Clear file search">✕</button>:null}</div>:null}
+    {files?(fileQ.trim()?<FileResults files={files} q={fileQ.trim()} onOpenFile={openFile}/>:files.length?<FileTree paths={files} onOpenFile={openFile}/>:<p className="muted">Empty repository.</p>):<p className="muted">Browse a repo to see its files, then edit and propose a change — it opens a pull request, never pushes to main directly.</p>}
     {curFile?<div><div className="row"><code className="mono">{curFile}</code></div><textarea className="editor" value={edit} onChange={e=>setEdit(e.target.value)} rows={10}/><div className="row"><input placeholder="Change message (PR title)…" value={prMsg} onChange={e=>setPrMsg(e.target.value)}/><button onClick={propose}>Propose change (PR)</button></div></div>:null}
     {note?<p className="muted">{note}</p>:null}
    </Card>
@@ -237,6 +239,12 @@ function FileTree({paths,onOpenFile,autoOpen}){
  return <div className="tree">{render(root,null,"",0)}</div>;
 }
 function SvcLatency({n}){const v=useCountUp(n,900);return <>{Math.round(v)}</>}
+function FileResults({files,q,onOpenFile}){
+ const ql=q.toLowerCase();
+ const matches=(files||[]).filter(f=>{const name=f.split("/").pop().toLowerCase();return name.includes(ql)||f.toLowerCase().includes(ql)}).slice(0,60);
+ if(!matches.length)return <p className="muted" style={{padding:8}}>No files match "{q}".</p>;
+ return <div className="fileResults">{matches.map((f,i)=><button key={f} className="fileResult" style={{animationDelay:(i*14)+"ms"}} onClick={()=>onOpenFile&&onOpenFile(f)} title={f}><span>📄</span><b>{f.split("/").pop()}</b><small>{f}</small></button>)}</div>;
+}
 
 function ProjectPicker({projects,value,onChange}){
  const [open,setOpen]=useState(false);
@@ -314,11 +322,12 @@ function ChatDrawer({onClose}){
  const [curFile,setCurFile]=useState(null);
  const [fileContent,setFileContent]=useState("");
  const [folderFilter,setFolderFilter]=useState(null);
+ const [fileQ,setFileQ]=useState("");
  const boxRef=React.useRef(null);
  const dirty=React.useRef(false);
  useEffect(()=>{api.projects().then(setProjects).catch(()=>{})},[]);
  useEffect(()=>{const el=boxRef.current;if(el)el.scrollTop=el.scrollHeight},[msgs,busy]);
- useEffect(()=>{if(!projectId){setDocs(null);setCurFile(null);setFolderFilter(null);return}setDocs(null);setCurFile(null);setFolderFilter(null);api.projectData(projectId).then(setDocs).catch(()=>setDocs(null))},[projectId]);
+ useEffect(()=>{if(!projectId){setDocs(null);setCurFile(null);setFolderFilter(null);setFileQ("");return}setDocs(null);setCurFile(null);setFolderFilter(null);setFileQ("");api.projectData(projectId).then(setDocs).catch(()=>setDocs(null))},[projectId]);
  useEffect(()=>{dirty.current=false;api.chatHistory(projectId).then(h=>{if(!dirty.current)setMsgs((h||[]).map(m=>({role:m.role,content:m.content,provider:m.provider,time:m.created_at?new Date(m.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):""}))) }).catch(()=>{})},[projectId]);
  const clearHistory=async()=>{try{await api.clearChat(projectId);dirty.current=true;setMsgs([])}catch(e){}};
  const send=async()=>{
@@ -335,6 +344,7 @@ function ChatDrawer({onClose}){
  const project=projects.find(p=>p.id===projectId)||null;
  const m={};(docs||[]).forEach(d=>{m[d.data_type]=d.payload});
  const files=Array.isArray(m.files)?m.files:[];
+ const visibleFiles=folderFilter?files.filter(f=>f.startsWith(folderFilter+"/")):files;
  const openFile=async path=>{
   if(!project)return;
   try{const c=await api.contents(project.repo,path);if(c.type!=="file")return;setCurFile(path);setFileContent(atob(c.content||""))}catch(e){setCurFile(path);setFileContent("// Could not read "+path+"\n"+e.message)}
@@ -344,7 +354,7 @@ function ChatDrawer({onClose}){
   <div className="chatDrawerBody">
    <ProjectPicker projects={projects} value={projectId} onChange={setProjectId}/>
    {project?<div className="drawerSection"><ProjectGraph projectId={projectId} projectName={project.name} docs={docs} onOpenFolder={setFolderFilter} activeFolder={folderFilter}/></div>:null}
-   {project?<div className="drawerSection filesSec"><div className="drawerSecHead"><b>{folderFilter?`📂 ${folderFilter}/`:"📂 Repository files"}</b>{folderFilter?<button className="ppChange" onClick={()=>setFolderFilter(null)}>← All files</button>:<span className="muted">{files.length?files.length+" files":"…"}</span>}</div><div className="drawerTree">{files.length?<FileTree paths={folderFilter?files.filter(f=>f.startsWith(folderFilter+"/")):files} onOpenFile={openFile} autoOpen/>:<p className="muted" style={{padding:8}}>Loading files…</p>}</div>{curFile?<div className="filePreview"><div className="fpHead"><code className="mono">{curFile}</code><button onClick={()=>setCurFile(null)} aria-label="Close preview">✕</button></div><pre>{fileContent}</pre></div>:null}</div>:null}
+   {project?<div className="drawerSection filesSec"><div className="drawerSecHead"><b>{folderFilter?`📂 ${folderFilter}/`:"📂 Repository files"}</b>{folderFilter?<button className="ppChange" onClick={()=>setFolderFilter(null)}>← All files</button>:<span className="muted">{files.length?files.length+" files":"…"}</span>}</div><div className="treeSearch"><Search size={12}/><input value={fileQ} onChange={e=>setFileQ(e.target.value)} placeholder="Search files by name…"/>{fileQ?<button onClick={()=>setFileQ("")} aria-label="Clear file search">✕</button>:null}</div><div className="drawerTree">{fileQ.trim()?<FileResults files={visibleFiles} q={fileQ.trim()} onOpenFile={openFile}/>:visibleFiles.length?<FileTree paths={visibleFiles} onOpenFile={openFile} autoOpen/>:<p className="muted" style={{padding:8}}>Loading files…</p>}</div>{curFile?<div className="filePreview"><div className="fpHead"><code className="mono">{curFile}</code><button onClick={()=>setCurFile(null)} aria-label="Close preview">✕</button></div><pre>{fileContent}</pre></div>:null}</div>:null}
    <div className="chatbox" ref={boxRef}>{(msgs.length?msgs:[{role:"assistant",content:"Hey! I'm Dev — your senior dev sidekick. Pick a project to see its live graph + repo tree, or just ask about any of them. 💡"}]).map((m,i)=><MsgBubble m={m} key={i}/>)}{busy?<Typing/>:null}</div>
   </div>
   <div className="chatbar"><input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")send()}} placeholder="Ask Dev about a project…"/><button onClick={send} disabled={busy||!input.trim()}>{busy?<span className="miniSpin"/>:"Send"}</button></div>
