@@ -12,6 +12,23 @@ PROFILE = {
         "responsive web apps. Skilled in React.js, FastAPI, PostgreSQL, Docker, CI/CD and modern "
         "DevOps practices. I love turning ideas into products that feel fast and never break."
     ),
+    "about": [
+        (
+            "I'm a Full Stack Developer from Faridabad, Haryana, currently building the B2C longevity "
+            "& fitness product at Odds Fitness across iOS and Android — shipping features end-to-end, "
+            "from pixel-perfect UI to async FastAPI backends."
+        ),
+        (
+            "At SGSN Associates I built production-grade React apps, optimized Postgres queries and "
+            "containerized backends with Docker, diving into CI/CD with Prometheus and Grafana "
+            "observability. Earlier at Interpe I cut my teeth on responsive UI and reusable components."
+        ),
+        (
+            "I believe great software is invisible: it feels fast, never breaks, and scales quietly. "
+            "That's why I obsess over observability, caching with Redis, and clean architecture in "
+            "everything I ship."
+        ),
+    ],
     "phone": "+91 9953540593",
     "email": "anshulrawat5124@gmail.com",
     "location": "Faridabad, Haryana, India",

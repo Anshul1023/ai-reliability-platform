@@ -1,8 +1,8 @@
-import React,{useEffect,useState} from "react";
+import React,{useEffect,useRef,useState} from "react";
 import {createRoot} from "react-dom/client";
 import {LayoutDashboard,Box,AlertTriangle,Bot,Settings,Activity,Github,ChevronRight,Plus,Search,Bell,CheckCircle2,Sparkles,MessageSquare,RefreshCw,User,BarChart3,Phone,Mail,MapPin,Linkedin,GraduationCap,Send} from "lucide-react";
 import {ResponsiveContainer,AreaChart,Area,BarChart,Bar,XAxis,YAxis,Tooltip} from "recharts";
-import {motion} from "framer-motion";
+import {motion,useInView} from "framer-motion";
 import {MaskedHeading,FoldText,ScrollExpand,AccordionGallery,CircularGallery} from "./reactbits";
 import {SplitText,DepthText,LogoLoop,DriftWall,Folder} from "./aboutbits";
 import {api,API_WS,getApiKey,setApiKey} from "./services/api";
@@ -10,6 +10,19 @@ import "./styles.css";
 import "./about.css";
 
 const demo=[{time:"09:00",error:1.1},{time:"10:00",error:1.4},{time:"11:00",error:1.2},{time:"12:00",error:2.1},{time:"13:00",error:3.2},{time:"14:00",error:2.4},{time:"15:00",error:1.1}];
+function StoryCount({to,suffix="",duration=1.4}){
+ const ref=useRef(null);
+ const inView=useInView(ref,{once:true,amount:.5});
+ const [v,setV]=useState(0);
+ useEffect(()=>{
+  if(!inView)return;
+  let raf;const t0=performance.now();
+  const tick=t=>{const p=Math.min(1,(t-t0)/(duration*1000));const e=1-Math.pow(1-p,3);setV(Math.round(to*e));if(p<1)raf=requestAnimationFrame(tick)};
+  raf=requestAnimationFrame(tick);
+  return ()=>cancelAnimationFrame(raf);
+ },[inView,to,duration]);
+ return <b>{v}{suffix}</b>;
+}
 
 function Badge({children,tone="neutral"}){return <span className={"badge "+tone}>{children}</span>}
 function Card({title,children,action}){return <section className="card"><div className="head"><h3>{title}</h3>{action}</div>{children}</section>}
@@ -135,7 +148,7 @@ function AboutPage(){
    <div className="abWordmark"><DepthText text="MY STORY" layers={26} depth={2.2} depthColor="#3d5af1" faceColor="#1a2236" fontSize="clamp(4rem,14vw,11rem)"/></div>
    <div className="abSecInner">
     <div className="abHeadWrap"><SplitText text="My Story" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">From code to production — the journey that shaped how I <b>build resilient systems</b>.</p></div>
-    <div className="storyExpand"><ScrollExpand src="/about/story.jpg" title="My story" scrollHint="Scroll inside ↓" scrollDistance={1} startWidth={46} startHeight={62}><div className="storyOverlay"><p className="storyLead">I turn ideas into products that <em>feel fast</em> and <em>never break</em>.</p><p>{p.summary}</p><div className="storyStats"><div className="storyStat"><b>{p.experience.length}</b><span>Roles</span></div><div className="storyStat"><b>{p.projects.length}</b><span>Projects</span></div><div className="storyStat"><b>{p.skills.length}</b><span>Skills</span></div><div className="storyStat"><b>{p.experience.reduce((s,e)=>s+e.points.length,0)}+</b><span>Achievements</span></div></div><a className="titleBtn" href="#contact">Let's build something</a></div></ScrollExpand></div>
+    <div className="storyExpand"><ScrollExpand src="/about/story.jpg" title="My story" scrollHint="Scroll inside ↓" scrollDistance={1} startWidth={46} startHeight={62}><div className="storyOverlay"><motion.h3 className="storyLead" initial={{opacity:0,y:50}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.4}} transition={{duration:.8,ease:[.22,1,.36,1]}}>I turn ideas into products that <em>feel fast</em> and <em>never break</em>.</motion.h3><motion.p initial={{opacity:0,y:36}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.3}} transition={{delay:.15,duration:.8,ease:[.22,1,.36,1]}}>{p.summary}</motion.p>{(p.about||[]).map((a,i)=><motion.p className="storyMore" key={i} initial={{opacity:0,y:36}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.3}} transition={{delay:.3+i*.15,duration:.8,ease:[.22,1,.36,1]}}>{a}</motion.p>)}<motion.div className="storyStats" initial={{opacity:0,y:30}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.3}} transition={{delay:.6,duration:.8,ease:[.22,1,.36,1]}}><div className="storyStat"><StoryCount to={p.experience.length}/><span>Roles</span></div><div className="storyStat"><StoryCount to={p.projects.length}/><span>Projects</span></div><div className="storyStat"><StoryCount to={p.skills.length}/><span>Skills</span></div><div className="storyStat"><StoryCount to={p.experience.reduce((s,e)=>s+e.points.length,0)} suffix="+"/><span>Achievements</span></div></motion.div><motion.div initial={{opacity:0,y:24}} whileInView={{opacity:1,y:0}} viewport={{once:true,amount:.3}} transition={{delay:.8,duration:.7,ease:[.22,1,.36,1]}}><a className="titleBtn" href="#contact">Let's build something</a></motion.div></div></ScrollExpand></div>
    </div>
   </motion.section>
   <motion.section {...secAnim} className="abSec abExp" id="experience">
