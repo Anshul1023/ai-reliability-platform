@@ -96,3 +96,18 @@ class ProjectData(Base):
     source: Mapped[str] = mapped_column(String(80), default="github")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class ChatMessage(Base):
+    """Persisted AI chat history. project_id NULL = the "all projects" conversation.
+
+    Written on every /ai/chat exchange; reads are served from a Redis cache
+    (chat:history:<project_id|all>) with Postgres as the source of truth.
+    """
+    __tablename__ = "chat_messages"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    project_id: Mapped[int | None] = mapped_column(ForeignKey("projects.id"), nullable=True, index=True)
+    role: Mapped[str] = mapped_column(String(20))
+    content: Mapped[str] = mapped_column(Text)
+    provider: Mapped[str] = mapped_column(String(40), default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)

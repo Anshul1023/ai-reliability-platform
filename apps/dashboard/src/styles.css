@@ -153,3 +153,4 @@ nav button.active,nav button:hover{background:#dbe4fd;color:#2f4ad0}
 .drawerTree .treeRow{font-size:10.5px}
 .drawerTree .treeRow.file span:last-child{font-size:10px}
 .drawerTree .filePreview{margin:8px}
+.chatActions{display:flex;align-items:center;gap:8px}

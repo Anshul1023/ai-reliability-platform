@@ -13,6 +13,11 @@ async function post(path,json){
   if(!r.ok)throw new Error(await r.text());
   return r.json();
 }
+async function del(path){
+  const r=await fetch(BASE+path,{method:"DELETE",headers:await authHeaders(false)});
+  if(!r.ok)throw new Error(await r.text());
+  return r.json();
+}
 export const api={
   health:()=>get("/health"),
   projects:()=>get("/projects"),
@@ -28,6 +33,8 @@ export const api={
   contents:(repo,path="")=>get(`/github/contents?repo=${encodeURIComponent(repo)}&path=${encodeURIComponent(path)}`),
   proposeChange:(data)=>post("/github/change-proposal",data),
   chat:(messages,projectId)=>post("/ai/chat",{messages,project_id:projectId}),
+  chatHistory:(projectId)=>get(`/ai/chat/history${projectId?`?project_id=${projectId}`:""}`),
+  clearChat:(projectId)=>del(`/ai/chat/history${projectId?`?project_id=${projectId}`:""}`),
   sync:()=>post("/projects/sync"),
   investigate:id=>post(`/incidents/${id}/investigate`)
 }

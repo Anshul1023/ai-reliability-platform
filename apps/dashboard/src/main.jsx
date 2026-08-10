@@ -146,8 +146,12 @@ function ChatPage(){
  const project=projects.find(p=>p.id===projectId)||null;
  const boxRef=React.useRef(null);
  useEffect(()=>{const el=boxRef.current;if(el)el.scrollTop=el.scrollHeight},[msgs,busy]);
+ const dirty=React.useRef(false);
+ useEffect(()=>{dirty.current=false;api.chatHistory(projectId).then(h=>{if(!dirty.current)setMsgs((h||[]).map(m=>({role:m.role,content:m.content,provider:m.provider,time:m.created_at?new Date(m.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):""}))) }).catch(()=>{})},[projectId]);
+ const clearHistory=async()=>{try{await api.clearChat(projectId);dirty.current=true;setMsgs([])}catch(e){}};
  const send=async()=>{
   if(!input.trim()||busy)return;
+  dirty.current=true;
   const history=[...msgs,{role:"user",content:input,time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}];
   setMsgs(history);setInput("");setBusy(true);
   try{
@@ -174,7 +178,7 @@ function ChatPage(){
  return <div className="page"><div className="title"><div><h1>AI Chat</h1><p>Ask anything about your projects — grounded in real repo + monitoring data.</p></div><button onClick={doSync}><RefreshCw size={13}/> Sync projects</button></div>
  {synced?<p className="muted">{synced}</p>:null}
  <div className="grid2">
-  <Card title="Conversation" action={<Badge tone="purple"><Sparkles size={13}/> RAG</Badge>}>
+  <Card title="Conversation" action={<span className="chatActions"><button className="ppChange" onClick={clearHistory} title="Clear saved chat history">🗑 Clear</button><Badge tone="purple"><Sparkles size={13}/> RAG</Badge></span>}>
    <div className="chatbox" ref={boxRef}>{(msgs.length?msgs:[{role:"assistant",content:"Hey! I'm Dev — your senior dev sidekick. Pick a project (or ask across all of them) — code, services, incidents, or what to build next. 💡"}]).map((m,i)=><MsgBubble m={m} key={i}/>)}{busy?<Typing/>:null}</div>
    <div className="chatbar"><input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")send()}} placeholder="Ask Dev about a project…"/><button onClick={send} disabled={busy||!input.trim()}>{busy?<span className="miniSpin"/>:"Send"}</button></div>
   </Card>
@@ -290,11 +294,15 @@ function ChatDrawer({onClose}){
  const [curFile,setCurFile]=useState(null);
  const [fileContent,setFileContent]=useState("");
  const boxRef=React.useRef(null);
+ const dirty=React.useRef(false);
  useEffect(()=>{api.projects().then(setProjects).catch(()=>{})},[]);
  useEffect(()=>{const el=boxRef.current;if(el)el.scrollTop=el.scrollHeight},[msgs,busy]);
  useEffect(()=>{if(!projectId){setDocs(null);setCurFile(null);return}setDocs(null);setCurFile(null);api.projectData(projectId).then(setDocs).catch(()=>setDocs(null))},[projectId]);
+ useEffect(()=>{dirty.current=false;api.chatHistory(projectId).then(h=>{if(!dirty.current)setMsgs((h||[]).map(m=>({role:m.role,content:m.content,provider:m.provider,time:m.created_at?new Date(m.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):""}))) }).catch(()=>{})},[projectId]);
+ const clearHistory=async()=>{try{await api.clearChat(projectId);dirty.current=true;setMsgs([])}catch(e){}};
  const send=async()=>{
   if(!input.trim()||busy)return;
+  dirty.current=true;
   const history=[...msgs,{role:"user",content:input,time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}];
   setMsgs(history);setInput("");setBusy(true);
   try{
@@ -311,7 +319,7 @@ function ChatDrawer({onClose}){
   try{const c=await api.contents(project.repo,path);if(c.type!=="file")return;setCurFile(path);setFileContent(atob(c.content||""))}catch(e){setCurFile(path);setFileContent("// Could not read "+path+"\n"+e.message)}
  };
  return <div className="chatDrawer">
-  <div className="chatDrawerHead"><b><span className="headDot"/><MessageSquare size={15}/> Ask Dev</b><div className="drawerHeadActions"><a className="ppOpen dash" href="/" target="_blank" rel="noreferrer" title="Open full dashboard in new tab">Dashboard ↗</a><button className="chatClose" onClick={onClose} aria-label="Close chat">✕</button></div></div>
+  <div className="chatDrawerHead"><b><span className="headDot"/><MessageSquare size={15}/> Ask Dev</b><div className="drawerHeadActions"><a className="ppOpen dash" href="/" target="_blank" rel="noreferrer" title="Open full dashboard in new tab">Dashboard ↗</a><button className="chatClose" onClick={clearHistory} title="Clear saved chat history" aria-label="Clear chat history">🗑</button><button className="chatClose" onClick={onClose} aria-label="Close chat">✕</button></div></div>
   <div className="chatDrawerBody">
    <ProjectPicker projects={projects} value={projectId} onChange={setProjectId}/>
    {project?<div className="drawerSection"><ProjectGraph projectId={projectId} projectName={project.name} docs={docs}/></div>:null}
