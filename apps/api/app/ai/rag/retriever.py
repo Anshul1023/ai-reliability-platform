@@ -68,7 +68,14 @@ async def retrieve_project_context(repo: str, project_id: int | None = None, db=
                 select(Incident).where(Incident.project_id == project_id).order_by(Incident.created_at.desc()).limit(5)
             )).scalars().all()
             info["services"] = [
-                {"name": s.name, "status": s.status, "latency_ms": s.latency_ms, "uptime": s.uptime}
+                {
+                    "name": s.name,
+                    "status": s.status,
+                    "latency_ms": s.latency_ms,
+                    "uptime": s.uptime,
+                    "check_url": s.check_url,
+                    "last_checked": s.last_checked.isoformat() if s.last_checked else None,
+                }
                 for s in svcs
             ]
             info["incidents"] = [

@@ -318,3 +318,9 @@ select option{background:#222733;color:#dfe6f5}
 .archCard select{flex:0 0 auto;width:auto;min-width:160px}
 ::-webkit-scrollbar-thumb{background:#39435c;border-color:#1b1f29}
 ::-webkit-scrollbar-thumb:hover{background:#4a5680}
+
+/* ---- clickable GitHub + service nodes ---- */
+.pclick{cursor:pointer}
+.pclick rect{transition:fill .15s ease,stroke .15s ease}
+.pclick:hover rect{fill:#e8edff;stroke:#93a6dd}
+.pclick:hover text:first-of-type{fill:#2f4ad0}

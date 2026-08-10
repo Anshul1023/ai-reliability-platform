@@ -265,6 +265,7 @@ function ProjectGraph({projectId,projectName,docs,onOpenFolder,activeFolder}){
  const incidents=Array.isArray(m.incidents)?m.incidents:[];
  const svcs=services.slice(0,2);
  const color=s=>s==="Healthy"?"#36a667":s==="Degraded"?"#d79b2b":"#c54d4d";
+ const openUrl=u=>{if(u)window.open(u,"_blank","noopener")};
  const dirs={};
  for(const f of files){const i=f.indexOf("/");if(i>0){const d=f.slice(0,i);if(!dirs[d])dirs[d]={files:0,subs:new Set()};const rest=f.slice(i+1);if(rest.indexOf("/")<0)dirs[d].files++;else dirs[d].subs.add(rest.slice(0,rest.indexOf("/")))}}
  const folders=Object.entries(dirs).map(([name,c])=>[name,c.files+c.subs.size]).sort((a,b)=>b[1]-a[1]).slice(0,6);
@@ -281,13 +282,13 @@ function ProjectGraph({projectId,projectName,docs,onOpenFolder,activeFolder}){
     <text x="180" y="25" textAnchor="middle" fontSize="11" fontWeight="700" fill="#3a4a8f">{projectName||(repo.full_name||"Project").split("/").pop()}</text>
     <text x="180" y="38" textAnchor="middle" fontSize="8.5" fill="#7d88b8">{repo.full_name||"loading…"}</text>
    </g>
-   <g className="pnode" style={{animationDelay:".12s"}}>
+   <g className="pnode pclick" style={{animationDelay:".12s"}} onClick={()=>openUrl(repo.full_name&&"https://github.com/"+repo.full_name)} title={repo.full_name?`Open ${repo.full_name} on GitHub`:"GitHub"}>
     <rect x="8" y="95" width="130" height="42" rx="10" fill="#fbfdff" stroke="#d5def6"/>
     <text x="73" y="109" textAnchor="middle" fontSize="10" fontWeight="700" fill="#182234">GitHub</text>
     <text x="73" y="122" textAnchor="middle" fontSize="8.5" fill="#687386">{repo.language||"—"}</text>
     <text x="73" y="133" textAnchor="middle" fontSize="8.5" fill="#8992a2">{repo.default_branch?"branch: "+repo.default_branch:""}</text>
    </g>
-   {svcs.map((s,i)=>(<g className="pnode" style={{animationDelay:`.2${i}s`}} key={"s"+i}>
+   {svcs.map((s,i)=>(<g key={"s"+i} className={"pnode"+(s.check_url?" pclick":"")} style={{animationDelay:`.2${i}s`}} onClick={()=>s.check_url&&openUrl(s.check_url)} title={s.check_url?`Open ${s.name} (${s.check_url})`:s.name}>
     <rect x="226" y={i===0?88:140} width="126" height="38" rx="10" fill="#fbfdff" stroke="#d5def6"/>
     <circle cx="240" cy={i===0?103:155} r="4" className="pdot" fill={color(s.status)}/>
     <text x="256" y={i===0?101:153} fontSize="9.5" fontWeight="700" fill="#182234">{s.name}</text>
