@@ -100,10 +100,10 @@
 .abWordmark .depth-text{font-size:clamp(4rem,14vw,11rem)}
 .abSecInner{position:relative;z-index:2}
 .abHeadWrap{margin-bottom:clamp(28px,5vw,56px)}
-.abHead{font-size:clamp(2.2rem,5.5vw,4.4rem);font-weight:800;letter-spacing:-.03em;color:#eaf0ff}
+.abHead{font-family:"Syne",Inter,sans-serif;font-size:clamp(2.2rem,5.5vw,4.4rem);font-weight:800;letter-spacing:-.02em;color:#eaf0ff}
 .abHead em{font-style:normal;background:linear-gradient(90deg,#7aa2ff,#5eead4);-webkit-background-clip:text;background-clip:text;color:transparent}
 .abHead .accent{background:linear-gradient(90deg,#7aa2ff,#5eead4 60%,#5b7cff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.abSub{font-size:clamp(1.05rem,1.7vw,1.3rem);color:#a7b4d8;max-width:760px;margin:14px 0 0;line-height:1.75}
+.abSub{font-family:"Space Grotesk",Inter,sans-serif;font-size:clamp(1.05rem,1.7vw,1.3rem);color:#a7b4d8;max-width:760px;margin:14px 0 0;line-height:1.75}
 .abSub b{color:#eaf0ff;font-weight:700}
 .abSub .hl{color:#5eead4;font-weight:700}
 .abSub .hl2{color:#7aa2ff;font-weight:700}
@@ -127,18 +127,28 @@
 .aboutHighlights span{white-space:nowrap}
 .abHeroScroll{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:2;color:#8fa0c8;font-size:12px;letter-spacing:.12em;display:flex;flex-direction:column;align-items:center;gap:6px;animation:bob 2.2s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,7px)}}
-/* story */
-.abStory{background:#0c0d14}
-.storyText{max-width:none;text-align:center;display:flex;flex-direction:column;align-items:center}
-.storyHeadWrap{margin-bottom:clamp(24px,4vw,44px);max-width:1100px;width:100%}
-.storyLeadWrap{margin:0 0 28px;max-width:1000px;width:100%}
-.storySummary{font-size:clamp(1.4rem,2.6vw,2rem);line-height:1.7;margin:0 0 18px;color:#e2e9ff;max-width:960px}
-.storyMore{font-size:clamp(1.2rem,2.2vw,1.7rem);line-height:1.7;margin:0 0 18px;color:#c7d2f0;max-width:960px}
-.storyText .titleBtn{box-shadow:0 8px 26px rgba(90,125,255,.5)}
-.storyStats{display:flex;flex-wrap:wrap;gap:clamp(28px,6vw,72px);justify-content:center;margin:28px 0 26px}
+/* story — full-page curved text */
+.abStory{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse 72% 58% at 50% 36%,rgba(90,125,255,.12),transparent 72%)}
+.storyText{max-width:1200px;width:100%;margin:0 auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:clamp(20px,3.4vw,34px);padding:clamp(48px,7vw,90px) 0}
+.storyScroll{color:#7f90bd;font-size:11px;letter-spacing:.4em;text-transform:uppercase;display:flex;align-items:center;gap:12px;animation:bobSoft 2.4s ease-in-out infinite}
+.storyScroll span{font-size:16px;color:#5eead4;letter-spacing:0}
+@keyframes bobSoft{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
+.storyTitle{font-family:"Syne",Inter,sans-serif;font-weight:800;font-size:clamp(3.4rem,10vw,7.6rem);line-height:.92;letter-spacing:-.02em;margin:0;position:relative;background:linear-gradient(92deg,#7aa2ff 0%,#5eead4 40%,#9db4ff 66%,#5b7cff 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 90px rgba(94,234,212,.28)}
+.storyDot{background:linear-gradient(180deg,#5eead4,#7aa2ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.storyLead{font-family:"Syne",Inter,sans-serif;font-weight:700;font-size:clamp(1.55rem,3.6vw,2.7rem);line-height:1.24;margin:0 0 6px;background:linear-gradient(92deg,#eaf0ff,#b9c8f2 55%,#9db4ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.storyLead span{background:linear-gradient(92deg,#5eead4,#7aa2ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.storyParas{display:flex;flex-direction:column;gap:clamp(16px,2.4vw,26px);width:100%;max-width:1020px;align-items:center}
+.storyParaWrap{width:100%}
+.curved{width:100%}
+.curved svg{display:block;overflow:visible;-webkit-mask-image:linear-gradient(90deg,#000 78%,transparent 100%);mask-image:linear-gradient(90deg,#000 78%,transparent 100%)}
+.curved text{font-family:"Space Grotesk",Inter,sans-serif;font-weight:500;fill:#cdd8f5}
+.storyCurveMore text{fill:#b6c4ea}
+.storyStats{display:flex;flex-wrap:wrap;gap:clamp(34px,7vw,84px);justify-content:center;align-items:baseline;margin:12px 0 4px}
 .storyStat{text-align:center}
-.storyStat b{display:block;font-size:clamp(2.4rem,5vw,4.2rem);font-weight:900;letter-spacing:-.03em;background:linear-gradient(135deg,#9db4ff,#5b7cff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.storyStat span{font-size:clamp(.95rem,1.6vw,1.3rem);color:#a0b0d8;letter-spacing:.04em;display:block;margin-top:2px}
+.storyStat b{display:block;font-family:"Syne",Inter,sans-serif;font-size:clamp(2.6rem,5.4vw,4.4rem);font-weight:800;letter-spacing:-.03em;background:linear-gradient(135deg,#9db4ff,#5b7cff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.storyStat span{font-size:clamp(.85rem,1.5vw,1.1rem);color:#93a5cf;letter-spacing:.16em;text-transform:uppercase;display:block;margin-top:6px}
+.storyCta{margin-top:6px}
+.storyText .titleBtn{box-shadow:0 8px 26px rgba(90,125,255,.5)}
 /* experience */
 .abExp{background:#0c0d14}
 .timeline{position:relative;padding-left:24px;margin-top:44px}

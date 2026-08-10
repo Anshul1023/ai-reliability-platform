@@ -24,6 +24,49 @@ function StoryCount({to,suffix="",duration=1.4}){
  return <b>{v}{suffix}</b>;
 }
 
+function CurvedText({text,className="",size=20,curve=26}){
+ const ref=useRef(null);
+ const uid=React.useId().replace(/[^a-zA-Z0-9]/g,"");
+ const [state,setState]=useState(null);
+ useEffect(()=>{
+  const el=ref.current;if(!el)return;
+  let alive=true;
+  const build=()=>{
+   if(!alive)return;
+   const w=el.clientWidth;if(!w)return;
+   const s=w<560?Math.round(size*.72):w<900?Math.round(size*.88):size;
+   const ctx=document.createElement("canvas").getContext("2d");
+   ctx.font=`500 ${s}px "Space Grotesk",Inter,sans-serif`;
+   const words=text.split(/\s+/);
+   const lines=[];let cur=[];
+   const wid=t=>ctx.measureText(t).width;
+   for(const word of words){
+    if(cur.length&&wid([...cur,word].join(" "))>w){lines.push({text:cur.join(" "),w:wid(cur.join(" "))});cur=[word]}
+    else cur.push(word);
+   }
+   if(cur.length)lines.push({text:cur.join(" "),w:wid(cur.join(" "))});
+   setState({w,lines,s});
+  };
+  build();
+  const ro=new ResizeObserver(build);
+  ro.observe(el);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(build);
+  return ()=>{alive=false;ro.disconnect()};
+ },[text,size]);
+ if(!state||!state.lines.length)return <div ref={ref} className={"curved "+className} style={{visibility:"hidden"}}>{text}</div>;
+ const {w,lines,s}=state;
+ const lh=Math.round(s*1.45);
+ const n=lines.length;
+ const h=Math.ceil(n*lh+curve*1.3+8);
+ const paths=lines.map((ln,i)=>{const y=i*lh+8;const depth=curve*((i+1)/n);return `M 0 ${y} C ${ln.w*.68} ${y}, ${ln.w*.94} ${y+depth*.5}, ${ln.w} ${y+depth}`});
+ return <div ref={ref} className={"curved "+className}>
+  <svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+   <defs>{paths.map((d,i)=><path key={i} id={`${uid}-p${i}`} d={d}/>)}</defs>
+   {lines.map((ln,i)=><text key={i} fontSize={s}><textPath href={`#${uid}-p${i}`}>{ln.text}</textPath></text>)}
+  </svg>
+ </div>;
+}
+
 function Badge({children,tone="neutral"}){return <span className={"badge "+tone}>{children}</span>}
 function Card({title,children,action}){return <section className="card"><div className="head"><h3>{title}</h3>{action}</div>{children}</section>}
 function useCountUp(target,dur=650){
@@ -144,16 +187,19 @@ function AboutPage(){
    </div>
    <div className="abHeroScroll">SCROLL<span>↓</span></div>
   </section>
-  <motion.section {...secAnim} className="abSec abStory" id="story">
+  <section className="abSec abStory" id="story">
    <div className="abSecInner storyText">
-    <div className="storyHeadWrap"><MaskedHeading text="MY STORY" tag="h2" fill="linear-gradient(90deg,#7aa2ff 0%,#5eead4 45%,#9db4ff 70%,#5b7cff 100%)" trigger="view" reveal="rise" duration={1.2} stagger={0.09} textScale={0.1} weight={900} tracking={-0.02} fillScale={1.15} parallax={28} drift={22}/></div>
-    <div className="storyLeadWrap"><MaskedHeading text="I turn ideas into products that feel fast and never break" tag="h3" fill="linear-gradient(90deg,#7aa2ff 0%,#5eead4 45%,#9db4ff 70%,#5b7cff 100%)" trigger="view" reveal="rise" duration={1.2} stagger={0.05} textScale={0.055} weight={900} tracking={-0.02} fillScale={1.12} parallax={20} drift={16}/></div>
-    <SplitText text={p.summary} tag="p" className="storySummary" splitType="chars" delay={60} duration={1} from={{opacity:0,y:70}} to={{opacity:1,y:0}}/>
-    {(p.about||[]).map((a,i)=><SplitText key={i} text={a} tag="p" className="storyMore" splitType="chars" delay={55} duration={1} from={{opacity:0,y:70}} to={{opacity:1,y:0}}/>)}
-    <motion.div className="storyStats" initial={{opacity:0,y:30}} whileInView={{opacity:1,y:0}} viewport={{once:false,amount:.3}} transition={{delay:.8,duration:.8,ease:[.22,1,.36,1]}}><div className="storyStat"><StoryCount to={p.experience.length}/><span>Roles</span></div><div className="storyStat"><StoryCount to={p.projects.length}/><span>Projects</span></div><div className="storyStat"><StoryCount to={p.skills.length}/><span>Skills</span></div><div className="storyStat"><StoryCount to={p.experience.reduce((s,e)=>s+e.points.length,0)} suffix="+"/><span>Achievements</span></div></motion.div>
-    <motion.div initial={{opacity:0,y:24}} whileInView={{opacity:1,y:0}} viewport={{once:false,amount:.3}} transition={{delay:1,duration:.7,ease:[.22,1,.36,1]}}><a className="titleBtn" href="#contact">Let's build something</a></motion.div>
+    <div className="storyScroll">Scroll<span>↓</span></div>
+    <motion.h2 className="storyTitle" initial={{x:-300,opacity:0,filter:"blur(10px)"}} whileInView={{x:0,opacity:1,filter:"blur(0px)"}} viewport={{once:false,amount:.4}} transition={{duration:.95,ease:[.22,1,.36,1]}}>MY STORY<span className="storyDot">.</span></motion.h2>
+    <motion.h3 className="storyLead" initial={{x:300,opacity:0,filter:"blur(8px)"}} whileInView={{x:0,opacity:1,filter:"blur(0px)"}} viewport={{once:false,amount:.4}} transition={{duration:.95,delay:.12,ease:[.22,1,.36,1]}}>I turn ideas into products<br/>that <span>feel fast</span> and <span>never break</span></motion.h3>
+    <div className="storyParas">
+     <motion.div className="storyParaWrap" initial={{x:-220,opacity:0}} whileInView={{x:0,opacity:1}} viewport={{once:false,amount:.3}} transition={{duration:.9,delay:.1,ease:[.22,1,.36,1]}}><CurvedText text={p.summary} size={22} className="storyCurve"/></motion.div>
+     {(p.about||[]).map((a,i)=><motion.div key={i} className="storyParaWrap" initial={{x:(i%2?1:-1)*240,opacity:0}} whileInView={{x:0,opacity:1}} viewport={{once:false,amount:.3}} transition={{duration:.9,delay:.18+i*.1,ease:[.22,1,.36,1]}}><CurvedText text={a} size={19} className="storyCurve storyCurveMore"/></motion.div>)}
+    </div>
+    <motion.div className="storyStats" initial={{x:260,opacity:0}} whileInView={{x:0,opacity:1}} viewport={{once:false,amount:.4}} transition={{duration:.85,delay:.3,ease:[.22,1,.36,1]}}><div className="storyStat"><StoryCount to={p.experience.length}/><span>Roles</span></div><div className="storyStat"><StoryCount to={p.projects.length}/><span>Projects</span></div><div className="storyStat"><StoryCount to={p.skills.length}/><span>Skills</span></div><div className="storyStat"><StoryCount to={p.experience.reduce((s,e)=>s+e.points.length,0)} suffix="+"/><span>Achievements</span></div></motion.div>
+    <motion.div className="storyCta" initial={{x:-240,opacity:0}} whileInView={{x:0,opacity:1}} viewport={{once:false,amount:.4}} transition={{duration:.85,delay:.4,ease:[.22,1,.36,1]}}><a className="titleBtn" href="#contact">Let's build something</a></motion.div>
    </div>
-  </motion.section>
+  </section>
   <motion.section {...secAnim} className="abSec abExp" id="experience">
    <div className="abWordmark"><DepthText text="EXPERIENCE" layers={26} depth={2.2} depthColor="#14b8a6" faceColor="#14202c" fontSize="clamp(3.4rem,11vw,9rem)"/></div>
    <div className="abSecInner">
