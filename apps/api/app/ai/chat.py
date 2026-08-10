@@ -90,13 +90,13 @@ def _fmt_documents(documents: dict) -> str:
 
 
 async def chat(messages: list[dict], project_id: int | None = None) -> dict:
-    async with SessionLocal() as db:
-        project = None
-        repo = ""
-        if project_id:
+    project = None
+    ctx: dict = {}
+    if project_id:
+        async with SessionLocal() as db:
             project = await db.get(Project, project_id)
             repo = project.repo if project else ""
-        ctx = await build_chat_context(db, project_id or 0, repo)
+            ctx = await build_chat_context(db, project_id, repo)
 
     context_text = _format_context(ctx)
     if settings.ai_provider != "demo" and settings.openai_api_key and settings.ai_model:
