@@ -143,6 +143,49 @@ function ChatPage(){
 </div>
 }
 
+function ProjectGraph({projectId,projectName}){
+ const [docs,setDocs]=useState(null);
+ useEffect(()=>{
+  if(!projectId){setDocs(null);return}
+  setDocs(null);
+  api.projectData(projectId).then(setDocs).catch(()=>setDocs(null));
+ },[projectId]);
+ if(!projectId)return null;
+ const m={};(docs||[]).forEach(d=>{m[d.data_type]=d.payload});
+ const repo=m.repository||{};
+ const services=Array.isArray(m.services)?m.services:[];
+ const tech=Array.isArray((m.tech||{}).tech)?m.tech.tech:[];
+ const files=Array.isArray(m.files)?m.files:[];
+ const incidents=Array.isArray(m.incidents)?m.incidents:[];
+ const svcs=services.slice(0,2);
+ const color=s=>s==="Healthy"?"#36a667":s==="Degraded"?"#d79b2b":"#c54d4d";
+ return <div className="pgraph">
+  <svg viewBox="0 0 360 185">
+   {svcs.map((s,i)=>(<path key={"e"+i} className="pedge" d={i===0?"M180 46 C 220 58, 250 66, 284 85":"M180 46 C 220 70, 250 100, 284 137"}/>))}
+   <path className="pedge" d="M180 46 C 140 60, 110 75, 78 93"/>
+   <g className="pnode" style={{animationDelay:"0s"}}>
+    <rect x="110" y="6" width="140" height="40" rx="10" fill="#eef2ff" stroke="#c9d3f7"/>
+    <circle cx="132" cy="26" r="4" className="pdot" fill="#36a667"/>
+    <text x="180" y="25" textAnchor="middle" fontSize="11" fontWeight="700" fill="#3a4a8f">{projectName||(repo.full_name||"Project").split("/").pop()}</text>
+    <text x="180" y="38" textAnchor="middle" fontSize="8.5" fill="#7d88b8">{repo.full_name||"loading…"}</text>
+   </g>
+   <g className="pnode" style={{animationDelay:".12s"}}>
+    <rect x="8" y="95" width="130" height="42" rx="10" fill="#fff" stroke="#e0e5ee"/>
+    <text x="73" y="109" textAnchor="middle" fontSize="10" fontWeight="700" fill="#182234">GitHub</text>
+    <text x="73" y="122" textAnchor="middle" fontSize="8.5" fill="#687386">{repo.language||"—"}</text>
+    <text x="73" y="133" textAnchor="middle" fontSize="8.5" fill="#8992a2">{repo.default_branch?"branch: "+repo.default_branch:""}</text>
+   </g>
+   {svcs.map((s,i)=>(<g className="pnode" style={{animationDelay:`.2${i}s`}} key={"s"+i}>
+    <rect x="226" y={i===0?88:140} width="126" height="38" rx="10" fill="#fff" stroke="#e0e5ee"/>
+    <circle cx="240" cy={i===0?103:155} r="4" className="pdot" fill={color(s.status)}/>
+    <text x="256" y={i===0?101:153} fontSize="9.5" fontWeight="700" fill="#182234">{s.name}</text>
+    <text x="256" y={i===0?114:166} fontSize="8.5" fill="#687386">{s.status} · {Math.round(s.latency_ms)}ms</text>
+   </g>))}
+  </svg>
+  {(tech.length||files.length||incidents.length)?<div className="pchips">{tech.slice(0,7).map((t,i)=><span className="pchip" key={i}>{t}</span>)}{files.length?<span className="pchip ghost">📄 {files.length} files</span>:null}{incidents.length?<span className="pchip warn">⚠ {incidents.length} incident{incidents.length>1?"s":""}</span>:null}</div>:null}
+ </div>;
+}
+
 function ChatDrawer({onClose}){
  const [projects,setProjects]=useState([]);
  const [projectId,setProjectId]=useState(null);
@@ -167,6 +210,7 @@ function ChatDrawer({onClose}){
     <option value="">All projects…</option>
     {projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
    </select>
+   <ProjectGraph projectId={projectId} projectName={projects.find(p=>p.id===projectId)?.name}/>
    <div className="chatbox">{(msgs.length?msgs:[{role:"assistant",content:"Ask me anything about your projects — code, services, incidents, or propose a change."}]).map((m,i)=><div className={"bubble "+(m.role==="user"?"me":"bot")} key={i}><span>{m.role==="user"?"You":"Agent"}</span>{m.content}</div>)}</div>
   </div>
   <div className="chatbar"><input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")send()}} placeholder="Ask about a project…"/><button onClick={send} disabled={busy}>{busy?"Thinking…":"Send"}</button></div>

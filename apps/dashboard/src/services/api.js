@@ -19,6 +19,7 @@ export const api={
   summary:()=>get("/projects/summary"),
   incidents:()=>get("/incidents"),
   project:id=>get(`/projects/${id}`),
+  projectData:id=>get(`/projects/${id}/data`),
   services:id=>get(`/services/${id}`),
   deployments:id=>get(`/deployments/${id}`),
   metrics:id=>get(`/metrics/${id}`),

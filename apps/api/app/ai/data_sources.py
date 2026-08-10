@@ -285,6 +285,8 @@ async def build_global_context(db) -> dict:
                 entry["description"] = repo_doc.get("description")
                 entry["language"] = repo_doc.get("language")
                 entry["homepage"] = repo_doc.get("homepage")
+            tech_doc = (docs_by_project.get(p.id) or {}).get("tech") or {}
+            entry["tech"] = tech_doc.get("tech") or []
             out_projects.append(entry)
         return {"projects": out_projects}
     except Exception:  # noqa: BLE001 - global context is best-effort
@@ -339,6 +341,9 @@ async def build_chat_context(db, project_id: int, repo: str) -> dict:
         ctx["documents"] = {
             k: (v[:2000] if isinstance(v, str) else v) for k, v in docs.items() if k != "readme"
         }
+        tech_doc = docs.get("tech") or {}
+        if tech_doc.get("tech"):
+            ctx["tech"] = tech_doc["tech"]
         if docs.get("readme"):
             ctx["readme"] = docs["readme"][:4000]
     else:

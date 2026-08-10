@@ -61,10 +61,12 @@ def _fmt_incidents(incidents) -> str:
 def _fmt_global_projects(projects) -> str:
     lines = []
     for p in projects:
+        tech = p.get("tech") or []
         lines.append(
             f"- #{p['id']} {p['name']} ({p['repo']}) — status {p['status']}, uptime {p['uptime']}%"
             + (f", {p['language']}" if p.get("language") else "")
             + (f" — {p['description']}" if p.get("description") else "")
+            + (f" | tech: {', '.join(tech)}" if tech else "")
             + f" | services={p.get('services', 0)}, deployments={p.get('deployments', 0)}, incidents={p.get('incidents', 0)}"
             + f" | stored docs: {', '.join(p.get('stored_documents') or []) or 'none'}"
         )
@@ -95,6 +97,8 @@ def _format_context(ctx: dict) -> str:
         parts.append(f"Files ({len(ctx['files'])}):\n" + "\n".join(ctx["files"][:80]))
     if ctx.get("documents"):
         parts.append("Stored JSON documents (data_type → summary):\n" + _fmt_documents(ctx["documents"]))
+    if ctx.get("tech"):
+        parts.append("Technologies detected (source: tech document, from dependency manifests + README):\n- " + ", ".join(ctx["tech"]))
     if ctx.get("services"):
         parts.append("Monitored services (source: services table):\n" + _fmt_services(ctx["services"]))
     if ctx.get("deployments"):

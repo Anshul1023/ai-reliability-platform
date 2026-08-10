@@ -7,7 +7,7 @@ from app.core.database import SessionLocal
 from app.models.models import Project, ProjectData
 
 # Which context buckets to persist as JSON documents.
-DOCUMENT_TYPES = ("repository", "readme", "files", "services", "incidents")
+DOCUMENT_TYPES = ("repository", "readme", "files", "services", "incidents", "tech")
 
 
 async def _upsert(db, project_id: int, data_type: str, payload: dict):
@@ -31,6 +31,12 @@ async def refresh_project_documents() -> dict:
         projects = (await db.execute(select(Project).order_by(Project.id))).scalars().all()
         for project in projects:
             ctx = await retrieve_project_context(project.repo, project.id, db)
+            try:
+                from app.services.tech_fingerprint import build_tech_fingerprint
+
+                ctx["tech"] = await build_tech_fingerprint(project.repo, ctx)
+            except Exception:  # noqa: BLE001 - fingerprinting is best-effort
+                ctx["tech"] = {"tech": [], "dependencies": {}}
             for data_type in DOCUMENT_TYPES:
                 if data_type in ctx:
                     await _upsert(db, project.id, data_type, ctx[data_type])
