@@ -4,7 +4,7 @@ import {LayoutDashboard,Box,AlertTriangle,Bot,Settings,Activity,Github,ChevronRi
 import {ResponsiveContainer,AreaChart,Area,BarChart,Bar,XAxis,YAxis,Tooltip} from "recharts";
 import {motion} from "framer-motion";
 import {MaskedHeading,FoldText,ScrollExpand,AccordionGallery,CircularGallery} from "./reactbits";
-import {SplitText,DepthText,LogoLoop,StaggeredMenu,DriftWall,Folder} from "./aboutbits";
+import {SplitText,DepthText,LogoLoop,DriftWall,Folder} from "./aboutbits";
 import {api,API_WS,getApiKey,setApiKey} from "./services/api";
 import "./styles.css";
 import "./about.css";
@@ -109,9 +109,7 @@ function AboutPage(){
  const expItems=p.experience.map((e,i)=>({image:["/about/fitness.jpg","/about/office.jpg","/about/code.jpg"][i]||"/about/desk.jpg",label:e.company,link:p.links.linkedin}));
  const half=Math.ceil(p.skills.length/2);
  const rows=[p.skills.slice(0,half),p.skills.slice(half)];
- const menuItems=[["Story","story"],["Experience","experience"],["Skills","skills"],["Projects","projects"],["Contact","contact"]].map(([l,id])=>({label:l,link:`#${id}`}));
  return <div className="about">
-  <StaggeredMenu items={menuItems} socialItems={[{label:"GitHub",link:p.links.github},{label:"LinkedIn",link:p.links.linkedin},{label:"Email",link:`mailto:${p.email}`}]} accentColor="#5a7dff" colors={["#141a2b","#1e2638"]} isFixed/>
   <motion.section {...heroFade} className="abHero" id="top">
    <div className="abHeroBg"><DriftWall items={driftItems} columns={5} tileWidth={210} tileHeight={140} gap={16} speed={36} fade={0.55} dim={0.72} tilt={14} turn={-12} overlayColor="#080a14"/></div>
    <div className="abHeroContent">
