@@ -7,8 +7,6 @@ import {MaskedHeading,FoldText,ScrollExpand,AccordionGallery,CircularGallery} fr
 import {api,API_WS,getApiKey,setApiKey} from "./services/api";
 import "./styles.css";
 
-const VIS="https://raw.githubusercontent.com/Anshul1023/anshul-rawat-portfolio/Ansh/frontend/public/visuals/";
-
 const demo=[{time:"09:00",error:1.1},{time:"10:00",error:1.4},{time:"11:00",error:1.2},{time:"12:00",error:2.1},{time:"13:00",error:3.2},{time:"14:00",error:2.4},{time:"15:00",error:1.1}];
 
 function Badge({children,tone="neutral"}){return <span className={"badge "+tone}>{children}</span>}
@@ -95,24 +93,24 @@ function AboutPage(){
  if(!p)return <div className="page"><p className="muted">Loading profile…</p></div>;
  const fade={initial:{opacity:0,y:30},whileInView:{opacity:1,y:0},viewport:{once:true,margin:"-70px"},transition:{duration:.6,ease:"easeOut"}};
  const projects=[
-  {label:"PulseOps — AI Reliability",image:VIS+"project-dashboard.svg",link:"https://github.com/Anshul1023/ai-reliability-platform"},
-  {label:"Anshul Rawat Portfolio",image:VIS+"hero-editorial.svg",link:"https://github.com/Anshul1023/anshul-rawat-portfolio"},
-  {label:"FastAPI Web Accelerator",image:VIS+"project-systems.svg",link:"https://github.com/Anshul1023/Fastapi"},
-  {label:"Browser Camera",image:VIS+"project-browser.svg",link:"https://github.com/Anshul1023/browser-camera"},
-  {label:"Snake Game",image:VIS+"project-game.svg",link:"https://github.com/Anshul1023/JavaScript-Snake-game"},
-  {label:"AgentFlow AI",image:VIS+"project-ai.svg",link:"https://github.com/Anshul1023/AgentFlow-Ai"}
+  {label:"PulseOps — AI Reliability",image:"/about/pulseops.jpg",link:"https://github.com/Anshul1023/ai-reliability-platform"},
+  {label:"Anshul Rawat Portfolio",image:"/about/portfolio.jpg",link:"https://github.com/Anshul1023/anshul-rawat-portfolio"},
+  {label:"FastAPI Web Accelerator",image:"/about/fastapi.jpg",link:"https://github.com/Anshul1023/Fastapi"},
+  {label:"Browser Camera",image:"/about/camera.jpg",link:"https://github.com/Anshul1023/browser-camera"},
+  {label:"Snake Game",image:"/about/game.jpg",link:"https://github.com/Anshul1023/JavaScript-Snake-game"},
+  {label:"AgentFlow AI",image:"/about/ai.jpg",link:"https://github.com/Anshul1023/AgentFlow-Ai"}
  ];
  const carousel=[
-  {image:VIS+"project-ai.svg",text:"Odds Fitness"},
-  {image:VIS+"project-systems.svg",text:"SGSN Associates"},
-  {image:VIS+"project-media.svg",text:"Interpe"}
+  {image:"/about/fitness.jpg",text:"Odds Fitness"},
+  {image:"/about/office.jpg",text:"SGSN Associates"},
+  {image:"/about/code.jpg",text:"Interpe"}
  ];
  return <div className="about">
   <section className="aboutHero"><div className="orb o1"/><div className="orb o2"/><div className="orb o3"/>
    <div className="aboutHeroInner">
     <motion.span initial={{opacity:0,scale:.85}} animate={{opacity:1,scale:1}} transition={{duration:.5}} className="badge aboutTag">Full Stack Developer</motion.span>
     <h1 className="aboutName"><FoldText text="Anshul Rawat" hinge="bottom" trigger="mount" splitBy="char" duration={0.7} stagger={0.06} fontSize={62} fontWeight={800} color="#eaf0ff"/></h1>
-    <div className="aboutMaskWrap"><MaskedHeading text="BUILDING THINGS THAT LAST" src={VIS+"project-dashboard.svg"} trigger="view" reveal="wipe" textScale={0.075} weight={800} tracking={-0.02}/></div>
+    <div className="aboutMaskWrap"><MaskedHeading text="BUILDING THINGS THAT LAST" src="/about/mask.jpg" trigger="view" reveal="wipe" textScale={0.075} weight={800} tracking={-0.02}/></div>
     <motion.p initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:.9,duration:.7}} className="aboutTagline">{p.tagline}</motion.p>
     <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:1.05,duration:.7}} className="aboutChips">
      <a className="aboutChip" href={`tel:${p.phone.replace(/\s/g,"")}`}><Phone size={13}/>{p.phone}</a>
@@ -126,7 +124,7 @@ function AboutPage(){
   </section>
   <section className="aboutBody">
    <motion.div {...fade} className="aboutSection"><h2><span className="bar"/>My story</h2>
-    <div className="storyExpand"><ScrollExpand src={VIS+"story-flow.svg"} title="My story" scrollHint="Scroll inside ↓" scrollDistance={1} startWidth={46} startHeight={62}><div className="storyOverlay"><p>{p.summary}</p><a className="titleBtn" href="#contact">Let's build something</a></div></ScrollExpand></div>
+    <div className="storyExpand"><ScrollExpand src="/about/story.jpg" title="My story" scrollHint="Scroll inside ↓" scrollDistance={1} startWidth={46} startHeight={62}><div className="storyOverlay"><p>{p.summary}</p><a className="titleBtn" href="#contact">Let's build something</a></div></ScrollExpand></div>
    </motion.div>
    <motion.div {...fade} className="aboutSection"><h2><span className="bar"/>Experience</h2>
     <div className="carouselWrap"><CircularGallery items={carousel} bend={2.4} textColor="#cfe0ff" borderRadius={0.08} font="bold 28px sans-serif"/></div>
