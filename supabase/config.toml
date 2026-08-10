@@ -1,0 +1,7 @@
+project_id = "ai-reliability-platform"
+[api]
+enabled = true
+[db]
+port = 5432
+[studio]
+enabled = true

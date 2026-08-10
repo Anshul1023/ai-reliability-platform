@@ -1,0 +1,2 @@
+import {useEffect,useState} from 'react';
+export function useApi(loader){const [data,setData]=useState(null);const [loading,setLoading]=useState(true);useEffect(()=>{let ok=true;loader().then(x=>ok&&setData(x)).finally(()=>ok&&setLoading(false));return()=>{ok=false}},[]);return {data,loading};}
