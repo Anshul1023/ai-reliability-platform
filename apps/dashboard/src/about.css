@@ -131,8 +131,7 @@
 .abStory{background:#0c0d14}
 .storyText{max-width:none;text-align:center;display:flex;flex-direction:column;align-items:center}
 .storyHeadWrap{margin-bottom:clamp(24px,4vw,44px);max-width:1100px;width:100%}
-.storyLead{font-size:clamp(2.2rem,5.5vw,4.2rem);font-weight:900;letter-spacing:-.03em;line-height:1.15;margin:0 0 22px;color:#eaf0ff;text-shadow:0 4px 30px rgba(0,0,0,.6);max-width:1000px}
-.storyLead em{font-style:normal;background:linear-gradient(90deg,#7aa2ff,#5eead4);-webkit-background-clip:text;background-clip:text;color:transparent}
+.storyLeadWrap{margin:0 0 28px;max-width:1000px;width:100%}
 .storySummary{font-size:clamp(1.4rem,2.6vw,2rem);line-height:1.7;margin:0 0 18px;color:#e2e9ff;max-width:960px}
 .storyMore{font-size:clamp(1.2rem,2.2vw,1.7rem);line-height:1.7;margin:0 0 18px;color:#c7d2f0;max-width:960px}
 .storyText .titleBtn{box-shadow:0 8px 26px rgba(90,125,255,.5)}
@@ -141,7 +140,7 @@
 .storyStat b{display:block;font-size:clamp(2.4rem,5vw,4.2rem);font-weight:900;letter-spacing:-.03em;background:linear-gradient(135deg,#9db4ff,#5b7cff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .storyStat span{font-size:clamp(.95rem,1.6vw,1.3rem);color:#a0b0d8;letter-spacing:.04em;display:block;margin-top:2px}
 /* experience */
-.abExp{background:linear-gradient(180deg,#0c0d14,#10131f)}
+.abExp{background:#0c0d14}
 .timeline{position:relative;padding-left:24px;margin-top:44px}
 .timeline:before{content:"";position:absolute;left:7px;top:4px;bottom:4px;width:2px;background:linear-gradient(180deg,#3a4a8f,#5eead4)}
 .tlItem{position:relative;margin:0 0 26px;transform-style:preserve-3d;transition:transform .25s}
@@ -157,12 +156,13 @@
 .abSkills .abSecInner{display:flex;flex-direction:column;gap:26px}
 .abSkills .logoloop{overflow:hidden;padding:4px 0}
 /* projects */
-.abProjects{background:linear-gradient(180deg,#0c0d14,#10131f)}
+.abProjects{background:#0c0d14}
 .carouselWrap{height:min(62vh,560px);margin:10px 0 8px;overflow:visible}
 .abProjectsMeta{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:22px}
 .abProjectsMeta .aboutChip{font-size:13px}
 /* contact */
 .abContact{background:#0c0d14}
+.about{background:#0c0d14}
 .contactWrap{display:grid;grid-template-columns:1fr 1.3fr;gap:clamp(24px,5vw,64px);align-items:start}
 .contactInfo p{color:#c2cadf;font-size:15px;line-height:1.7}
 .contactLine{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px dashed rgba(58,74,143,.55)}
