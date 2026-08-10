@@ -18,6 +18,7 @@ async function post(path){
 export const api={
   health:()=>get("/health"),
   projects:()=>get("/projects"),
+  summary:()=>get("/projects/summary"),
   incidents:()=>get("/incidents"),
   project:id=>get(`/projects/${id}`),
   services:id=>get(`/services/${id}`),
