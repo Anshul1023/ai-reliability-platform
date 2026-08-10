@@ -9,7 +9,7 @@ The catalog is the code-side source of truth. It is also seeded into the
 database (see ensure_data_sources / seed_data_sources).
 """
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from app.models.models import (
     AgentRun,
@@ -239,6 +239,56 @@ async def fetch_stored_documents(db, project_id: int) -> dict:
 # ---------------------------------------------------------------------------
 # Chat context assembly
 # ---------------------------------------------------------------------------
+
+
+async def build_global_context(db) -> dict:
+    """Context spanning every project, used when no single project is selected.
+
+    Lists all projects with repo metadata taken from the stored JSON documents,
+    plus per-project counts (services / deployments / incidents) and which
+    document types are available. Best-effort: any DB failure yields an empty
+    context so the chat never errors out.
+    """
+    try:
+        projects = (await db.execute(select(Project).order_by(Project.id))).scalars().all()
+        docs = (await db.execute(select(ProjectData))).scalars().all()
+
+        docs_by_project: dict[int, dict] = {}
+        for d in docs:
+            docs_by_project.setdefault(d.project_id, {})[d.data_type] = d.payload
+
+        svc_counts = {pid: n for pid, n in (await db.execute(
+            select(Service.project_id, func.count()).group_by(Service.project_id)
+        )).all()}
+        dep_counts = {pid: n for pid, n in (await db.execute(
+            select(Deployment.project_id, func.count()).group_by(Deployment.project_id)
+        )).all()}
+        inc_counts = {pid: n for pid, n in (await db.execute(
+            select(Incident.project_id, func.count()).group_by(Incident.project_id)
+        )).all()}
+
+        out_projects = []
+        for p in projects:
+            repo_doc = (docs_by_project.get(p.id) or {}).get("repository") or {}
+            entry = {
+                "id": p.id,
+                "name": p.name,
+                "repo": p.repo,
+                "status": p.status,
+                "uptime": p.uptime,
+                "services": svc_counts.get(p.id, 0),
+                "deployments": dep_counts.get(p.id, 0),
+                "incidents": inc_counts.get(p.id, 0),
+                "stored_documents": sorted((docs_by_project.get(p.id) or {}).keys()),
+            }
+            if repo_doc:
+                entry["description"] = repo_doc.get("description")
+                entry["language"] = repo_doc.get("language")
+                entry["homepage"] = repo_doc.get("homepage")
+            out_projects.append(entry)
+        return {"projects": out_projects}
+    except Exception:  # noqa: BLE001 - global context is best-effort
+        return {}
 
 
 async def seed_data_sources(db) -> int:

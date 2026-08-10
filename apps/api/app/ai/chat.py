@@ -1,7 +1,12 @@
 import httpx
 from sqlalchemy import select
 
-from app.ai.data_sources import DATA_SOURCES, build_chat_context, catalog_markdown
+from app.ai.data_sources import (
+    DATA_SOURCES,
+    build_chat_context,
+    build_global_context,
+    catalog_markdown,
+)
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.models.models import Project
@@ -13,7 +18,12 @@ SYSTEM_PREAMBLE = (
     "Never invent facts. When you reference a fact, say which data source it came "
     "from (table, API or service). When discussing code changes, propose precise "
     "edits with file paths. The user can approve changes which are committed to a "
-    "branch and opened as a pull request."
+    "branch and opened as a pull request. "
+    "The context may cover a single selected project OR every registered project. "
+    "When asked about any of the user's projects, use the projects list to identify "
+    "it (name, repo, status, uptime) and describe it from the stored repository "
+    "documents. For deep detail (README, files, services) say the project can be "
+    "selected for full context."
 )
 
 
@@ -48,8 +58,26 @@ def _fmt_incidents(incidents) -> str:
     return "\n".join(lines) or "- none"
 
 
+def _fmt_global_projects(projects) -> str:
+    lines = []
+    for p in projects:
+        lines.append(
+            f"- #{p['id']} {p['name']} ({p['repo']}) — status {p['status']}, uptime {p['uptime']}%"
+            + (f", {p['language']}" if p.get("language") else "")
+            + (f" — {p['description']}" if p.get("description") else "")
+            + f" | services={p.get('services', 0)}, deployments={p.get('deployments', 0)}, incidents={p.get('incidents', 0)}"
+            + f" | stored docs: {', '.join(p.get('stored_documents') or []) or 'none'}"
+        )
+    return "\n".join(lines) or "- none"
+
+
 def _format_context(ctx: dict) -> str:
     parts = []
+    if ctx.get("projects"):
+        parts.append(
+            "All registered projects (source: projects table + repository documents):\n"
+            + _fmt_global_projects(ctx["projects"])
+        )
     proj = ctx.get("project")
     if proj:
         parts.append(
@@ -97,6 +125,12 @@ async def chat(messages: list[dict], project_id: int | None = None) -> dict:
             project = await db.get(Project, project_id)
             repo = project.repo if project else ""
             ctx = await build_chat_context(db, project_id, repo)
+    else:
+        # No project selected -> give the agent the full picture of every project
+        # (list, repo metadata from stored docs, counts). Best-effort: if the DB
+        # is unreachable this stays empty and the reply degrades gracefully.
+        async with SessionLocal() as db:
+            ctx = await build_global_context(db)
 
     context_text = _format_context(ctx)
     if settings.ai_provider != "demo" and settings.openai_api_key and settings.ai_model:
@@ -142,6 +176,8 @@ async def _call_llm(messages: list[dict], context_text: str) -> str:
 
 def _demo_reply(messages: list[dict], project, ctx: dict, context_text: str) -> str:
     lines = ["Demo mode is active (no LLM API key configured), so I answer from live project data:"]
+    if ctx.get("projects"):
+        lines.append("Registered projects:\n" + _fmt_global_projects(ctx["projects"]))
     proj = ctx.get("project")
     if proj:
         lines.append(
