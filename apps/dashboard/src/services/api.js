@@ -36,6 +36,13 @@ export const api={
   chat:(messages,projectId)=>post("/ai/chat",{messages,project_id:projectId}),
   chatHistory:(projectId)=>get(`/ai/chat/history${projectId?`?project_id=${projectId}`:""}`),
   clearChat:(projectId)=>del(`/ai/chat/history${projectId?`?project_id=${projectId}`:""}`),
+  recordView:(data)=>post("/analytics/view",data),
+  analytics:(range="7d")=>get(`/analytics/views?range=${range}`),
+  feedback:(data)=>post("/feedback",data),
+  listFeedback:()=>get("/feedback"),
+  contact:(data)=>post("/contact",data),
+  listContacts:()=>get("/contact"),
+  profile:()=>get("/profile"),
   sync:()=>post("/projects/sync"),
   investigate:id=>post(`/incidents/${id}/investigate`)
 }

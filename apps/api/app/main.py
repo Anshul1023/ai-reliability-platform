@@ -8,7 +8,7 @@ from app.core.config import settings
 from app.core.database import engine, Base, SessionLocal
 from app.redis.client import ping as redis_ping
 from app.redis.rate_limiter import allow as rate_limit_allow
-from app.api.routes import auth, projects, services, incidents, deployments, metrics, github, ai
+from app.api.routes import analytics, auth, projects, services, incidents, deployments, metrics, github, ai
 from app.api.websocket import router as ws_router
 from app.models.models import Project, Service, Deployment, Incident
 
@@ -70,5 +70,5 @@ async def health():
 async def prometheus():
     return Response(generate_latest(),media_type=CONTENT_TYPE_LATEST)
 
-for router in [auth.router,projects.router,services.router,incidents.router,deployments.router,metrics.router,github.router,ai.router,ws_router]:
+for router in [auth.router,projects.router,services.router,incidents.router,deployments.router,metrics.router,github.router,ai.router,analytics.router,ws_router]:
     app.include_router(router)

@@ -1,7 +1,7 @@
 import React,{useEffect,useState} from "react";
 import {createRoot} from "react-dom/client";
-import {LayoutDashboard,Box,AlertTriangle,Bot,Settings,Activity,Github,ChevronRight,Plus,Search,Bell,CheckCircle2,Sparkles,MessageSquare,RefreshCw,User} from "lucide-react";
-import {ResponsiveContainer,AreaChart,Area,XAxis,YAxis,Tooltip} from "recharts";
+import {LayoutDashboard,Box,AlertTriangle,Bot,Settings,Activity,Github,ChevronRight,Plus,Search,Bell,CheckCircle2,Sparkles,MessageSquare,RefreshCw,User,BarChart3,Phone,Mail,MapPin,Linkedin,GraduationCap,Send} from "lucide-react";
+import {ResponsiveContainer,AreaChart,Area,BarChart,Bar,XAxis,YAxis,Tooltip} from "recharts";
 import {api,API_WS,getApiKey,setApiKey} from "./services/api";
 import "./styles.css";
 
@@ -29,6 +29,115 @@ function MsgBubble({m}){
 }
 function Typing(){
  return <div className="bubble bot typing"><span className="bAvatar"><Bot size={13}/></span><div className="bBody"><span className="bName">Dev</span><div className="dots"><i/><i/><i/></div></div></div>;
+}
+function getVisitorId(){let v=localStorage.getItem("pulseops_visitor");if(!v){v="v_"+Math.random().toString(36).slice(2,10);localStorage.setItem("pulseops_visitor",v)}return v}
+
+function FeedbackPopup({isOwner}){
+ const [visible,setVisible]=useState(false);
+ const [name,setName]=useState("");
+ const [msg,setMsg]=useState("");
+ const [busy,setBusy]=useState(false);
+ const [done,setDone]=useState(false);
+ useEffect(()=>{
+  if(isOwner||localStorage.getItem("pulseops_feedback_done"))return;
+  const t=setTimeout(()=>setVisible(true),3200);
+  return()=>clearTimeout(t);
+ },[isOwner]);
+ const submit=async()=>{
+  if(!msg.trim()||busy)return;
+  setBusy(true);
+  try{await api.feedback({name:name.trim()||"Anonymous",message:msg.trim(),visitor_id:getVisitorId()});localStorage.setItem("pulseops_feedback_done","1");setDone(true);setTimeout(()=>setVisible(false),2200)}catch(e){}
+  setBusy(false);
+ };
+ if(!visible)return null;
+ return <div className="fbModal"><div className="fbCard">{done?<div className="fbDone"><CheckCircle2 size={30}/><b>Thanks!</b><p className="muted">Your feedback means a lot. 💙</p></div>:<><h3>💬 Leave some feedback</h3><p className="muted">Help me make this dashboard better for everyone.</p><input placeholder="Your name (optional)" value={name} onChange={e=>setName(e.target.value)}/><textarea placeholder="What do you think?…" value={msg} onChange={e=>setMsg(e.target.value)} rows={3}/><div className="fbActions"><button className="ppChange" onClick={()=>{localStorage.setItem("pulseops_feedback_done","1");setVisible(false)}}>Skip</button><button className="titleBtn" onClick={submit} disabled={busy||!msg.trim()}>{busy?"Sending…":"Send feedback"}</button></div></>}</div></div>;
+}
+
+function AnalyticsPage(){
+ const [range,setRange]=useState("7d");
+ const [data,setData]=useState(null);
+ const [feedback,setFeedback]=useState([]);
+ const [contacts,setContacts]=useState([]);
+ const isOwner=!!getApiKey();
+ useEffect(()=>{if(!isOwner)return;api.analytics(range).then(setData).catch(()=>{});api.listFeedback().then(setFeedback).catch(()=>{});api.listContacts().then(setContacts).catch(()=>{})},[range,isOwner]);
+ if(!isOwner)return <div className="page"><div className="title"><div><h1>Analytics</h1><p>Owner only.</p></div></div><Card><p className="muted">This page is only visible to the owner. Add your API key in Settings to view visitor analytics, feedback and contact requests.</p></Card></div>;
+ const d=data||{total_views:0,unique_visitors:0,per_project:[],per_path:[],daily:[]};
+ return <div className="page"><div className="title"><div><h1>Analytics</h1><p>Who's looking at your dashboard.</p></div><select className="rangeSel" value={range} onChange={e=>setRange(e.target.value)}><option value="24h">Last 24 hours</option><option value="7d">Last 7 days</option><option value="30d">Last 30 days</option><option value="all">All time</option></select></div>
+ <div className="stats"><Stat title="Total views" count={d.total_views} sub={range==="24h"?"last 24 hours":range==="7d"?"last 7 days":range==="30d"?"last 30 days":"all time"}/><Stat title="Unique visitors" count={d.unique_visitors} sub="by visitor id"/><Stat title="Feedback" count={feedback.length} sub="visitor responses"/><Stat title="Contact requests" count={contacts.length} sub="waiting for you"/></div>
+ <div className="grid2">
+  <Card title="Views over time" action={<Badge tone="blue">live</Badge>}><div className="chart"><ResponsiveContainer width="100%" height={220}><BarChart data={d.daily}><XAxis dataKey="date" stroke="#39435c" tick={{fill:"#8b96b3",fontSize:9}}/><YAxis stroke="#39435c" tick={{fill:"#8b96b3",fontSize:9}}/><Tooltip contentStyle={{background:"#222733",border:"1px solid #39435c",borderRadius:8}} labelStyle={{color:"#dfe6f5"}}/><Bar dataKey="views" fill="#3b5bdb" radius={[4,4,0,0]}/></BarChart></ResponsiveContainer></div></Card>
+  <Card title="Top projects" action={<Badge>{d.per_project.length} tracked</Badge>}><div className="rows">{d.per_project.length?d.per_project.map(p=><div className="row" key={p.id}><span className="dot"/><b>{p.name}</b><span>{p.views} view{p.views===1?"":"s"}</span></div>):<p className="muted">No project views yet.</p>}</div></Card>
+ </div>
+ <Card title="Top pages" action={<Badge>{d.per_path.length}</Badge>}><div className="rows">{d.per_path.length?d.per_path.map(p=><div className="row" key={p.path}><code className="mono">{p.path}</code><span>{p.views} view{p.views===1?"":"s"}</span></div>):<p className="muted">No views recorded yet.</p>}</div></Card>
+ <div className="grid2">
+  <Card title="Visitor feedback" action={<Badge tone="purple">{feedback.length}</Badge>}><div className="rows">{feedback.length?feedback.map(f=><div className="row" key={f.id}><div className="incidentIcon"><Sparkles size={15}/></div><div><b>{f.name}</b><small>{new Date(f.created_at).toLocaleString()}</small></div><p style={{flex:2,margin:0}}>{f.message}</p></div>):<p className="muted">No feedback yet — visitors see a popup after a few seconds.</p>}</div></Card>
+  <Card title="Contact requests" action={<Badge tone="blue">{contacts.length}</Badge>}><div className="rows">{contacts.length?contacts.map(c=><div className="row" key={c.id}><div className="incidentIcon"><Mail size={15}/></div><div><b>{c.name} · {c.topic||"General"}</b><small>{c.email} · {new Date(c.created_at).toLocaleString()}</small></div><p style={{flex:2,margin:0}}>{c.message}</p></div>):<p className="muted">No contact requests yet — visitors reach you from the About page.</p>}</div></Card>
+ </div>
+ </div>;
+}
+
+function AboutPage(){
+ const [p,setP]=useState(null);
+ const [form,setForm]=useState({name:"",topic:"",email:"",message:""});
+ const [sent,setSent]=useState(false);
+ const [busy,setBusy]=useState(false);
+ useEffect(()=>{api.profile().then(setP).catch(()=>{})},[]);
+ useEffect(()=>{
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.12});
+  document.querySelectorAll(".rv").forEach(el=>io.observe(el));
+  return()=>io.disconnect();
+ },[]);
+ const tilt=e=>{const c=e.currentTarget;const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5;const y=(e.clientY-r.top)/r.height-.5;c.style.transform=`perspective(800px) rotateY(${x*7}deg) rotateX(${-y*7}deg) translateY(-4px)`};
+ const untilt=e=>{e.currentTarget.style.transform=""};
+ const sendContact=async()=>{
+  if(!form.name.trim()||!form.email.trim()||!form.message.trim()||busy)return;
+  setBusy(true);
+  try{const r=await api.contact(form);setSent(true);setTimeout(()=>setSent(false),4000);setForm({name:"",topic:"",email:"",message:""})}catch(e){}
+  setBusy(false);
+ };
+ if(!p)return <div className="page"><p className="muted">Loading profile…</p></div>;
+ return <div className="about">
+  <section className="aboutHero"><div className="orb o1"/><div className="orb o2"/><div className="orb o3"/>
+   <div className="aboutHeroInner">
+    <span className="rv badge aboutTag">Full Stack Developer</span>
+    <h1 className="rv">Hi, I'm <span className="grad">Anshul Rawat</span></h1>
+    <p className="rv aboutTagline">{p.tagline}</p>
+    <div className="rv aboutChips">
+     <a className="aboutChip" href={`tel:${p.phone.replace(/\s/g,"")}`}><Phone size={13}/>{p.phone}</a>
+     <a className="aboutChip" href={`mailto:${p.email}`}><Mail size={13}/>{p.email}</a>
+     <span className="aboutChip"><MapPin size={13}/>{p.location}</span>
+     <a className="aboutChip" href={p.links.github} target="_blank" rel="noreferrer"><Github size={13}/>GitHub</a>
+     <a className="aboutChip" href={p.links.linkedin} target="_blank" rel="noreferrer"><Linkedin size={13}/>LinkedIn</a>
+    </div>
+    <div className="rv aboutCta"><a className="titleBtn" href="#contact">💬 Work with me</a><a className="titleBtn ghost" href={p.links.portfolio} target="_blank" rel="noreferrer">View my portfolio ↗</a></div>
+   </div>
+  </section>
+  <section className="aboutBody">
+   <div className="rv aboutSection"><h2><span className="bar"/>My story</h2><p className="aboutText">{p.summary}</p></div>
+   <div className="rv aboutSection"><h2><span className="bar"/>Experience</h2><div className="timeline">{p.experience.map((e,i)=><div className="tlItem" key={i} onMouseMove={tilt} onMouseLeave={untilt}><div className="tlDot"/><div className="tlCard"><div className="tlHead"><b>{e.role}</b><span>{e.period}</span></div><small>{e.company}</small><ul>{e.points.map((pt,j)=><li key={j}>{pt}</li>)}</ul></div></div>)}</div></div>
+   <div className="rv aboutSection"><h2><span className="bar"/>Skills</h2><div className="skillCloud">{p.skills.map((s,i)=><span className="rv skill" key={i} style={{animationDelay:(i*40)+"ms"}}>{s}</span>)}</div></div>
+   <div className="rv aboutSection"><h2><span className="bar"/>Projects</h2><div className="projGrid">{p.projects.map((pr,i)=><a className="rv projCard" key={i} href={pr.url||p.links.github} target="_blank" rel="noreferrer" onMouseMove={tilt} onMouseLeave={untilt}><b>{pr.name}</b><p>{pr.desc}</p><small>{pr.url?"Open on GitHub ↗":"Personal project"}</small></a>)}</div></div>
+   <div className="rv aboutSection"><h2><span className="bar"/>Education & languages</h2><div className="eduRow">{p.education.map((e,i)=><div className="eduCard" key={i}><GraduationCap size={16}/><div><b>{e.degree}</b><small>{e.school} · {e.period}</small></div></div>)}</div><div className="langRow">{p.languages.map((l,i)=><span className="lang" key={i}>🗣 {l}</span>)}</div></div>
+   <div className="rv aboutSection" id="contact"><h2><span className="bar"/>Contact me</h2>
+    <div className="contactWrap">
+     <div className="contactInfo"><p className="muted">Have a project, a role, or just want to say hi? Send a message — it lands straight in my inbox.</p>
+      <div className="contactLine"><Mail size={15}/><div><b>Email</b><a href={`mailto:${p.email}`}>{p.email}</a></div></div>
+      <div className="contactLine"><Phone size={15}/><div><b>Phone</b><a href={`tel:${p.phone.replace(/\s/g,"")}`}>{p.phone}</a></div></div>
+      <div className="contactLine"><MapPin size={15}/><div><b>Location</b><span>{p.location}</span></div></div>
+      <div className="contactLine"><Github size={15}/><div><b>GitHub</b><a href={p.links.github} target="_blank" rel="noreferrer">{p.links.github}</a></div></div>
+     </div>
+     <div className="contactForm">
+      <input placeholder="Your name…" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
+      <input placeholder="Your email…" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/>
+      <input placeholder="Topic (job, project, collab…)…" value={form.topic} onChange={e=>setForm({...form,topic:e.target.value})}/>
+      <textarea placeholder="What would you like to talk about?" rows={4} value={form.message} onChange={e=>setForm({...form,message:e.target.value})}/>
+      <button className="titleBtn" onClick={sendContact} disabled={busy}>{busy?"Sending…":<><Send size={14}/> Send message</>}</button>
+      {sent?<p className="sentOk"><CheckCircle2 size={14}/> Message sent! I'll get back to you.</p>:null}
+     </div>
+    </div>
+   </div>
+  </section>
+ </div>;
 }
 
 function StoryBoard(){
@@ -404,6 +513,7 @@ function App(){
  const [chatOpen,setChatOpen]=useState(false);
  const [liveTick,setLiveTick]=useState(0);
  useEffect(()=>{const id=new URLSearchParams(location.search).get("project");if(id)api.project(id).then(setSelected).catch(()=>{})},[]);
+ useEffect(()=>{api.recordView({path:location.pathname+location.search,visitor_id:getVisitorId(),referrer:document.referrer||null}).catch(()=>{})},[]);
  useEffect(()=>{
   let ws;
   try{
@@ -413,8 +523,8 @@ function App(){
   }catch(e){}
   return()=>{try{ws&&ws.close()}catch(e){}};
  },[]);
- const nav=[["Overview",LayoutDashboard],["Projects",Box],["Incidents",AlertTriangle],["AI Investigation",Bot],["AI Chat",MessageSquare],["Settings",Settings]];
- let content=selected?<ProjectDetails p={selected} back={()=>setSelected(null)} liveTick={liveTick}/>:page==="Overview"?<Overview liveTick={liveTick}/>:page==="Projects"?<Projects open={setSelected} liveTick={liveTick}/>:page==="Incidents"?<Incidents liveTick={liveTick}/>:page==="AI Investigation"?<AIPage/>:page==="AI Chat"?<ChatPage/>:<SettingsPage/>;
- return <div className="app"><aside><div className="brand"><Activity size={18}/> PulseOps</div><div className="workspace"><b>Acme Engineering</b><small>Production</small></div><nav>{nav.map(([n,I])=><button className={page===n&&!selected?"active":""} onClick={()=>{setPage(n);setSelected(null)}} key={n}><I size={17}/>{n}</button>)}</nav><div className="user">AS · Ansh Sharma</div></aside> <main><header><span>{selected?.name||page}</span><div className="top">{isOwner?<Badge tone="green">Owner</Badge>:<Badge tone="blue">Public view</Badge>}<div className="topSearch"><Search size={14}/><input placeholder="Search…"/></div><Bell size={17}/><span className="avatar">AS</span></div></header>{content}</main><button className="chatFab" onClick={()=>setChatOpen(true)} title="Ask the AI about any project"><MessageSquare size={17}/> Ask AI</button>{chatOpen?<ChatDrawer onClose={()=>setChatOpen(false)}/>:null}</div>
+ const nav=[["Overview",LayoutDashboard],["Projects",Box],["Incidents",AlertTriangle],["AI Investigation",Bot],["AI Chat",MessageSquare],["About",User],["Analytics",BarChart3],["Settings",Settings]];
+ let content=selected?<ProjectDetails p={selected} back={()=>setSelected(null)} liveTick={liveTick}/>:page==="Overview"?<Overview liveTick={liveTick}/>:page==="Projects"?<Projects open={setSelected} liveTick={liveTick}/>:page==="Incidents"?<Incidents liveTick={liveTick}/>:page==="AI Investigation"?<AIPage/>:page==="AI Chat"?<ChatPage/>:page==="About"?<AboutPage/>:page==="Analytics"?<AnalyticsPage/>:<SettingsPage/>;
+ return <div className="app"><aside><div className="brand"><Activity size={18}/> PulseOps</div><div className="workspace"><b>Acme Engineering</b><small>Production</small></div><nav>{nav.map(([n,I])=><button className={page===n&&!selected?"active":""} onClick={()=>{setPage(n);setSelected(null)}} key={n}><I size={17}/>{n}</button>)}</nav><div className="user">AS · Ansh Sharma</div></aside> <main><header><span>{selected?.name||page}</span><div className="top">{isOwner?<Badge tone="green">Owner</Badge>:<Badge tone="blue">Public view</Badge>}<div className="topSearch"><Search size={14}/><input placeholder="Search…"/></div><Bell size={17}/><span className="avatar">AS</span></div></header>{content}</main><button className="chatFab" onClick={()=>setChatOpen(true)} title="Ask the AI about any project"><MessageSquare size={17}/> Ask AI</button>{chatOpen?<ChatDrawer onClose={()=>setChatOpen(false)}/>:null}<FeedbackPopup isOwner={isOwner}/></div>
 }
 createRoot(document.getElementById("root")).render(<App/>);

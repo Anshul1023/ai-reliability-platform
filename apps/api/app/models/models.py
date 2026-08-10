@@ -113,3 +113,34 @@ class ChatMessage(Base):
     # Extra response metadata (context_used, project, sources) captured per reply.
     meta: Mapped[dict] = mapped_column(JSONB, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+
+class PageView(Base):
+    """Visitor analytics: one row per page/project view."""
+    __tablename__ = "page_views"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    path: Mapped[str] = mapped_column(String(300))
+    project_id: Mapped[int | None] = mapped_column(ForeignKey("projects.id"), nullable=True, index=True)
+    visitor_id: Mapped[str | None] = mapped_column(String(80), nullable=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+
+class Feedback(Base):
+    """Visitor feedback submitted via the on-page popup."""
+    __tablename__ = "feedback"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(120))
+    message: Mapped[str] = mapped_column(Text)
+    visitor_id: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class ContactMessage(Base):
+    """Visitor contact requests — emailed to the owner and stored here."""
+    __tablename__ = "contact_messages"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(120))
+    topic: Mapped[str] = mapped_column(String(200), default="")
+    email: Mapped[str] = mapped_column(String(200))
+    message: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

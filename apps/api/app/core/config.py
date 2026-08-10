@@ -26,6 +26,12 @@ class Settings(BaseSettings):
     rate_limit_requests: int = 120
     rate_limit_window_seconds: int = 60
     cache_ttl_seconds: int = 30
+    # Optional SMTP for the contact form (e.g. Gmail app password).
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_pass: str = ""
+    smtp_from: str = ""
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 settings = Settings()
