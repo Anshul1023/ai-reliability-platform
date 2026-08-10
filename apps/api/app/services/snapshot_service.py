@@ -44,6 +44,25 @@ async def refresh_project_documents() -> dict:
     return {"projects": len(projects), "document_types": list(DOCUMENT_TYPES)}
 
 
+async def refresh_one_project(project_id: int):
+    """Refresh the JSON documents for a single project (used when a repo is added)."""
+    async with SessionLocal() as db:
+        project = await db.get(Project, project_id)
+        if not project:
+            return
+        ctx = await retrieve_project_context(project.repo, project.id, db)
+        try:
+            from app.services.tech_fingerprint import build_tech_fingerprint
+
+            ctx["tech"] = await build_tech_fingerprint(project.repo, ctx)
+        except Exception:  # noqa: BLE001 - fingerprinting is best-effort
+            ctx["tech"] = {"tech": [], "dependencies": {}}
+        for data_type in DOCUMENT_TYPES:
+            if data_type in ctx:
+                await _upsert(db, project.id, data_type, ctx[data_type])
+        await db.commit()
+
+
 async def stored_documents(project_id: int):
     """The persisted JSON documents for a project, ordered by type."""
     async with SessionLocal() as db:

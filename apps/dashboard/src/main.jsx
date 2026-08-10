@@ -31,6 +31,18 @@ function Typing(){
  return <div className="bubble bot typing"><span className="bAvatar"><Bot size={13}/></span><div className="bBody"><span className="bName">Dev</span><div className="dots"><i/><i/><i/></div></div></div>;
 }
 
+function StoryBoard(){
+ const [playing,setPlaying]=useState(true);
+ const [rev,setRev]=useState(0);
+ const steps=["🔗 Connect repos","📡 Monitor live","⚠️ Detect outages","🤖 AI investigates","✅ Resolve & learn"];
+ return <Card title="How PulseOps works — a story" action={<span className="chatActions"><button className="ppChange" onClick={()=>setPlaying(p=>!p)}>{playing?"⏸ Pause":"▶ Play"}</button><button className="ppChange" onClick={()=>{setPlaying(true);setRev(r=>r+1)}}>↻ Replay</button></span>}>
+  <div className={"story"+(playing?"":" paused")} key={rev}>
+   <div className="storyLine"><i/></div>
+   <div className="storySteps">{steps.map((s,i)=><div className="storyStep" key={i}><span className="storyDot"/><b>{s}</b><small>Step {i+1}</small></div>)}</div>
+  </div>
+ </Card>;
+}
+
 function Overview({liveTick}){
  const [incidents,setIncidents]=useState([]);
  const [projects,setProjects]=useState([]);
@@ -40,6 +52,7 @@ function Overview({liveTick}){
  useEffect(()=>{if(projects.length&&!archId){const real=projects.find(p=>p.repo.includes("/")&&!p.repo.startsWith("demo/"));setArchId(real?real.id:projects[0].id)}},[projects,archId]);
  return <div className="page"><div className="title"><div><h1>Overview</h1><p>Production health across connected projects.</p></div><button><Plus size={15}/> Add project</button></div>
  <div className="stats"><Stat title="System uptime" count={99.96} suffix="%" sub="+0.04% this month"/><Stat title="Active incidents" count={incidents.length||2} sub="1 critical · 1 warning"/><Stat title="Avg latency" count={242} suffix=" ms" sub="-8.4% vs yesterday"/><Stat title="Deployments" count={24} sub="22 passed · 2 failed"/></div>
+ <StoryBoard/>
  <div className="topProjects"><Card title="Top projects" action={<Badge tone="blue">Live</Badge>}><div className="miniProjects">{(projects.length?projects:[{id:1,name:"Demo Production API",repo:"demo/reliability-api",status:"Healthy",uptime:99.96}]).slice(0,6).map(p=><div className="miniProject" key={p.id}><span className={"dot "+(p.status==="Healthy"?"":"warn")}/><div><b>{p.name}</b><small>{p.repo}</small></div><span className="miniUptime"><CountUp n={p.uptime}/>%</span></div>)}</div></Card></div>
  <div className="archCard"><Card title="Live architecture" action={<select value={archId||""} onChange={e=>setArchId(e.target.value?Number(e.target.value):null)}>{projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select>}><ProjectGraph projectId={archId} projectName={projects.find(p=>p.id===archId)?.name}/></Card></div>
  <div className="grid2"><Card title="Error rate" action={<Badge tone="green">Normal</Badge>}><div className="chart"><ResponsiveContainer width="100%" height={250}><AreaChart data={demo}><XAxis dataKey="time" stroke="#39435c" tick={{fill:"#8b96b3",fontSize:10}}/><YAxis stroke="#39435c" tick={{fill:"#8b96b3",fontSize:10}}/><Tooltip contentStyle={{background:"#222733",border:"1px solid #39435c",borderRadius:8,color:"#dfe6f5"}} labelStyle={{color:"#dfe6f5"}}/><Area dataKey="error" type="monotone" stroke="#8fa5ff" fill="#8fa5ff" fillOpacity=".10" strokeWidth={2}/></AreaChart></ResponsiveContainer></div></Card>
@@ -56,9 +69,14 @@ function Projects({open,liveTick}){
  const base=data.length?data:[{id:1,name:"Demo Production API",repo:"demo/reliability-api",status:"Healthy",uptime:99.96}];
  const list=base.filter(p=>(status==="All"||p.status===status)&&(!q||p.name.toLowerCase().includes(q.toLowerCase())||p.repo.toLowerCase().includes(q.toLowerCase())));
  const sorted=[...list].sort((a,b)=>sort==="uptime"?b.uptime-a.uptime:a.name.localeCompare(b.name));
- return <div className="page"><div className="title"><div><h1>Projects</h1><p>Connected repositories and production systems.</p></div><button><Plus size={15}/> Connect repository</button></div>
+ const isOwner=!!getApiKey();
+ const delProject=async p=>{
+  if(!window.confirm(`Delete "${p.name}"? This removes its services, deployments, incidents and stored documents.`))return;
+  try{await api.deleteProject(p.id);setData(d=>d.filter(x=>x.id!==p.id))}catch(e){window.alert("Delete failed: "+e.message)}
+ };
+ return <div className="page"><div className="title"><div><h1>Projects</h1><p>Connected repositories and production systems.</p></div>{isOwner?<button><Plus size={15}/> Connect repository</button>:<Badge tone="blue">Public read-only view</Badge>}</div>
  <div className="filters"><div className="search"><Search size={14}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search projects…"/></div><select value={status} onChange={e=>setStatus(e.target.value)}><option>All</option><option>Healthy</option><option>Degraded</option><option>Down</option></select><select value={sort} onChange={e=>setSort(e.target.value)}><option value="name">Sort: Name</option><option value="uptime">Sort: Uptime</option></select><span className="muted filterCount">{sorted.length} project{sorted.length===1?"":"s"}</span></div>
- <div className="projectGrid">{sorted.map(p=><div className="card project" key={p.id} onClick={()=>open(p)}><div className="projectTop"><Github size={20}/><Badge tone={p.status==="Healthy"?"green":"yellow"}>{p.status}</Badge></div><h3>{p.name}</h3><small>{p.repo}</small><div className="metrics"><div><span>Uptime</span><b><CountUp n={p.uptime}/>%</b></div><div><span>Services</span><b>{summary.services[p.id]||0}</b></div><div><span>Incidents</span><b>{summary.incidents[p.id]||0}</b></div></div><strong>Open project <ChevronRight size={14}/></strong></div>)}{sorted.length===0?<p className="muted full">No projects match your filters.</p>:null}</div></div>
+ <div className="projectGrid">{sorted.map(p=><div className="card project" key={p.id} onClick={()=>open(p)}><div className="projectTop"><span className="projectIcon"><Github size={16}/></span><Badge tone={p.status==="Healthy"?"green":"yellow"}>{p.status}</Badge></div><h3>{p.name}</h3><small className="repoPath">{p.repo}</small><div className="metrics"><div><span>Uptime</span><b><CountUp n={p.uptime}/>%</b></div><div><span>Services</span><b>{summary.services[p.id]||0}</b></div><div><span>Incidents</span><b>{summary.incidents[p.id]||0}</b></div></div><div className="projectFoot"><strong>Open project <ChevronRight size={14}/></strong>{isOwner?<button className="ppChange del" onClick={e=>{e.stopPropagation();delProject(p)}} title={`Delete ${p.name}`}>🗑</button>:null}</div></div>)}{sorted.length===0?<p className="muted full">No projects match your filters.</p>:null}</div></div>
 }
 function Incidents({liveTick}){
  const [data,setData]=useState([]);
@@ -380,6 +398,7 @@ function ChatDrawer({onClose}){
 }
 
 function App(){
+ const isOwner=!!getApiKey();
  const [page,setPage]=useState(()=>new URLSearchParams(location.search).get("page")||"Overview");
  const [selected,setSelected]=useState(null);
  const [chatOpen,setChatOpen]=useState(false);
@@ -396,6 +415,6 @@ function App(){
  },[]);
  const nav=[["Overview",LayoutDashboard],["Projects",Box],["Incidents",AlertTriangle],["AI Investigation",Bot],["AI Chat",MessageSquare],["Settings",Settings]];
  let content=selected?<ProjectDetails p={selected} back={()=>setSelected(null)} liveTick={liveTick}/>:page==="Overview"?<Overview liveTick={liveTick}/>:page==="Projects"?<Projects open={setSelected} liveTick={liveTick}/>:page==="Incidents"?<Incidents liveTick={liveTick}/>:page==="AI Investigation"?<AIPage/>:page==="AI Chat"?<ChatPage/>:<SettingsPage/>;
- return <div className="app"><aside><div className="brand"><Activity size={18}/> PulseOps</div><div className="workspace"><b>Acme Engineering</b><small>Production</small></div><nav>{nav.map(([n,I])=><button className={page===n&&!selected?"active":""} onClick={()=>{setPage(n);setSelected(null)}} key={n}><I size={17}/>{n}</button>)}</nav><div className="user">AS · Ansh Sharma</div></aside><main><header><span>{selected?.name||page}</span><div className="top"><div className="topSearch"><Search size={14}/><input placeholder="Search…"/></div><Bell size={17}/><span className="avatar">AS</span></div></header>{content}</main><button className="chatFab" onClick={()=>setChatOpen(true)} title="Ask the AI about any project"><MessageSquare size={17}/> Ask AI</button>{chatOpen?<ChatDrawer onClose={()=>setChatOpen(false)}/>:null}</div>
+ return <div className="app"><aside><div className="brand"><Activity size={18}/> PulseOps</div><div className="workspace"><b>Acme Engineering</b><small>Production</small></div><nav>{nav.map(([n,I])=><button className={page===n&&!selected?"active":""} onClick={()=>{setPage(n);setSelected(null)}} key={n}><I size={17}/>{n}</button>)}</nav><div className="user">AS · Ansh Sharma</div></aside> <main><header><span>{selected?.name||page}</span><div className="top">{isOwner?<Badge tone="green">Owner</Badge>:<Badge tone="blue">Public view</Badge>}<div className="topSearch"><Search size={14}/><input placeholder="Search…"/></div><Bell size={17}/><span className="avatar">AS</span></div></header>{content}</main><button className="chatFab" onClick={()=>setChatOpen(true)} title="Ask the AI about any project"><MessageSquare size={17}/> Ask AI</button>{chatOpen?<ChatDrawer onClose={()=>setChatOpen(false)}/>:null}</div>
 }
 createRoot(document.getElementById("root")).render(<App/>);

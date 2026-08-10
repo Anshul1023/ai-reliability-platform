@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func, select
 from app.core.database import get_db
 from app.core.security import require_api_key
 from app.models.models import Deployment, Incident, Project, Service
 from app.schemas.schemas import ProjectOut
+from app.services.project_ops import delete_project_rows
 router = APIRouter(prefix="/projects", tags=["projects"])
 
 @router.get("", response_model=list[ProjectOut])
@@ -46,7 +47,17 @@ async def project_data_documents(project_id: int):
 
 @router.get("/{project_id}", response_model=ProjectOut)
 async def get_project(project_id: int, db=Depends(get_db)):
-    from fastapi import HTTPException
     obj = await db.get(Project, project_id)
     if not obj: raise HTTPException(404, "Project not found")
     return obj
+
+@router.delete("/{project_id}")
+async def delete_project(project_id: int, db=Depends(get_db), _=Depends(require_api_key)):
+    """Delete a project and everything attached to it (owner-only, API key required)."""
+    obj = await db.get(Project, project_id)
+    if not obj:
+        raise HTTPException(404, "Project not found")
+    await delete_project_rows(db, project_id)
+    await db.delete(obj)
+    await db.commit()
+    return {"deleted": True, "id": project_id, "name": obj.name}

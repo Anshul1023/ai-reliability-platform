@@ -348,3 +348,45 @@ select option{background:#222733;color:#dfe6f5}
 .folderList{display:flex;flex-direction:column;padding:4px}
 .folderRow b{color:#8fa5ff}
 .folderRow:hover b{color:#c3d0ff}
+
+/* ---- typography polish ---- */
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;letter-spacing:-.012em;line-height:1.55;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+h1,h2,h3,.head h3,b,strong{letter-spacing:-.02em}
+.title h1{font-size:26px;font-weight:800}
+.card{font-size:12.5px}
+.stat b{font-size:27px;font-weight:800;letter-spacing:-.02em}
+.stat span{font-size:10.5px}
+.project h3{font-size:16.5px;font-weight:800;letter-spacing:-.02em}
+.bText{font-size:11.5px;line-height:1.65}
+.mono{font-size:10.5px}
+.muted{font-size:11px;line-height:1.5}
+
+/* ---- project card polish ---- */
+.projectIcon{width:34px;height:34px;border-radius:9px;background:#2b3760;color:#8fa5ff;display:grid;place-items:center;flex:none}
+.projectTop{align-items:center}
+.projectFoot{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid #2e3544}
+.repoPath{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;color:#8b96b3;display:block;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ppChange.del{background:#3a1f1f;border-color:#5c3030;color:#f08a8a}
+.ppChange.del:hover{background:#5c3030;color:#ffb4b4}
+
+/* ---- storytelling animation ---- */
+.story{position:relative;padding:26px 6px 10px}
+.storyLine{position:relative;height:3px;background:#2e3544;border-radius:3px}
+.storyLine i{position:absolute;inset:0 auto 0 0;width:0%;background:linear-gradient(90deg,#3b5bdb,#8fa5ff);border-radius:3px;animation:storyFill 12s linear infinite}
+@keyframes storyFill{0%{width:0%}100%{width:100%}}
+.storySteps{display:flex;justify-content:space-between;margin-top:-9px}
+.storyStep{display:flex;flex-direction:column;align-items:center;gap:6px;width:20%;text-align:center}
+.storyDot{width:15px;height:15px;border-radius:50%;background:#2b3760;border:2px solid #3f4f8f;animation:storyDot 2.4s ease-in-out infinite}
+.storyStep:nth-child(2) .storyDot{animation-delay:.48s}
+.storyStep:nth-child(3) .storyDot{animation-delay:.96s}
+.storyStep:nth-child(4) .storyDot{animation-delay:1.44s}
+.storyStep:nth-child(5) .storyDot{animation-delay:1.92s}
+@keyframes storyDot{0%,100%{background:#2b3760;border-color:#3f4f8f;transform:scale(1)}25%{background:#8fa5ff;border-color:#8fa5ff;transform:scale(1.4);box-shadow:0 0 14px rgba(59,91,219,.85)}}
+.storyStep b{font-size:11px;color:#dfe6f5;animation:storyLabel .6s ease both}
+.storyStep small{font-size:8.5px;color:#8b96b3}
+.storyStep:nth-child(2) b{animation-delay:.5s}
+.storyStep:nth-child(3) b{animation-delay:1s}
+.storyStep:nth-child(4) b{animation-delay:1.5s}
+.storyStep:nth-child(5) b{animation-delay:2s}
+@keyframes storyLabel{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.story.paused *{animation-play-state:paused}

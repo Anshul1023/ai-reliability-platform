@@ -1,3 +1,6 @@
+import asyncio
+import re
+
 import httpx
 from sqlalchemy import select
 
@@ -132,7 +135,108 @@ def _fmt_documents(documents: dict) -> str:
     return "\n".join(lines)
 
 
+async def _run_project_tools(messages: list[dict]):
+    """Project-management commands the agent can execute: add / delete a project.
+
+    Only explicit commands trigger actions, and everything is best-effort — if
+    the DB is unreachable the tool quietly does nothing and normal chat resumes.
+    Returns a dict with a human note when an action was taken (or asked for
+    clarification), else None.
+    """
+    text = " ".join(m.get("content", "") for m in messages if m.get("role") == "user").strip()
+    low = text.lower()
+    if not text:
+        return None
+    try:
+        if re.search(r"\b(add|connect|track)\b", low) and re.search(
+            r"\b(projects?|repos?|repository)\b", low
+        ):
+            m = re.search(r"github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)", text) or re.search(
+                r"\b([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)\b", text
+            )
+            if not m:
+                return {
+                    "note": "I can add a repo to your dashboard — tell me its owner/name, e.g. \"add Anshul1023/agentflow to my projects\".",
+                    "changed": False,
+                }
+            repo = m.group(1).rstrip("/")
+            async with SessionLocal() as db:
+                existing = (
+                    await db.execute(select(Project).where(Project.repo == repo))
+                ).scalar_one_or_none()
+                if existing:
+                    return {
+                        "note": f"✅ `{repo}` is already registered as project #{existing.id} ({existing.name}).",
+                        "changed": False,
+                    }
+                name = repo.split("/")[-1].replace("-", " ").replace("_", " ").title()
+                db.add(Project(name=name, repo=repo, status="Healthy", uptime=99.99))
+                await db.commit()
+                pid = (
+                    await db.execute(select(Project).where(Project.repo == repo))
+                ).scalar_one().id
+            try:  # fetch README/files/services for the new project in the background
+                from app.services.snapshot_service import refresh_one_project
+
+                asyncio.get_running_loop().create_task(refresh_one_project(pid))
+            except Exception:  # noqa: BLE001
+                pass
+            return {
+                "note": f"✅ Added **{name}** (`{repo}`) as a new project (id #{pid}). I'm fetching its README, files and services now — ask me anything about it in a minute.",
+                "changed": True,
+            }
+        if re.search(r"\b(delete|remove)\b", low) and re.search(
+            r"\b(projects?|repos?|repository)\b", low
+        ):
+            async with SessionLocal() as db:
+                projects = (
+                    (await db.execute(select(Project).order_by(Project.id))).scalars().all()
+                )
+                target = None
+                m = re.search(r"([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)", text)
+                if m:
+                    repo = m.group(1).rstrip("/")
+                    target = next((p for p in projects if p.repo == repo), None)
+                if not target:
+                    for p in projects:
+                        if p.name.lower() in low or p.repo.split("/")[-1].lower() in low:
+                            target = p
+                            break
+                if not target:
+                    return {
+                        "note": "I can delete a project — say its name or repo (e.g. \"delete project Demo Production API\").",
+                        "changed": False,
+                    }
+                from app.services.project_ops import delete_project_rows
+
+                await delete_project_rows(db, target.id)
+                await db.delete(target)
+                await db.commit()
+                return {
+                    "note": f"🗑 Deleted **{target.name}** (`{target.repo}`) along with its services, deployments, incidents and stored documents.",
+                    "changed": True,
+                }
+    except Exception:  # noqa: BLE001 - tool execution is best-effort
+        pass
+    return None
+
+
 async def chat(messages: list[dict], project_id: int | None = None) -> dict:
+    tool = await _run_project_tools(messages)
+    if tool:
+        provider = (
+            settings.ai_provider
+            if settings.ai_provider != "demo" and settings.openai_api_key and settings.ai_model
+            else "demo"
+        )
+        return {
+            "reply": tool["note"],
+            "provider": provider,
+            "tool": tool["changed"],
+            "context_used": False,
+            "project": None,
+            "sources": [],
+        }
     project = None
     ctx: dict = {}
     if project_id:
