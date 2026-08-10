@@ -1,6 +1,6 @@
 import React,{useEffect,useState} from "react";
 import {createRoot} from "react-dom/client";
-import {LayoutDashboard,Box,AlertTriangle,Bot,Settings,Activity,Github,ChevronRight,Plus,Search,Bell,CheckCircle2,Sparkles,MessageSquare,RefreshCw} from "lucide-react";
+import {LayoutDashboard,Box,AlertTriangle,Bot,Settings,Activity,Github,ChevronRight,Plus,Search,Bell,CheckCircle2,Sparkles,MessageSquare,RefreshCw,User} from "lucide-react";
 import {ResponsiveContainer,AreaChart,Area,XAxis,YAxis,Tooltip} from "recharts";
 import {api,API_WS,getApiKey,setApiKey} from "./services/api";
 import "./styles.css";
@@ -10,6 +10,15 @@ const demo=[{time:"09:00",error:1.1},{time:"10:00",error:1.4},{time:"11:00",erro
 function Badge({children,tone="neutral"}){return <span className={"badge "+tone}>{children}</span>}
 function Card({title,children,action}){return <section className="card"><div className="head"><h3>{title}</h3>{action}</div>{children}</section>}
 function Stat({title,value,sub}){return <div className="card stat"><span>{title}</span><b>{value}</b><small>{sub}</small></div>}
+function MsgBubble({m}){
+ return <div className={"bubble "+(m.role==="user"?"me":"bot")}>
+  <span className="bAvatar">{m.role==="user"?<User size={13}/>:<Bot size={13}/>}</span>
+  <div className="bBody"><span className="bName">{m.role==="user"?"You":"Dev"}</span><div className="bText">{m.content}</div>{m.provider?<small className="bMeta">· {m.provider}</small>:null}</div>
+ </div>;
+}
+function Typing(){
+ return <div className="bubble bot typing"><span className="bAvatar"><Bot size={13}/></span><div className="bBody"><span className="bName">Dev</span><div className="dots"><i/><i/><i/></div></div></div>;
+}
 
 function Overview({liveTick}){
  const [incidents,setIncidents]=useState([]);
@@ -96,13 +105,15 @@ function ChatPage(){
  const [synced,setSynced]=useState(null);
  useEffect(()=>{api.projects().then(setProjects).catch(()=>{})},[]);
  const project=projects.find(p=>p.id===projectId)||null;
+ const boxRef=React.useRef(null);
+ useEffect(()=>{const el=boxRef.current;if(el)el.scrollTop=el.scrollHeight},[msgs,busy]);
  const send=async()=>{
   if(!input.trim()||busy)return;
-  const history=[...msgs,{role:"user",content:input}];
+  const history=[...msgs,{role:"user",content:input,time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}];
   setMsgs(history);setInput("");setBusy(true);
   try{
    const res=await api.chat(history.map(m=>({role:m.role,content:m.content})),projectId);
-   setMsgs([...history,{role:"assistant",content:res.reply,provider:res.provider}]);
+   setMsgs([...history,{role:"assistant",content:res.reply,provider:res.provider,time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}]);
   }catch(e){setMsgs([...history,{role:"assistant",content:"Error: "+e.message}])}
   setBusy(false);
  };
@@ -125,8 +136,8 @@ function ChatPage(){
  {synced?<p className="muted">{synced}</p>:null}
  <div className="grid2">
   <Card title="Conversation" action={<Badge tone="purple"><Sparkles size={13}/> RAG</Badge>}>
-   <div className="chatbox">{(msgs.length?msgs:[{role:"assistant",content:"Hi! Select a project and ask me anything about it — code, services, incidents, or propose a change."}]).map((m,i)=><div className={"bubble "+(m.role==="user"?"me":"bot")} key={i}><span>{m.role==="user"?"You":"Agent"}</span>{m.content}{m.provider?<small> · {m.provider}</small>:null}</div>)}</div>
-   <div className="chatbar"><input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")send()}} placeholder="Ask about a project…"/><button onClick={send} disabled={busy}>{busy?"Thinking…":"Send"}</button></div>
+   <div className="chatbox" ref={boxRef}>{(msgs.length?msgs:[{role:"assistant",content:"Hey! I'm Dev — your senior dev sidekick. Pick a project (or ask across all of them) — code, services, incidents, or what to build next. 💡"}]).map((m,i)=><MsgBubble m={m} key={i}/>)}{busy?<Typing/>:null}</div>
+   <div className="chatbar"><input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")send()}} placeholder="Ask Dev about a project…"/><button onClick={send} disabled={busy||!input.trim()}>{busy?<span className="miniSpin"/>:"Send"}</button></div>
   </Card>
   <div>
    <Card title="Project" action={project?<Badge tone="green">{project.name}</Badge>:null}>
@@ -192,28 +203,30 @@ function ChatDrawer({onClose}){
  const [msgs,setMsgs]=useState([]);
  const [input,setInput]=useState("");
  const [busy,setBusy]=useState(false);
+ const boxRef=React.useRef(null);
  useEffect(()=>{api.projects().then(setProjects).catch(()=>{})},[]);
+ useEffect(()=>{const el=boxRef.current;if(el)el.scrollTop=el.scrollHeight},[msgs,busy]);
  const send=async()=>{
   if(!input.trim()||busy)return;
-  const history=[...msgs,{role:"user",content:input}];
+  const history=[...msgs,{role:"user",content:input,time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}];
   setMsgs(history);setInput("");setBusy(true);
   try{
    const res=await api.chat(history.map(m=>({role:m.role,content:m.content})),projectId);
-   setMsgs([...history,{role:"assistant",content:res.reply}]);
+   setMsgs([...history,{role:"assistant",content:res.reply,time:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}]);
   }catch(e){setMsgs([...history,{role:"assistant",content:"Error: "+e.message}])}
   setBusy(false);
  };
  return <div className="chatDrawer">
-  <div className="chatDrawerHead"><b><MessageSquare size={15}/> Ask AI</b><button className="chatClose" onClick={onClose} aria-label="Close chat">✕</button></div>
+  <div className="chatDrawerHead"><b><span className="headDot"/><MessageSquare size={15}/> Ask Dev</b><button className="chatClose" onClick={onClose} aria-label="Close chat">✕</button></div>
   <div className="chatDrawerBody">
    <select value={projectId||""} onChange={e=>setProjectId(e.target.value?Number(e.target.value):null)}>
     <option value="">All projects…</option>
     {projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
    </select>
    <ProjectGraph projectId={projectId} projectName={projects.find(p=>p.id===projectId)?.name}/>
-   <div className="chatbox">{(msgs.length?msgs:[{role:"assistant",content:"Ask me anything about your projects — code, services, incidents, or propose a change."}]).map((m,i)=><div className={"bubble "+(m.role==="user"?"me":"bot")} key={i}><span>{m.role==="user"?"You":"Agent"}</span>{m.content}</div>)}</div>
+   <div className="chatbox" ref={boxRef}>{(msgs.length?msgs:[{role:"assistant",content:"Hey! I'm Dev — your senior dev sidekick. Ask me about any project: code, services, incidents, or what to build next. 💡"}]).map((m,i)=><MsgBubble m={m} key={i}/>)}{busy?<Typing/>:null}</div>
   </div>
-  <div className="chatbar"><input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")send()}} placeholder="Ask about a project…"/><button onClick={send} disabled={busy}>{busy?"Thinking…":"Send"}</button></div>
+  <div className="chatbar"><input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")send()}} placeholder="Ask Dev about a project…"/><button onClick={send} disabled={busy||!input.trim()}>{busy?<span className="miniSpin"/>:"Send"}</button></div>
  </div>;
 }
 
