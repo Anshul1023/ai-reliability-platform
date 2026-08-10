@@ -31,8 +31,12 @@ async def _redis_safe(fn, default=None):
         return default
 
 
-async def save_messages(db, project_id, user_content, assistant_content, provider=""):
-    """Persist one user/assistant exchange to Postgres and refresh the Redis cache."""
+async def save_messages(db, project_id, user_content, assistant_content, provider="", meta=None):
+    """Persist one user/assistant exchange to Postgres and refresh the Redis cache.
+
+    `meta` is stored on the assistant row and captures the full response details
+    (context_used, project, sources) so saved replies are complete.
+    """
     db.add(ChatMessage(project_id=project_id, role="user", content=user_content))
     db.add(
         ChatMessage(
@@ -40,6 +44,7 @@ async def save_messages(db, project_id, user_content, assistant_content, provide
             role="assistant",
             content=assistant_content,
             provider=provider,
+            meta=meta or {},
         )
     )
     await db.commit()
@@ -74,6 +79,7 @@ def _row_to_dict(row: ChatMessage) -> dict:
         "role": row.role,
         "content": row.content,
         "provider": row.provider or "",
+        "meta": row.meta or {},
         "created_at": row.created_at.isoformat() if row.created_at else None,
     }
 

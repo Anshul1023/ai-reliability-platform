@@ -220,3 +220,101 @@ select,.editor,.row input,.chatbar input,.chatDrawer .chatbar input{background:#
 .pfolder:hover text:first-of-type{fill:#2f4ad0}
 .pfolder.active rect{fill:#dce4fd;stroke:#3b5bdb}
 .pfolder.active text:first-of-type{fill:#2f4ad0;font-weight:800}
+
+/* ---- live architecture card on Overview ---- */
+.archCard{margin-bottom:13px;animation:cardIn .5s ease both}
+.archCard .pgraph{max-width:640px;margin:0 auto}
+
+/* ---- dark grey theme ---- */
+body{background:#1b1f29;color:#dfe6f5}
+aside{background:#222733;border-right-color:#2e3544}
+header{background:#222733;border-bottom-color:#2e3544}
+.workspace{background:#1d2230;border-color:#39435c;box-shadow:none}
+.workspace b{color:#dfe6f5}
+.workspace small{color:#8b96b3}
+nav button{color:#9aa5c0}
+nav button.active,nav button:hover{background:#2b3760;color:#9db4ff}
+.user{color:#8b96b3;border-top-color:#2e3544}
+.title p{color:#8b96b3}
+.title h1{background:linear-gradient(92deg,#aebfff,#7b96ff 70%,#5b7cff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.card{background:linear-gradient(180deg,#262c3b 0%,#212736 100%);border-color:#3f4f8f;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.project:hover,.card:hover{box-shadow:0 10px 26px rgba(0,0,0,.45)}
+.head h3{color:#dfe6f5}
+.stat span{color:#8b96b3}
+.stat b{background:linear-gradient(135deg,#9db4ff,#5b7cff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.stat small{color:#8b96b3}
+.row{border-bottom-color:#2e3544}
+.row small{color:#8b96b3}
+.row>span:nth-last-child(2){color:#aab6d0}
+.muted{color:#8b96b3}
+.mono{background:#1d2230;border-color:#39435c;color:#9db4ff}
+.row a{color:#7b96ff}
+.topSearch,.search,.filters .search{background:#1d2230;border-color:#39435c}
+.topSearch input,.search input,.ppSearch input{color:#dfe6f5}
+.topSearch input::placeholder,.search input::placeholder,.ppSearch input::placeholder{color:#6b7694}
+select,.editor,.row input,.chatbar input,.chatDrawer .chatbar input{background:#1d2230;border-color:#39435c;color:#dfe6f5}
+select option{background:#222733;color:#dfe6f5}
+.badge.neutral{background:#2a3040;color:#aab6d0}
+.badge.green{background:#17301f;color:#63d08a}
+.badge.red{background:#3a1f1f;color:#f08a8a}
+.badge.yellow{background:#3a2e14;color:#e8c36a}
+.badge.purple{background:#2b2342;color:#c3a6ff}
+.badge.blue{background:#1c2545;color:#8fa5ff}
+.miniProject{background:linear-gradient(180deg,#262c3b 0%,#212736 100%);border-color:#3f4f8f;box-shadow:0 3px 12px rgba(0,0,0,.3)}
+.miniProject b{color:#dfe6f5}
+.miniProject small{color:#8b96b3}
+.miniUptime{color:#8fa5ff}
+.project h3{color:#e8edf9}
+.project>small{color:#8b96b3}
+.metrics{border-block-color:#2e3544}
+.metrics span{color:#8b96b3}
+.metrics b{color:#dfe6f5}
+.project>strong{color:#8fa5ff}
+.chatDrawer{background:#1d2230;border-left-color:#2e3544}
+.chatDrawerHead{background:#222733;border-bottom-color:#2e3544}
+.chatDrawerHead b{color:#dfe6f5}
+.chatClose{background:#2a3040;color:#aab6d0}
+.chatDrawer .chatbar{border-top-color:#2e3544}
+.bubble.bot{background:#262c3b;border-color:#39435c}
+.bubble.me{background:#2b3760;border-color:#3f4f8f}
+.bText{color:#d5dcea}
+.bName{color:#8b96b3}
+.bubble.me .bName{color:#8fa5ff}
+.bMeta{color:#6b7694}
+.drawerSection{background:linear-gradient(180deg,#262c3b 0%,#212736 100%);border-color:#3f4f8f;box-shadow:0 3px 12px rgba(0,0,0,.3)}
+.pgraph,.drawerSection .pgraph{background:linear-gradient(180deg,#232a3a 0%,#1c2130 100%);border-color:#3f4f8f}
+.drawerSecHead{background:#222733;border-bottom-color:#2e3544}
+.drawerSecHead b{color:#dfe6f5}
+.drawerTree .treeRow:hover{background:#2b3760}
+.treeRow.folder b{color:#dfe6f5}
+.treeRow.folder small{background:#2b3760;color:#8fa5ff}
+.treeRow.file span:last-child{color:#c3cde4}
+.filePreview{background:#1d2230;border-color:#39435c}
+.fpHead{background:#222733;border-bottom-color:#2e3544}
+.fpHead code{color:#9db4ff}
+.filePreview pre{color:#c3cde4}
+.ppickSel{background:linear-gradient(135deg,#262c3b 0%,#222a3c 100%);border-color:#3f4f8f;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.ppickSel b{color:#dfe6f5}
+.ppickSel small{color:#8b96b3}
+.ppSel{background:#1d2230;border-color:#3f4f8f;color:#8fa5ff}
+.ppSel:hover{background:#2b3760;border-color:#8fa5ff}
+.ppList{background:#222733;border-color:#39435c;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.ppSearch{background:#1d2230;border-bottom-color:#2e3544;color:#8b96b3}
+.ppItem{border-bottom-color:#2a3040}
+.ppItem b{color:#dfe6f5}
+.ppItem small{color:#8b96b3}
+.ppItem:hover,.ppItem.on{background:#2b3760}
+.ppOpen,.ppChange{background:#222733;border-color:#39435c;color:#8fa5ff}
+.ppOpen:hover{background:#3b5bdb;color:#fff}
+.pchip{background:#2b3760;border-color:#3f4f8f;color:#8fa5ff}
+.pchip.ghost{background:#262c3b;color:#aab6d0;border-color:#39435c}
+.back{color:#8b96b3}
+.title button,.row button{background:#2b3760;color:#dfe6f5;border-color:#3f4f8f}
+.title button{background:linear-gradient(135deg,#3b5bdb,#5261d5);color:#fff}
+.row button{color:#8fa5ff}
+.chatbar button{background:linear-gradient(135deg,#3b5bdb,#5261d5)}
+.filters select{background:#1d2230;color:#dfe6f5}
+.filters select option{background:#222733}
+.archCard select{flex:0 0 auto;width:auto;min-width:160px}
+::-webkit-scrollbar-thumb{background:#39435c;border-color:#1b1f29}
+::-webkit-scrollbar-thumb:hover{background:#4a5680}

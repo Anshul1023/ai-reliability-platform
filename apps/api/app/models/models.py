@@ -110,4 +110,6 @@ class ChatMessage(Base):
     role: Mapped[str] = mapped_column(String(20))
     content: Mapped[str] = mapped_column(Text)
     provider: Mapped[str] = mapped_column(String(40), default="")
+    # Extra response metadata (context_used, project, sources) captured per reply.
+    meta: Mapped[dict] = mapped_column(JSONB, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)

@@ -54,7 +54,7 @@ async def chat_endpoint(req: ChatRequest, db=Depends(get_db), _=Depends(require_
     result = await chat_with_context(
         [{"role": m.role, "content": m.content} for m in req.messages], req.project_id
     )
-    # Persist the exchange (user message + reply) — best effort, never breaks the response.
+    # Persist the exchange (user message + reply + response metadata) — best effort.
     try:
         last_user = req.messages[-1].content if req.messages else ""
         await save_messages(
@@ -63,6 +63,11 @@ async def chat_endpoint(req: ChatRequest, db=Depends(get_db), _=Depends(require_
             last_user,
             result.get("reply", ""),
             result.get("provider", ""),
+            meta={
+                "context_used": result.get("context_used", False),
+                "project": result.get("project"),
+                "sources": result.get("sources", []),
+            },
         )
     except Exception:  # noqa: BLE001 - history persistence is optional
         pass
