@@ -128,7 +128,7 @@ function AboutPage(){
    <div className="abHeroContent">
     <motion.span initial={{opacity:0,scale:.85}} animate={{opacity:1,scale:1}} transition={{duration:.5}} className="badge aboutTag">Full Stack Developer</motion.span>
     <h1 className="aboutName"><FoldText text="Anshul Rawat" hinge="bottom" trigger="mount" splitBy="char" duration={0.7} stagger={0.06} fontSize="clamp(2.8rem,8.5vw,6rem)" fontWeight={800} color="#eaf0ff"/></h1>
-    <div className="aboutMaskWrap"><MaskedHeading text="BUILDING THINGS THAT LAST" src="/about/mask.jpg" trigger="view" reveal="wipe" textScale={0.075} weight={800} tracking={-0.02}/></div>
+    <div className="aboutMaskWrap"><MaskedHeading text="BUILDING THINGS THAT LAST" fill="linear-gradient(90deg,#7aa2ff 0%,#5eead4 45%,#9db4ff 70%,#5b7cff 100%)" trigger="view" reveal="rise" duration={1.2} stagger={0.09} textScale={0.09} weight={900} tracking={-0.03} fillScale={1.15} parallax={28} drift={22}/></div>
     <motion.p initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:.9,duration:.7}} className="aboutTagline">{p.tagline}</motion.p>
     <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:1,duration:.7}} className="aboutHighlights">
      <span><b>{p.experience.length}</b> Roles</span><span>·</span><span><b>{p.projects.length}</b> Projects</span><span>·</span><span><b>{p.skills.length}</b> Skills</span><span>·</span><span><b>B.Tech CSE</b> · Uttaranchal Univ.</span><span>·</span><span><b>Docker · FastAPI · React · Redis</b></span>

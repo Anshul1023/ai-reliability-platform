@@ -478,8 +478,8 @@ h1,h2,h3,.head h3,b,strong{letter-spacing:-.02em}
 /* ===== About page new animated sections ===== */
 .aboutName{min-height:76px;margin:6px 0 4px}
 .aboutName .fold-text{letter-spacing:-.02em;text-shadow:0 4px 30px rgba(90,125,255,.35)}
-.aboutMaskWrap{margin:14px auto 8px;min-height:56px;max-width:760px}
-.aboutMaskWrap .masked-heading__source{filter:brightness(1.05) saturate(1.05)}
+.aboutMaskWrap{margin:14px auto 8px;min-height:56px;max-width:920px}
+.aboutMaskWrap .masked-heading__fill{filter:brightness(1.05) saturate(1.05)}
 .storyExpand{height:min(58vh,520px);border-radius:18px;border:1px solid #3a4a8f;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.35)}
 .storyExpand .scroll-expand{border-radius:18px}
 .storyOverlay{max-width:560px;color:#eaf0ff}
@@ -500,6 +500,8 @@ h1,h2,h3,.head h3,b,strong{letter-spacing:-.02em}
 .masked-heading__clip{position:absolute;inset:0;display:block}
 .masked-heading__media{position:absolute;inset:0;display:block;will-change:transform,filter}
 .masked-heading__source{display:block;width:100%;height:100%;object-fit:cover;user-select:none;-webkit-user-drag:none}
+.masked-heading__fill{display:block;position:absolute;inset:0;background-size:200% 200%;animation:mhGradient 8s ease-in-out infinite}
+@keyframes mhGradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 
 /* ===== ReactBits: FoldText ===== */
 .fold-text{display:inline-block;color:var(--fold-text-color,currentColor);font-size:var(--fold-text-font-size,inherit);font-weight:var(--fold-text-font-weight,inherit);line-height:.95;letter-spacing:-.04em;white-space:pre-wrap;user-select:text}

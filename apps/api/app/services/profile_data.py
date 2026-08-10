@@ -6,7 +6,7 @@ Sourced from Anshul's resume (anshulcv2025.pdf). Edit freely; it is public.
 PROFILE = {
     "name": "Anshul Rawat",
     "title": "Full Stack Developer",
-    "tagline": "I build fast, resilient web apps — from pixel-perfect React frontends to async FastAPI backends with Docker, Redis and real observability.",
+    "tagline": "I build fast, resilient web apps. From pixel-perfect React frontends to async FastAPI backends with Docker, Redis and real observability.",
     "summary": (
         "Full Stack Developer with hands-on experience building scalable, high-performance, "
         "responsive web apps. Skilled in React.js, FastAPI, PostgreSQL, Docker, CI/CD and modern "

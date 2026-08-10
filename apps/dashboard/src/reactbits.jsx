@@ -16,6 +16,7 @@ export function MaskedHeading({
   tag = "h2",
   mediaType = "image",
   src = "",
+  fill = "",
   fillScale = 1.25,
   parallax = 26,
   drift = 18,
@@ -214,7 +215,9 @@ export function MaskedHeading({
       <span ref={revealRef} className="masked-heading__reveal">
         <span className="masked-heading__clip" style={{ clipPath: `url(#${clipId})` }}>
           <span ref={mediaRef} className="masked-heading__media">
-            {mediaType === "video" ? (
+            {fill ? (
+              <span className="masked-heading__fill" style={{ background: fill }} aria-hidden="true" />
+            ) : mediaType === "video" ? (
               <video className="masked-heading__source" src={src} autoPlay muted loop playsInline />
             ) : (
               <img className="masked-heading__source" src={src} alt="" draggable={false} />
