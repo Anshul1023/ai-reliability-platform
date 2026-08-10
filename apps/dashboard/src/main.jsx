@@ -143,9 +143,40 @@ function ChatPage(){
 </div>
 }
 
+function ChatDrawer({onClose}){
+ const [projects,setProjects]=useState([]);
+ const [projectId,setProjectId]=useState(null);
+ const [msgs,setMsgs]=useState([]);
+ const [input,setInput]=useState("");
+ const [busy,setBusy]=useState(false);
+ useEffect(()=>{api.projects().then(setProjects).catch(()=>{})},[]);
+ const send=async()=>{
+  if(!input.trim()||busy)return;
+  const history=[...msgs,{role:"user",content:input}];
+  setMsgs(history);setInput("");setBusy(true);
+  try{
+   const res=await api.chat(history.map(m=>({role:m.role,content:m.content})),projectId);
+   setMsgs([...history,{role:"assistant",content:res.reply}]);
+  }catch(e){setMsgs([...history,{role:"assistant",content:"Error: "+e.message}])}
+  setBusy(false);
+ };
+ return <div className="chatDrawer">
+  <div className="chatDrawerHead"><b><MessageSquare size={15}/> Ask AI</b><button className="chatClose" onClick={onClose} aria-label="Close chat">✕</button></div>
+  <div className="chatDrawerBody">
+   <select value={projectId||""} onChange={e=>setProjectId(e.target.value?Number(e.target.value):null)}>
+    <option value="">All projects…</option>
+    {projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
+   </select>
+   <div className="chatbox">{(msgs.length?msgs:[{role:"assistant",content:"Ask me anything about your projects — code, services, incidents, or propose a change."}]).map((m,i)=><div className={"bubble "+(m.role==="user"?"me":"bot")} key={i}><span>{m.role==="user"?"You":"Agent"}</span>{m.content}</div>)}</div>
+  </div>
+  <div className="chatbar"><input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")send()}} placeholder="Ask about a project…"/><button onClick={send} disabled={busy}>{busy?"Thinking…":"Send"}</button></div>
+ </div>;
+}
+
 function App(){
  const [page,setPage]=useState(()=>new URLSearchParams(location.search).get("page")||"Overview");
  const [selected,setSelected]=useState(null);
+ const [chatOpen,setChatOpen]=useState(false);
  const [liveTick,setLiveTick]=useState(0);
  useEffect(()=>{const id=new URLSearchParams(location.search).get("project");if(id)api.project(id).then(setSelected).catch(()=>{})},[]);
  useEffect(()=>{
@@ -159,6 +190,6 @@ function App(){
  },[]);
  const nav=[["Overview",LayoutDashboard],["Projects",Box],["Incidents",AlertTriangle],["AI Investigation",Bot],["AI Chat",MessageSquare],["Settings",Settings]];
  let content=selected?<ProjectDetails p={selected} back={()=>setSelected(null)} liveTick={liveTick}/>:page==="Overview"?<Overview liveTick={liveTick}/>:page==="Projects"?<Projects open={setSelected} liveTick={liveTick}/>:page==="Incidents"?<Incidents liveTick={liveTick}/>:page==="AI Investigation"?<AIPage/>:page==="AI Chat"?<ChatPage/>:<SettingsPage/>;
- return <div className="app"><aside><div className="brand"><Activity size={18}/> PulseOps</div><div className="workspace"><b>Acme Engineering</b><small>Production</small></div><nav>{nav.map(([n,I])=><button className={page===n&&!selected?"active":""} onClick={()=>{setPage(n);setSelected(null)}} key={n}><I size={17}/>{n}</button>)}</nav><div className="user">AS · Ansh Sharma</div></aside><main><header><span>{selected?.name||page}</span><div className="top"><div className="topSearch"><Search size={14}/><input placeholder="Search…"/></div><Bell size={17}/><span className="avatar">AS</span></div></header>{content}</main>{page!=="AI Chat"||selected?<button className="chatFab" onClick={()=>{setPage("AI Chat");setSelected(null)}} title="Ask the AI about any project"><MessageSquare size={17}/> Ask AI</button>:null}</div>
+ return <div className="app"><aside><div className="brand"><Activity size={18}/> PulseOps</div><div className="workspace"><b>Acme Engineering</b><small>Production</small></div><nav>{nav.map(([n,I])=><button className={page===n&&!selected?"active":""} onClick={()=>{setPage(n);setSelected(null)}} key={n}><I size={17}/>{n}</button>)}</nav><div className="user">AS · Ansh Sharma</div></aside><main><header><span>{selected?.name||page}</span><div className="top"><div className="topSearch"><Search size={14}/><input placeholder="Search…"/></div><Bell size={17}/><span className="avatar">AS</span></div></header>{content}</main><button className="chatFab" onClick={()=>setChatOpen(true)} title="Ask the AI about any project"><MessageSquare size={17}/> Ask AI</button>{chatOpen?<ChatDrawer onClose={()=>setChatOpen(false)}/>:null}</div>
 }
 createRoot(document.getElementById("root")).render(<App/>);

@@ -34,6 +34,16 @@ async def sync_projects(_=Depends(require_api_key)):
     from app.services.sync_service import sync_projects_from_github
     return await sync_projects_from_github()
 
+@router.post("/refresh")
+async def refresh_project_data(_=Depends(require_api_key)):
+    from app.services.snapshot_service import refresh_project_documents
+    return await refresh_project_documents()
+
+@router.get("/{project_id}/data")
+async def project_data_documents(project_id: int):
+    from app.services.snapshot_service import stored_documents
+    return await stored_documents(project_id)
+
 @router.get("/{project_id}", response_model=ProjectOut)
 async def get_project(project_id: int, db=Depends(get_db)):
     from fastapi import HTTPException

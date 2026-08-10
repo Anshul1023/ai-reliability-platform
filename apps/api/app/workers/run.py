@@ -1,6 +1,7 @@
 import asyncio
 
 from app.redis.queues import dequeue
+from app.services.snapshot_service import refresh_project_documents
 from app.services.sync_service import sync_projects_from_github
 from app.workers.ai_worker import process
 from app.workers.metrics_worker import run_forever as monitoring_forever
@@ -11,6 +12,8 @@ async def project_sync_forever():
         try:
             result = await sync_projects_from_github()
             print("project sync", result)
+            snapshot = await refresh_project_documents()
+            print("project data refresh", snapshot)
         except Exception as exc:  # noqa: BLE001
             print("project sync failed", repr(exc))
         await asyncio.sleep(6 * 3600)  # every 6 hours

@@ -1,5 +1,6 @@
 from datetime import datetime
-from sqlalchemy import String, Text, Integer, Float, DateTime, ForeignKey, Boolean
+from sqlalchemy import String, Text, Integer, Float, DateTime, ForeignKey, Boolean, UniqueConstraint
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 from app.core.database import Base
 
@@ -61,3 +62,19 @@ class AgentRun(Base):
     confidence: Mapped[int] = mapped_column(Integer, default=0)
     result: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+class ProjectData(Base):
+    """Rich per-project data stored as JSON documents (the future vector-RAG corpus).
+
+    One row per (project, data_type): e.g. repository, readme, files, commits,
+    services, incidents. Populated by the snapshot/refresh worker.
+    """
+    __tablename__ = "project_data"
+    __table_args__ = (UniqueConstraint("project_id", "data_type", name="uq_project_data_type"),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+    data_type: Mapped[str] = mapped_column(String(80))
+    payload: Mapped[dict] = mapped_column(JSONB, default=dict)
+    source: Mapped[str] = mapped_column(String(80), default="github")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
