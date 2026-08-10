@@ -107,11 +107,11 @@ function ProjectDetails({p,back,liveTick}){
  const open=incidents.filter(i=>i.status!=="Resolved").length;
  const filesDoc=(pdata||[]).find(d=>d.data_type==="files");
  const filesPaths=Array.isArray(filesDoc&&filesDoc.payload)?filesDoc.payload:[];
- const [folderFilter,setFolderFilter]=useState(null);
+ const [folderPath,setFolderPath]=useState(null);
  const openFile=async path=>{try{const c=await api.contents(p.repo,path);if(c.type==="file")setPreview({path,content:atob(c.content||"")})}catch(e){}};
  return <div className="page"><button className="back" onClick={back}>← Projects</button>
  <div className="title"><div><h1>{p.name}</h1><p><Github size={14}/> {p.repo}</p></div><Badge tone={p.status==="Healthy"?"green":"yellow"}>{p.status}</Badge></div>
- <div className="pgraphWrap"><ProjectGraph projectId={p.id} projectName={p.name} onOpenFolder={setFolderFilter} activeFolder={folderFilter}/></div>
+ <div className="pgraphWrap"><ProjectGraph projectId={p.id} projectName={p.name} onOpenFolder={name=>setFolderPath(p=>p===name?null:name)} activeFolder={folderPath?folderPath.split("/")[0]:null}/></div>
  <div className="stats"><Stat title="Uptime" count={p.uptime} suffix="%" sub="Last 30 days"/><Stat title="Services" count={services.length} sub={services.length?"Monitored":"Not monitored yet"}/><Stat title="Deployments" count={deployments.length} sub="Tracked here"/><Stat title="Open incidents" count={open} sub="Needs attention"/></div>
  <div className="grid2">
   <Card title="GitHub repository" action={repo?<Badge tone="green">Connected</Badge>:null}>
@@ -129,8 +129,8 @@ function ProjectDetails({p,back,liveTick}){
  </div>
  <Card title="Services"><div className="rows">{services.length?services.map(s=><div className="row" key={s.id}><span className={"dot "+(s.status==="Healthy"?"":"warn")}/><b>{s.name}</b><span>{s.status}</span><small>{Math.round(s.latency_ms)}ms</small></div>):<p className="muted">No monitored services yet — Vercel/Railway monitoring comes next.</p>}</div></Card>
  <Card title="Deployments"><div className="rows">{deployments.length?deployments.map(d=><div className="row" key={d.id}><code className="mono">{short(d.sha)}</code><div><b>{d.message}</b><small>{d.author} · {new Date(d.created_at).toLocaleString()}</small></div><Badge tone={d.status==="Passed"?"green":"red"}>{d.status}</Badge></div>):<p className="muted">No deployments recorded yet.</p>}</div></Card>
- <Card title={folderFilter?`📂 ${folderFilter}/`:"Repository files"} action={<span className="chatActions">{folderFilter?<button className="ppChange" onClick={()=>setFolderFilter(null)}>← All files</button>:filesPaths.length?<Badge tone="blue">{filesPaths.length} files</Badge>:null}</span>}>
-  <FileTree paths={folderFilter?filesPaths.filter(f=>f.startsWith(folderFilter+"/")):filesPaths} onOpenFile={openFile}/>
+ <Card title={folderPath?`📂 ${folderPath}/`:"Repository files"} action={<span className="chatActions">{folderPath?<button className="ppChange" onClick={()=>setFolderPath(null)}>← All files</button>:filesPaths.length?<Badge tone="blue">{filesPaths.length} files</Badge>:null}</span>}>
+  {folderPath?<FolderView repo={p.name} folderPath={folderPath} files={filesPaths} onOpenFile={openFile} onNavigate={setFolderPath}/>:<FileTree paths={filesPaths} onOpenFile={openFile}/>}
   {preview?<div className="filePreview"><div className="fpHead"><code className="mono">{preview.path}</code><button onClick={()=>setPreview(null)}>✕</button></div><pre>{preview.content.slice(0,8000)}</pre></div>:null}
  </Card>
  </div>}
@@ -239,6 +239,24 @@ function FileTree({paths,onOpenFile,autoOpen}){
  return <div className="tree">{render(root,null,"",0)}</div>;
 }
 function SvcLatency({n}){const v=useCountUp(n,900);return <>{Math.round(v)}</>}
+function FolderView({repo,folderPath,files,onOpenFile,onNavigate}){
+ const segs=folderPath.split("/");
+ const prefix=folderPath+"/";
+ const subs=new Set();const direct=[];
+ for(const f of files){
+  if(!f.startsWith(prefix))continue;
+  const rest=f.slice(prefix.length);const i=rest.indexOf("/");
+  if(i<0)direct.push(f);else subs.add(rest.slice(0,i));
+ }
+ const crumbs=[repo||"repo",...segs];
+ return <div className="folderView">
+  <div className="crumbs">{crumbs.map((c,i)=><span key={i}>{i>0?<span className="crumbSep">/</span>:null}{i===crumbs.length-1?<b className="crumb cur">{c}</b>:<button className="crumb" onClick={()=>onNavigate(i===0?null:segs.slice(0,i).join("/"))}>{c}</button>}</span>)}</div>
+  <div className="folderList">{[...subs].sort().map(s=><button key={s} className="fileResult folderRow" onClick={()=>onNavigate(folderPath+"/"+s)}><span>📁</span><b>{s}</b><small>folder</small></button>)}
+   {direct.map(f=><button key={f} className="fileResult" onClick={()=>onOpenFile(f)}><span>📄</span><b>{f.split("/").pop()}</b><small>{f}</small></button>)}
+   {!subs.size&&!direct.length?<p className="muted" style={{padding:8}}>Empty folder.</p>:null}
+  </div>
+ </div>;
+}
 function FileResults({files,q,onOpenFile}){
  const ql=q.toLowerCase();
  const matches=(files||[]).filter(f=>{const name=f.split("/").pop().toLowerCase();return name.includes(ql)||f.toLowerCase().includes(ql)}).slice(0,60);
@@ -302,7 +320,7 @@ function ProjectGraph({projectId,projectName,docs,onOpenFolder,activeFolder}){
     <text x="256" y={i===0?101:153} fontSize="9.5" fontWeight="700" fill="#182234">{s.name}</text>
     <text x="256" y={i===0?114:166} fontSize="8.5" fill="#687386">{s.status} · <SvcLatency n={s.latency_ms}/>ms</text>
    </g>))}
-   {folders.map((f,i)=>(<g key={"f"+i} className={"pnode pfolder"+(activeFolder===f[0]?" active":"")} style={{animationDelay:(0.24+i*0.1)+"s"}} onClick={()=>onOpenFolder&&onOpenFolder(activeFolder===f[0]?null:f[0])} role="button" title={(activeFolder===f[0]?"Show all files":"Show "+f[0]+" files")}>
+   {folders.map((f,i)=>(<g key={"f"+i} className={"pnode pfolder"+(activeFolder===f[0]?" active":"")} style={{animationDelay:(0.24+i*0.1)+"s"}} onClick={()=>onOpenFolder&&onOpenFolder(f[0])} role="button" title={(activeFolder===f[0]?"Show all files":"Show "+f[0]+" files")}>
     <rect x={fx[i]-42} y={fy[i]-20} width="84" height="40" rx="9" fill="#fbfdff" stroke="#c9d3f7"/>
     <text x={fx[i]} y={fy[i]-3} textAnchor="middle" fontSize="9" fontWeight="700" fill="#33405e">📁 {short(f[0])}</text>
     <text x={fx[i]} y={fy[i]+11} textAnchor="middle" fontSize="8" fill="#7d88b8">{f[1]} files</text>
@@ -321,13 +339,13 @@ function ChatDrawer({onClose}){
  const [busy,setBusy]=useState(false);
  const [curFile,setCurFile]=useState(null);
  const [fileContent,setFileContent]=useState("");
- const [folderFilter,setFolderFilter]=useState(null);
+ const [folderPath,setFolderPath]=useState(null);
  const [fileQ,setFileQ]=useState("");
  const boxRef=React.useRef(null);
  const dirty=React.useRef(false);
  useEffect(()=>{api.projects().then(setProjects).catch(()=>{})},[]);
  useEffect(()=>{const el=boxRef.current;if(el)el.scrollTop=el.scrollHeight},[msgs,busy]);
- useEffect(()=>{if(!projectId){setDocs(null);setCurFile(null);setFolderFilter(null);setFileQ("");return}setDocs(null);setCurFile(null);setFolderFilter(null);setFileQ("");api.projectData(projectId).then(setDocs).catch(()=>setDocs(null))},[projectId]);
+ useEffect(()=>{if(!projectId){setDocs(null);setCurFile(null);setFolderPath(null);setFileQ("");return}setDocs(null);setCurFile(null);setFolderPath(null);setFileQ("");api.projectData(projectId).then(setDocs).catch(()=>setDocs(null))},[projectId]);
  useEffect(()=>{dirty.current=false;api.chatHistory(projectId).then(h=>{if(!dirty.current)setMsgs((h||[]).map(m=>({role:m.role,content:m.content,provider:m.provider,time:m.created_at?new Date(m.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):""}))) }).catch(()=>{})},[projectId]);
  const clearHistory=async()=>{try{await api.clearChat(projectId);dirty.current=true;setMsgs([])}catch(e){}};
  const send=async()=>{
@@ -344,7 +362,7 @@ function ChatDrawer({onClose}){
  const project=projects.find(p=>p.id===projectId)||null;
  const m={};(docs||[]).forEach(d=>{m[d.data_type]=d.payload});
  const files=Array.isArray(m.files)?m.files:[];
- const visibleFiles=folderFilter?files.filter(f=>f.startsWith(folderFilter+"/")):files;
+ const visibleFiles=folderPath?files.filter(f=>f.startsWith(folderPath+"/")):files;
  const openFile=async path=>{
   if(!project)return;
   try{const c=await api.contents(project.repo,path);if(c.type!=="file")return;setCurFile(path);setFileContent(atob(c.content||""))}catch(e){setCurFile(path);setFileContent("// Could not read "+path+"\n"+e.message)}
@@ -353,8 +371,8 @@ function ChatDrawer({onClose}){
   <div className="chatDrawerHead"><b><span className="headDot"/><MessageSquare size={15}/> Ask Dev</b><div className="drawerHeadActions"><a className="ppOpen dash" href="/" target="_blank" rel="noreferrer" title="Open full dashboard in new tab">Dashboard ↗</a><button className="chatClose" onClick={clearHistory} title="Clear saved chat history" aria-label="Clear chat history">🗑</button><button className="chatClose" onClick={onClose} aria-label="Close chat">✕</button></div></div>
   <div className="chatDrawerBody">
    <ProjectPicker projects={projects} value={projectId} onChange={setProjectId}/>
-   {project?<div className="drawerSection"><ProjectGraph projectId={projectId} projectName={project.name} docs={docs} onOpenFolder={setFolderFilter} activeFolder={folderFilter}/></div>:null}
-   {project?<div className="drawerSection filesSec"><div className="drawerSecHead"><b>{folderFilter?`📂 ${folderFilter}/`:"📂 Repository files"}</b>{folderFilter?<button className="ppChange" onClick={()=>setFolderFilter(null)}>← All files</button>:<span className="muted">{files.length?files.length+" files":"…"}</span>}</div><div className="treeSearch"><Search size={12}/><input value={fileQ} onChange={e=>setFileQ(e.target.value)} placeholder="Search files by name…"/>{fileQ?<button onClick={()=>setFileQ("")} aria-label="Clear file search">✕</button>:null}</div><div className="drawerTree">{fileQ.trim()?<FileResults files={visibleFiles} q={fileQ.trim()} onOpenFile={openFile}/>:visibleFiles.length?<FileTree paths={visibleFiles} onOpenFile={openFile} autoOpen/>:<p className="muted" style={{padding:8}}>Loading files…</p>}</div>{curFile?<div className="filePreview"><div className="fpHead"><code className="mono">{curFile}</code><button onClick={()=>setCurFile(null)} aria-label="Close preview">✕</button></div><pre>{fileContent}</pre></div>:null}</div>:null}
+   {project?<div className="drawerSection"><ProjectGraph projectId={projectId} projectName={project.name} docs={docs} onOpenFolder={name=>setFolderPath(p=>p===name?null:name)} activeFolder={folderPath?folderPath.split("/")[0]:null}/></div>:null}
+   {project?<div className="drawerSection filesSec"><div className="drawerSecHead"><b>{folderPath?`📂 ${folderPath}/`:"📂 Repository files"}</b>{folderPath?<button className="ppChange" onClick={()=>setFolderPath(null)}>← All files</button>:<span className="muted">{files.length?files.length+" files":"…"}</span>}</div><div className="treeSearch"><Search size={12}/><input value={fileQ} onChange={e=>setFileQ(e.target.value)} placeholder="Search files by name…"/>{fileQ?<button onClick={()=>setFileQ("")} aria-label="Clear file search">✕</button>:null}</div><div className="drawerTree">{fileQ.trim()?<FileResults files={visibleFiles} q={fileQ.trim()} onOpenFile={openFile}/>:folderPath?<FolderView repo={project.name} folderPath={folderPath} files={files} onOpenFile={openFile} onNavigate={setFolderPath}/>:visibleFiles.length?<FileTree paths={visibleFiles} onOpenFile={openFile} autoOpen/>:<p className="muted" style={{padding:8}}>Loading files…</p>}</div>{curFile?<div className="filePreview"><div className="fpHead"><code className="mono">{curFile}</code><button onClick={()=>setCurFile(null)} aria-label="Close preview">✕</button></div><pre>{fileContent}</pre></div>:null}</div>:null}
    <div className="chatbox" ref={boxRef}>{(msgs.length?msgs:[{role:"assistant",content:"Hey! I'm Dev — your senior dev sidekick. Pick a project to see its live graph + repo tree, or just ask about any of them. 💡"}]).map((m,i)=><MsgBubble m={m} key={i}/>)}{busy?<Typing/>:null}</div>
   </div>
   <div className="chatbar"><input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")send()}} placeholder="Ask Dev about a project…"/><button onClick={send} disabled={busy||!input.trim()}>{busy?<span className="miniSpin"/>:"Send"}</button></div>

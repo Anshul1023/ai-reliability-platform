@@ -337,3 +337,14 @@ select option{background:#222733;color:#dfe6f5}
 .fileResult b{color:#dfe6f5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10.5px;flex:none;max-width:45%}
 .fileResult small{color:#8b96b3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-left:auto;padding-left:8px;font-size:9px}
 .card .fileResults{max-height:280px;overflow:auto}
+
+/* ---- breadcrumb drill-down view ---- */
+.folderView{display:flex;flex-direction:column}
+.crumbs{display:flex;align-items:center;flex-wrap:wrap;gap:2px;padding:7px 10px 4px;font-size:10px;color:#8b96b3;border-bottom:1px solid #2e3544}
+.crumb{border:0;background:transparent;color:#8fa5ff;cursor:pointer;font-size:10px;font-weight:700;padding:2px 4px;border-radius:5px;transition:background .12s ease}
+.crumb:hover{background:#2b3760;text-decoration:underline}
+.crumb.cur{color:#dfe6f5;font-weight:800}
+.crumbSep{color:#39435c;margin:0 2px}
+.folderList{display:flex;flex-direction:column;padding:4px}
+.folderRow b{color:#8fa5ff}
+.folderRow:hover b{color:#c3d0ff}
