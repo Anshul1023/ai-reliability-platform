@@ -2,9 +2,9 @@ import React,{useEffect,useRef,useState} from "react";
 import {createRoot} from "react-dom/client";
 import {LayoutDashboard,Box,AlertTriangle,Bot,Settings,Activity,Github,ChevronRight,Plus,Search,Bell,CheckCircle2,Sparkles,MessageSquare,RefreshCw,User,BarChart3,Phone,Mail,MapPin,Linkedin,GraduationCap,Send} from "lucide-react";
 import {ResponsiveContainer,AreaChart,Area,BarChart,Bar,XAxis,YAxis,Tooltip} from "recharts";
-import {motion,useInView} from "framer-motion";
-import {MaskedHeading,FoldText,ScrollExpand,AccordionGallery,CircularGallery} from "./reactbits";
-import {SplitText,DepthText,LogoLoop,DriftWall,Folder} from "./aboutbits";
+import {motion,useInView,useScroll,useTransform} from "framer-motion";
+import {MaskedHeading,FoldText,ScrollExpand,CircularGallery} from "./reactbits";
+import {SplitText,DepthText,DriftWall,Folder,OptionWheel} from "./aboutbits";
 import {api,API_WS,getApiKey,setApiKey} from "./services/api";
 import "./styles.css";
 import "./about.css";
@@ -64,6 +64,48 @@ function CurvedText({text,className="",size=20,curve=26}){
    <defs>{paths.map((d,i)=><path key={i} id={`${uid}-p${i}`} d={d}/>)}</defs>
    {lines.map((ln,i)=><text key={i} fontSize={s}><textPath href={`#${uid}-p${i}`}>{ln.text}</textPath></text>)}
   </svg>
+ </div>;
+}
+
+function StoryReel(){
+ const ref=useRef(null);
+ const {scrollYProgress}=useScroll({target:ref,offset:["start start","end end"]});
+ const x=useTransform(scrollYProgress,[0,1],["0%","-72%"]);
+ const imgs=["/about/mask.jpg","/about/story.jpg","/about/desk.jpg","/about/mountain.jpg","/about/space.jpg","/about/office.jpg","/about/code.jpg","/about/ai.jpg"];
+ const words=["SHIP FAST","NEVER BREAK","OBSERVE EVERYTHING","AUTOMATE THE BORING","SCALE QUIETLY"];
+ const notes=["Fast products win.","Downtime is a choice.","Metrics tell the truth.","AI does the busywork.","Simple scales best."];
+ const tilt=e=>{const c=e.currentTarget;const r=c.getBoundingClientRect();c.style.transform=`perspective(900px) rotateY(${((e.clientX-r.left)/r.width-.5)*10}deg) rotateX(${-((e.clientY-r.top)/r.height-.5)*8}deg) translateY(-6px) scale(1.04)`};
+ const untilt=e=>{e.currentTarget.style.transform=""};
+ useEffect(()=>{let alive=true;const rem=()=>{if(alive)window.dispatchEvent(new Event("resize"))};if(document.fonts&&document.fonts.ready)document.fonts.ready.then(rem);window.addEventListener("load",rem);return ()=>{alive=false;window.removeEventListener("load",rem)}},[]);
+ return <div className="storyReel" ref={ref}>
+  <div className="storyReelSticky">
+   <div className="reelHead"><span className="reelTag">The journey in motion</span><b className="reelHint">Keep scrolling <span>→</span></b></div>
+   <motion.div className="storyReelTrack" style={{x}}>
+    {imgs.map((img,i)=><div className="reelCard reelImg" key={"i"+i} onMouseMove={tilt} onMouseLeave={untilt}><img src={img} alt=""/><span className="reelCap">0{i+1} — {words[i%words.length]}</span></div>)}
+    {words.map((w,i)=><div className="reelCard reelText" key={"w"+i}><span className="reelStar">✦</span><b>{w}</b><small>{notes[i]}</small></div>)}
+    <div className="reelCard reelEnd"><b>That's my story.</b><small>One commit at a time.</small><a className="titleBtn" href="#contact">Let's build together</a></div>
+   </motion.div>
+  </div>
+ </div>;
+}
+
+function ExpReel({experience,education}){
+ const ref=useRef(null);
+ const {scrollYProgress}=useScroll({target:ref,offset:["start start","end end"]});
+ const x=useTransform(scrollYProgress,[0,1],["0%","-50%"]);
+ const imgs=["/about/fitness.jpg","/about/office.jpg","/about/code.jpg"];
+ useEffect(()=>{let alive=true;const rem=()=>{if(alive)window.dispatchEvent(new Event("resize"))};if(document.fonts&&document.fonts.ready)document.fonts.ready.then(rem);window.addEventListener("load",rem);return ()=>{alive=false;window.removeEventListener("load",rem)}},[]);
+ return <div className="expReel" ref={ref}>
+  <div className="expReelSticky">
+   <motion.div className="expTrack" style={{x}}>
+    {experience.map((e,i)=><div className="expCard" key={i}>
+     <div className="expMedia"><img src={imgs[i%imgs.length]} alt=""/><span className="expPeriod">{e.period}</span></div>
+     <div className="expBody"><b>{e.role}</b><small>{e.company}</small><ul>{e.points.map((pt,j)=><li key={j}>{pt}</li>)}</ul></div>
+    </div>)}
+    {education.map((e,i)=><div className="expCard expEdu" key={"e"+i}><span className="expEduIcon"><GraduationCap size={22}/></span><b>{e.degree}</b><small>{e.school}</small><span className="expPeriod">{e.period}</span></div>)}
+    <div className="expCard expEnd"><b>That's the journey so far.</b><small>Always shipping, always learning.</small><a className="titleBtn" href="#projects">See the work →</a></div>
+   </motion.div>
+  </div>
  </div>;
 }
 
@@ -148,6 +190,7 @@ function AboutPage(){
  const [form,setForm]=useState({name:"",topic:"",email:"",message:""});
  const [sent,setSent]=useState(false);
  const [busy,setBusy]=useState(false);
+ const [skill,setSkill]=useState(null);
  useEffect(()=>{api.profile().then(setP).catch(()=>{})},[]);
  useEffect(()=>{api.projects().then(list=>{setAllProjects(list.filter(x=>x.repo&&x.repo.includes("/")).map((x,i)=>({label:x.name,text:x.name,image:imageForRepo(x.repo,i),link:`https://github.com/${x.repo}`,title:x.name}))) }).catch(()=>{})},[]);
  const tilt=e=>{const c=e.currentTarget;const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5;const y=(e.clientY-r.top)/r.height-.5;c.style.transform=`perspective(800px) rotateY(${x*7}deg) rotateX(${-y*7}deg) translateY(-4px)`};
@@ -162,9 +205,7 @@ function AboutPage(){
  const secAnim={initial:{opacity:0,y:120,scale:.93,filter:"blur(6px)"},whileInView:{opacity:1,y:0,scale:1,filter:"blur(0px)"},viewport:{once:false,margin:"-40px",amount:0.15},transition:{duration:.85,ease:[.22,1,.36,1]}};
  
  const driftItems=["/about/mask.jpg","/about/story.jpg","/about/abstract.jpg","/about/desk.jpg","/about/mountain.jpg","/about/space.jpg","/about/office.jpg","/about/code.jpg","/about/ai.jpg","/about/fitness.jpg"].map((img,i)=>({image:img,title:`tile${i}`}));
- const expItems=p.experience.map((e,i)=>({image:["/about/fitness.jpg","/about/office.jpg","/about/code.jpg"][i]||"/about/desk.jpg",label:e.company,link:p.links.linkedin}));
- const half=Math.ceil(p.skills.length/2);
- const rows=[p.skills.slice(0,half),p.skills.slice(half)];
+
  return <div className="about">
   <section className="abHero" id="top">
    <div className="abHeroBg"><DriftWall items={driftItems} columns={5} tileWidth={210} tileHeight={140} gap={16} speed={36} fade={0.55} dim={0.72} tilt={14} turn={-12} overlayColor="#080a14"/></div>
@@ -193,35 +234,35 @@ function AboutPage(){
     <motion.h2 className="storyTitle" initial={{x:-300,opacity:0,filter:"blur(10px)"}} whileInView={{x:0,opacity:1,filter:"blur(0px)"}} viewport={{once:false,amount:.4}} transition={{duration:.95,ease:[.22,1,.36,1]}}>MY STORY<span className="storyDot">.</span></motion.h2>
     <motion.h3 className="storyLead" initial={{x:300,opacity:0,filter:"blur(8px)"}} whileInView={{x:0,opacity:1,filter:"blur(0px)"}} viewport={{once:false,amount:.4}} transition={{duration:.95,delay:.12,ease:[.22,1,.36,1]}}>I turn ideas into products<br/>that <span>feel fast</span> and <span>never break</span></motion.h3>
     <div className="storyParas">
-     <motion.div className="storyParaWrap" initial={{x:-220,opacity:0}} whileInView={{x:0,opacity:1}} viewport={{once:false,amount:.3}} transition={{duration:.9,delay:.1,ease:[.22,1,.36,1]}}><CurvedText text={p.summary} size={22} className="storyCurve"/></motion.div>
-     {(p.about||[]).map((a,i)=><motion.div key={i} className="storyParaWrap" initial={{x:(i%2?1:-1)*240,opacity:0}} whileInView={{x:0,opacity:1}} viewport={{once:false,amount:.3}} transition={{duration:.9,delay:.18+i*.1,ease:[.22,1,.36,1]}}><CurvedText text={a} size={19} className="storyCurve storyCurveMore"/></motion.div>)}
+     <motion.div className="storyParaWrap" initial={{x:-220,opacity:0}} whileInView={{x:0,opacity:1}} viewport={{once:false,amount:.3}} transition={{duration:.9,delay:.1,ease:[.22,1,.36,1]}}><CurvedText text={p.summary} size={21} curve={12} className="storyCurve"/></motion.div>
     </div>
-    <motion.div className="storyStats" initial={{x:260,opacity:0}} whileInView={{x:0,opacity:1}} viewport={{once:false,amount:.4}} transition={{duration:.85,delay:.3,ease:[.22,1,.36,1]}}><div className="storyStat"><StoryCount to={p.experience.length}/><span>Roles</span></div><div className="storyStat"><StoryCount to={p.projects.length}/><span>Projects</span></div><div className="storyStat"><StoryCount to={p.skills.length}/><span>Skills</span></div><div className="storyStat"><StoryCount to={p.experience.reduce((s,e)=>s+e.points.length,0)} suffix="+"/><span>Achievements</span></div></motion.div>
-    <motion.div className="storyCta" initial={{x:-240,opacity:0}} whileInView={{x:0,opacity:1}} viewport={{once:false,amount:.4}} transition={{duration:.85,delay:.4,ease:[.22,1,.36,1]}}><a className="titleBtn" href="#contact">Let's build something</a></motion.div>
+    <motion.div className="storyCta" initial={{x:-240,opacity:0}} whileInView={{x:0,opacity:1}} viewport={{once:false,amount:.4}} transition={{duration:.85,delay:.25,ease:[.22,1,.36,1]}}><a className="titleBtn" href="#contact">Let's build something</a></motion.div>
    </div>
+   <StoryReel/>
   </section>
   <motion.section {...secAnim} className="abSec abExp" id="experience">
    <div className="abWordmark"><DepthText text="EXPERIENCE" layers={26} depth={2.2} depthColor="#14b8a6" faceColor="#14202c" fontSize="clamp(3.4rem,11vw,9rem)"/></div>
    <div className="abSecInner">
-    <div className="abHeadWrap"><SplitText text="Where I've Worked" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub"><span className="hl">Three roles</span>, one obsession: building products that <b>feel fast</b> and never break. From startup to agency, I've shipped across the stack.</p></div>
-    <AccordionGallery items={expItems} height={440} defaultIndex={0} grayscale={false} accentColor="#5eead4" overlayColor="#0b0f1c"/>
-    <div className="timeline">{p.experience.map((e,i)=><div className="tlItem" key={i} onMouseMove={tilt} onMouseLeave={untilt}><div className="tlDot"/><div className="tlCard"><div className="tlHead"><b>{e.role}</b><span>{e.period}</span></div><small>{e.company}</small><ul>{e.points.map((pt,j)=><li key={j}>{pt}</li>)}</ul></div></div>)}</div>
-    <div className="eduRow" style={{marginTop:8}}>{p.education.map((e,i)=><div className="eduCard" key={i}><GraduationCap size={16}/><div><b>{e.degree}</b><small>{e.school} · {e.period}</small></div></div>)}</div>
+    <div className="abHeadWrap"><SplitText text="Where I've Worked" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub"><span className="hl">Three roles</span>, one obsession: building products that <b>feel fast</b> and never break. Keep scrolling — the road keeps moving <span className="hl2">→</span></p></div>
+    <ExpReel experience={p.experience} education={p.education}/>
    </div>
   </motion.section>
   <motion.section {...secAnim} className="abSec abSkills" id="skills">
    <div className="abWordmark"><DepthText text="SKILLS" layers={26} depth={2.2} depthColor="#8b5cf6" faceColor="#1d1830" fontSize="clamp(4rem,14vw,11rem)"/></div>
    <div className="abSecInner">
-    <div className="abHeadWrap"><SplitText text="The Stack I Ship With" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">A <span className="hl2">live marquee</span> of the tools I use daily — <b>{p.skills.length} technologies</b>, from React to Redis. Hover to pause, scroll to see them all.</p></div>
-    {rows.map((row,i)=><LogoLoop key={i} logos={row} speed={i===0?70:-80} direction={i===0?"left":"right"} logoHeight={46} gap={22} pauseOnHover renderItem={s=><span className="skChip">✦ {s}</span>} fadeOut/>)}
-    <div className="langRow" style={{marginTop:22}}>{p.languages.map((l,i)=><span className="lang" key={i}>🗣 {l}</span>)}</div>
+    <div className="abHeadWrap"><SplitText text="The Stack I Ship With" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">A <span className="hl2">living wheel</span> of the tools I use daily — <b>{p.skills.length} technologies</b>, from React to Redis. Scroll, drag or click to spin it.</p></div>
+    <div className="skillWheel">
+     <OptionWheel items={p.skills} side="left" fontSize={1.55} spacing={1.32} tilt={9} blur={1.4} fade={0.26} minOpacity={0.05} inset={30} textColor="#7d8cb5" activeColor="#eaf0ff" onChange={(i,l)=>setSkill(l)}/>
+     <div className="skillWheelCenter"><span className="swTag">✦ SELECTED</span><b className="swName">{skill||p.skills[Math.floor(p.skills.length/2)]}</b><small>scroll · drag · click</small></div>
+    </div>
+    <div className="langRow" style={{marginTop:26}}>{p.languages.map((l,i)=><span className="lang" key={i}>🗣 {l}</span>)}</div>
    </div>
   </motion.section>
   <motion.section {...secAnim} className="abSec abProjects" id="projects">
    <div className="abWordmark"><DepthText text="PROJECTS" layers={26} depth={2.2} depthColor="#f59e0b" faceColor="#2c2413" fontSize="clamp(3.4rem,11vw,9rem)"/></div>
    <div className="abSecInner">
-    <div className="abHeadWrap"><SplitText text="Every Project, One Place" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">Drag through <b>all {allProjects.length}</b> repos from my GitHub — each card shows the <span className="hl2">repo name</span>. Click any to open on GitHub.</p></div>
-    <div className="carouselWrap">{allProjects.length?<CircularGallery items={allProjects} bend={2.4} textColor="#cfe0ff" borderRadius={0.08} font="bold 26px Inter, system-ui, sans-serif" scrollSpeed={3} scrollEase={0.03}/>:<p className="muted">Loading projects…</p>}</div>
+    <div className="abHeadWrap"><SplitText text="Every Project, One Place" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">Spin through <b>all {allProjects.length}</b> repos from my GitHub — every card carries the <span className="hl2">repo name</span>, border-free. Click any to open it.</p></div>
+    <div className="carouselWrap cgFree">{allProjects.length?<CircularGallery items={allProjects} bend={2.4} textColor="#cfe0ff" borderRadius={0.08} font="bold 26px Inter, system-ui, sans-serif" scrollSpeed={3} scrollEase={0.03}/>:<p className="muted">Loading projects…</p>}</div>
     <div className="abProjectsMeta">{allProjects.slice(0,8).map((x,i)=><span className="aboutChip" key={i} onClick={()=>window.open(x.link,"_blank")} style={{cursor:"pointer"}}>{x.label}</span>)}</div>
    </div>
   </motion.section>
@@ -231,21 +272,25 @@ function AboutPage(){
     <div className="abHeadWrap"><SplitText text="Let's Build Together" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">Have a project, a role, or just want to say hi? Your message lands <b>straight in my inbox</b> — I reply within 24 hours.</p></div>
     <div className="contactWrap">
      <div className="contactInfo">
-      <div className="contactLine"><Mail size={15}/><div><b>Email</b><a href={`mailto:${p.email}`}>{p.email}</a></div></div>
-      <div className="contactLine"><Phone size={15}/><div><b>Phone</b><a href={`tel:${p.phone.replace(/\s/g,"")}`}>{p.phone}</a></div></div>
-      <div className="contactLine"><MapPin size={15}/><div><b>Location</b><span>{p.location}</span></div></div>
-      <div className="contactLine"><Github size={15}/><div><b>GitHub</b><a href={p.links.github} target="_blank" rel="noreferrer">{p.links.github}</a></div></div>
-      <div className="abFolder"><Folder color="#5a7dff" size={1.25} items={["📄","✨","💙"]}/></div>
+      <div className="contactLines">
+       <div className="contactLine"><Mail size={17}/><div><b>Email</b><a href={`mailto:${p.email}`}>{p.email}</a></div></div>
+       <div className="contactLine"><Phone size={17}/><div><b>Phone</b><a href={`tel:${p.phone.replace(/\s/g,"")}`}>{p.phone}</a></div></div>
+       <div className="contactLine"><MapPin size={17}/><div><b>Location</b><span>{p.location}</span></div></div>
+       <div className="contactLine"><Github size={17}/><div><b>GitHub</b><a href={p.links.github} target="_blank" rel="noreferrer">{p.links.github.replace("https://","")}</a></div></div>
+       <div className="contactLine"><Linkedin size={17}/><div><b>LinkedIn</b><a href={p.links.linkedin} target="_blank" rel="noreferrer">{p.links.linkedin.replace("https://","")}</a></div></div>
+      </div>
+      <div className="abFolder"><Folder color="#5a7dff" size={1.4} items={["📄","✨","💙"]}/></div>
      </div>
      <div className="contactForm">
       <input placeholder="Your name…" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
       <input placeholder="Your email…" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/>
       <input placeholder="Topic (job, project, collab…)…" value={form.topic} onChange={e=>setForm({...form,topic:e.target.value})}/>
-      <textarea placeholder="What would you like to talk about?" rows={4} value={form.message} onChange={e=>setForm({...form,message:e.target.value})}/>
-      <button className="titleBtn" onClick={sendContact} disabled={busy}>{busy?"Sending…":<><Send size={14}/> Send message</>}</button>
+      <textarea placeholder="What would you like to talk about?" rows={5} value={form.message} onChange={e=>setForm({...form,message:e.target.value})}/>
+      <button className="titleBtn" onClick={sendContact} disabled={busy}>{busy?"Sending…":<><Send size={15}/> Send message</>}</button>
       {sent?<p className="sentOk"><CheckCircle2 size={14}/> Message sent! I'll get back to you.</p>:null}
      </div>
     </div>
+    <div className="contactFoot"><span>© 2026 {p.name}</span><span>Built with ❤️ and a lot of observability</span></div>
    </div>
   </motion.section>
  </div>;
