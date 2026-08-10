@@ -240,29 +240,25 @@ function AboutPage(){
 
  return <div className="about">
   <section className="abHero" id="top">
-   <div className="abHeroBg"><DriftWall items={driftItems} columns={5} tileWidth={210} tileHeight={140} gap={16} speed={36} fade={0.55} dim={0.8} tilt={14} turn={-12} overlayColor="#080a14"/></div>
-   <div className="abHeroGrid">
+   <div className="abHeroBg"><DriftWall items={driftItems} columns={5} tileWidth={210} tileHeight={140} gap={16} speed={36} fade={0.55} dim={0.82} tilt={14} turn={-12} overlayColor="#080a14"/></div>
+   <div className="abHeroInner">
     <div className="abHeroText">
      <motion.span initial={{opacity:0,scale:.85}} animate={{opacity:1,scale:1}} transition={{duration:.5}} className="badge aboutTag">Full Stack Developer</motion.span>
-     <h1 className="aboutName"><FoldText text="Anshul Rawat" hinge="bottom" trigger="mount" splitBy="char" duration={0.7} stagger={0.06} fontSize="clamp(3.6rem,9vw,7.4rem)" fontWeight={800} color="#eaf0ff"/></h1>
-     <div className="aboutMaskWrap"><MaskedHeading text="BUILDING THINGS THAT LAST" align="left" fill="linear-gradient(90deg,#7aa2ff 0%,#5eead4 45%,#9db4ff 70%,#5b7cff 100%)" trigger="view" reveal="rise" duration={1.2} stagger={0.09} textScale={0.09} weight={900} tracking={-0.03} fillScale={1.15} parallax={28} drift={22}/></div>
-     <motion.p initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:.9,duration:.7}} className="aboutTagline">{p.tagline}</motion.p>
-     <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:1,duration:.7}} className="aboutHighlights">
-      <span><b>{p.experience.length}</b> Roles</span><span>·</span><span><b>{p.projects.length}</b> Projects</span><span>·</span><span><b>{p.skills.length}</b> Skills</span><span>·</span><span><b>B.Tech CSE</b> · Uttaranchal Univ.</span><span>·</span><span><b>Docker · FastAPI · React · Redis</b></span>
-     </motion.div>
-     <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:1.05,duration:.7}} className="aboutChips">
+     <h1 className="aboutName"><FoldText text="Anshul Rawat" hinge="bottom" trigger="mount" splitBy="char" duration={0.7} stagger={0.06} fontSize="clamp(4rem,10vw,8.6rem)" fontWeight={800} color="#eaf0ff"/></h1>
+     <div className="aboutMaskWrap"><MaskedHeading text="BUILDING THINGS THAT LAST" align="left" fill="linear-gradient(90deg,#7aa2ff 0%,#5eead4 45%,#9db4ff 70%,#5b7cff 100%)" trigger="view" reveal="rise" duration={1.2} stagger={0.09} textScale={0.11} weight={900} tracking={-0.03} fillScale={1.15} parallax={28} drift={22}/></div>
+     <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:.9,duration:.7}} className="aboutChips">
       <a className="aboutChip" href={`tel:${p.phone.replace(/\s/g,"")}`}><Phone size={13}/>{p.phone}</a>
       <a className="aboutChip" href={`mailto:${p.email}`}><Mail size={13}/>{p.email}</a>
       <span className="aboutChip"><MapPin size={13}/>{p.location}</span>
       <a className="aboutChip" href={p.links.github} target="_blank" rel="noreferrer"><Github size={13}/>GitHub</a>
       <a className="aboutChip" href={p.links.linkedin} target="_blank" rel="noreferrer"><Linkedin size={13}/>LinkedIn</a>
      </motion.div>
-     <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:1.2,duration:.7}} className="aboutCta"><a className="titleBtn" href="#contact">💬 Work with me</a><a className="titleBtn ghost" href={p.links.portfolio} target="_blank" rel="noreferrer">View my portfolio ↗</a></motion.div>
+     <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:1.05,duration:.7}} className="aboutCta"><a className="titleBtn" href="#contact">💬 Work with me</a><a className="titleBtn ghost" href={p.links.portfolio} target="_blank" rel="noreferrer">View my portfolio ↗</a></motion.div>
     </div>
-    <motion.div initial={{opacity:0,x:70}} animate={{opacity:1,x:0}} transition={{delay:.55,duration:.9,ease:[.22,1,.36,1]}} className="abHeroArt">
-     <div className="abArtCard abArtMain" onMouseMove={tilt} onMouseLeave={untilt}><img src="/about/code.jpg" alt=""/><span className="abArtTag">FastAPI · Redis · Docker</span></div>
-     <div className="abArtCard abArtGif" onMouseMove={tilt} onMouseLeave={untilt}><img src="/about/cat.gif" alt=""/><span className="abArtTag">always shipping</span></div>
-     <div className="abArtCard abArtSmall" onMouseMove={tilt} onMouseLeave={untilt}><img src="/about/mountain.jpg" alt=""/><span className="abArtTag">from Faridabad</span></div>
+    <motion.div initial={{opacity:0,x:70}} animate={{opacity:1,x:0}} transition={{delay:.5,duration:.9,ease:[.22,1,.36,1]}} className="abHeroArt">
+     <img className="abFloat abFloatCode" src="/about/code.jpg" alt=""/>
+     <img className="abFloat abFloatMtn" src="/about/mountain.jpg" alt=""/>
+     <div className="abChar"><img src="/about/cat.gif" alt=""/><span>always shipping</span></div>
     </motion.div>
    </div>
    <div className="abHeroScroll">SCROLL<span>↓</span></div>
