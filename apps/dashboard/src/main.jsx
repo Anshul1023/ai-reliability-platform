@@ -4,7 +4,7 @@ import {LayoutDashboard,Box,AlertTriangle,Bot,Settings,Activity,Github,ChevronRi
 import {ResponsiveContainer,AreaChart,Area,BarChart,Bar,XAxis,YAxis,Tooltip} from "recharts";
 import {motion,useInView,useScroll,useTransform} from "framer-motion";
 import {MaskedHeading,FoldText,ScrollExpand,CircularGallery} from "./reactbits";
-import {SplitText,DepthText,DriftWall,Folder,OptionWheel} from "./aboutbits";
+import {SplitText,DriftWall,Folder,OptionWheel} from "./aboutbits";
 import {gsap} from "gsap";
 import {ScrollTrigger} from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
@@ -219,6 +219,10 @@ function imageForRepo(repo,i){
  return pool[(i||0)%pool.length];
 }
 
+function SecTitle({children}){
+ return <motion.h2 className="secTitle" initial={{y:80,opacity:0,filter:"blur(8px)"}} whileInView={{y:0,opacity:1,filter:"blur(0px)"}} viewport={{once:false,amount:.3}} transition={{duration:.9,ease:[.22,1,.36,1]}}>{children}</motion.h2>;
+}
+
 function AboutPage(){
  const [p,setP]=useState(null);
  const [allProjects,setAllProjects]=useState([]);
@@ -241,6 +245,24 @@ function AboutPage(){
   },2800);
   return ()=>{clearTimeout(settle);ctx.revert();};
  },[p]);
+ useEffect(()=>{
+  const force=()=>{
+   document.querySelectorAll(".abSec,.secTitle,.storyTitle,.storyLead,.storyParaWrap,.storyCta").forEach(el=>{
+    const r=el.getBoundingClientRect();
+    if(r.top<window.innerHeight&&r.bottom>0&&parseFloat(getComputedStyle(el).opacity)<.5){
+     el.style.setProperty("opacity","1","important");
+     if(el.classList.contains("secTitle")||el.classList.contains("storyTitle")||el.classList.contains("storyLead")){
+      el.style.setProperty("transform","none","important");
+      el.style.setProperty("filter","none","important");
+     }
+    }
+   });
+  };
+  window.addEventListener("scroll",force,{passive:true});
+  const t=setTimeout(force,4000);
+  const iv=setInterval(force,3000);
+  return ()=>{window.removeEventListener("scroll",force);clearTimeout(t);clearInterval(iv)};
+ },[]);
  useEffect(()=>{api.projects().then(list=>{setAllProjects(list.filter(x=>x.repo&&x.repo.includes("/")).map((x,i)=>({label:x.name,text:x.name,image:imageForRepo(x.repo,i),link:`https://github.com/${x.repo}`,title:x.name}))) }).catch(()=>{})},[]);
  const tilt=e=>{const c=e.currentTarget;const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5;const y=(e.clientY-r.top)/r.height-.5;c.style.transform=`perspective(800px) rotateY(${x*7}deg) rotateX(${-y*7}deg) translateY(-4px)`};
  const untilt=e=>{e.currentTarget.style.transform=""};
@@ -296,14 +318,14 @@ function AboutPage(){
    <StoryReel/>
   </section>
   <motion.section {...secAnim} className="abSec abExp" id="experience">
-   <div className="abWordmark"><DepthText text="EXPERIENCE" layers={26} depth={2.2} depthColor="#14b8a6" faceColor="#14202c" fontSize="clamp(3.4rem,11vw,9rem)"/></div>
+   <SecTitle>EXPERIENCE</SecTitle>
    <div className="abSecInner">
     <div className="abHeadWrap"><SplitText text="Where I've Worked" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub"><span className="hl">Three roles</span>, one obsession: building products that <b>feel fast</b> and never break. Keep scrolling — the road keeps moving <span className="hl2">→</span></p></div>
     <ExpReel experience={p.experience} education={p.education}/>
    </div>
   </motion.section>
   <motion.section {...secAnim} className="abSec abSkills" id="skills">
-   <div className="abWordmark"><DepthText text="SKILLS" layers={26} depth={2.2} depthColor="#8b5cf6" faceColor="#1d1830" fontSize="clamp(4rem,14vw,11rem)"/></div>
+   <SecTitle>SKILLS</SecTitle>
    <div className="abSecInner">
     <div className="abHeadWrap"><SplitText text="The Stack I Ship With" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">A <span className="hl2">living wheel</span> of the tools I use daily — <b>{p.skills.length} technologies</b>, from React to Redis. Scroll, drag or click to spin it.</p></div>
     <div className="skillWheel">
@@ -314,7 +336,7 @@ function AboutPage(){
    </div>
   </motion.section>
   <motion.section {...secAnim} className="abSec abProjects" id="projects">
-   <div className="abWordmark"><DepthText text="PROJECTS" layers={26} depth={2.2} depthColor="#f59e0b" faceColor="#2c2413" fontSize="clamp(3.4rem,11vw,9rem)"/></div>
+   <SecTitle>PROJECTS</SecTitle>
    <div className="abSecInner">
     <div className="abHeadWrap"><SplitText text="Every Project, One Place" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">Spin through <b>all {allProjects.length}</b> repos from my GitHub — every card carries the <span className="hl2">repo name</span>, border-free. Click any to open it.</p></div>
     <div className="carouselWrap cgFree">{allProjects.length?<CircularGallery items={allProjects} bend={2.4} textColor="#cfe0ff" borderRadius={0.08} font="bold 26px Inter, system-ui, sans-serif" scrollSpeed={3} scrollEase={0.03}/>:<p className="muted">Loading projects…</p>}</div>
@@ -322,7 +344,7 @@ function AboutPage(){
    </div>
   </motion.section>
   <motion.section {...secAnim} className="abSec abContact" id="contact">
-   <div className="abWordmark"><DepthText text="CONTACT" layers={26} depth={2.2} depthColor="#14b8a6" faceColor="#14202c" fontSize="clamp(3.4rem,11vw,9rem)"/></div>
+   <SecTitle>CONTACT</SecTitle>
    <div className="abSecInner">
     <div className="abHeadWrap"><SplitText text="Let's Build Together" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">Have a project, a role, or just want to say hi? Your message lands <b>straight in my inbox</b> — I reply within 24 hours.</p></div>
     <div className="contactWrap">

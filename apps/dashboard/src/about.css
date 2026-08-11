@@ -96,6 +96,8 @@
 /* ===== About page: full-bleed layout (no cards) ===== */
 .about{max-width:none;margin:0;padding:0}
 .abSec{position:relative;width:100%;padding:clamp(44px,6vw,84px) clamp(18px,6vw,84px);overflow:hidden}
+/* section titles — editorial Bodoni, same voice as the hero */
+.secTitle{font-family:"Bodoni Moda",serif;font-weight:900;text-transform:uppercase;font-size:clamp(3.6rem,9.5vw,8.5rem);line-height:.95;letter-spacing:.01em;text-align:center;margin:clamp(6px,1.2vw,14px) 0 clamp(14px,3vw,32px);background:linear-gradient(92deg,#7aa2ff 0%,#5eead4 40%,#9db4ff 66%,#5b7cff 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 90px rgba(94,234,212,.25)}
 .abWordmark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:.5;z-index:0;transform:scale(1.08)}
 .abWordmark .depth-text{font-size:clamp(4rem,14vw,11rem)}
 .abSecInner{position:relative;z-index:2}
@@ -169,7 +171,7 @@
 .storyScroll{color:#7f90bd;font-size:11px;letter-spacing:.4em;text-transform:uppercase;display:flex;align-items:center;gap:12px;animation:bobSoft 2.4s ease-in-out infinite}
 .storyScroll span{font-size:16px;color:#5eead4;letter-spacing:0}
 @keyframes bobSoft{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
-.storyTitle{font-family:"Syne",Inter,sans-serif;font-weight:800;font-size:clamp(3.4rem,10vw,7.6rem);line-height:.92;letter-spacing:-.02em;margin:0;position:relative;background:linear-gradient(92deg,#7aa2ff 0%,#5eead4 40%,#9db4ff 66%,#5b7cff 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 90px rgba(94,234,212,.28)}
+.storyTitle{font-family:"Bodoni Moda",serif;font-weight:900;font-size:clamp(3.4rem,10vw,7.6rem);line-height:.92;letter-spacing:.01em;margin:0;position:relative;background:linear-gradient(92deg,#7aa2ff 0%,#5eead4 40%,#9db4ff 66%,#5b7cff 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 90px rgba(94,234,212,.28)}
 .storyDot{background:linear-gradient(180deg,#5eead4,#7aa2ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .storyLead{font-family:"Syne",Inter,sans-serif;font-weight:700;font-size:clamp(1.55rem,3.6vw,2.7rem);line-height:1.24;margin:0 0 6px;background:linear-gradient(92deg,#eaf0ff,#b9c8f2 55%,#9db4ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .storyLead span{background:linear-gradient(92deg,#5eead4,#7aa2ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
