@@ -2,7 +2,7 @@ import React,{useEffect,useRef,useState} from "react";
 import {createRoot} from "react-dom/client";
 import {LayoutDashboard,Box,AlertTriangle,Bot,Settings,Activity,Github,ChevronRight,Plus,Search,Bell,CheckCircle2,Sparkles,MessageSquare,RefreshCw,User,BarChart3,Phone,Mail,MapPin,Linkedin,GraduationCap,Send} from "lucide-react";
 import {ResponsiveContainer,AreaChart,Area,BarChart,Bar,XAxis,YAxis,Tooltip} from "recharts";
-import {motion,useInView,useScroll,useTransform} from "framer-motion";
+import {motion,useInView} from "framer-motion";
 import {MaskedHeading,FoldText,ScrollExpand,CircularGallery} from "./reactbits";
 import {SplitText,DriftWall,Folder,OptionWheel} from "./aboutbits";
 import {gsap} from "gsap";
@@ -70,9 +70,30 @@ function CurvedText({text,className="",size=20,curve=26}){
  </div>;
 }
 
+function usePinProgress(ref, trackRef, travelRef){
+ useEffect(()=>{
+  const measure=()=>{
+   const el=ref.current;const t=trackRef.current;
+   if(!el||!t)return;
+   const r=el.getBoundingClientRect();
+   const range=r.height-window.innerHeight;
+   const p=range>0?Math.min(1,Math.max(0,-r.top/range)):0;
+   const tr=travelRef.current||0;
+   t.style.transform=`translate3d(${(-tr*p).toFixed(2)}px,0,0)`;
+  };
+  const onScroll=()=>measure();
+  window.addEventListener("scroll",onScroll,{passive:true});
+  window.addEventListener("resize",onScroll);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(onScroll).catch(()=>{});
+  measure();
+  return ()=>{window.removeEventListener("scroll",onScroll);window.removeEventListener("resize",onScroll)};
+ },[ref,trackRef,travelRef]);
+}
+
 function StoryReel(){
  const ref=useRef(null);
  const trackRef=useRef(null);
+ const travelRef=useRef(0);
  const [travel,setTravel]=useState(0);
  const cards=[
   {t:"img",img:"/about/mask.jpg",n:"01",head:"Ship fast",d:"Fast products win. I obsess over every millisecond, every frame."},
@@ -87,7 +108,9 @@ function StoryReel(){
  useEffect(()=>{
   const measure=()=>{
    const t=trackRef.current;if(!t)return;
-   setTravel(Math.max(0,(t.scrollWidth||0)-window.innerWidth));
+   const x=Math.max(0,(t.scrollWidth||0)-window.innerWidth);
+   travelRef.current=x;
+   setTravel(x);
   };
   measure();
   const ro=new ResizeObserver(measure);
@@ -96,17 +119,16 @@ function StoryReel(){
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>setTimeout(measure,80));
   return ()=>{ro.disconnect();window.removeEventListener("resize",measure)};
  },[]);
- const {scrollYProgress}=useScroll({target:ref,offset:["start start","end end"]});
- const x=useTransform(scrollYProgress,[0,1],[0,-travel]);
+ usePinProgress(ref, trackRef, travelRef);
  const tilt=e=>{const c=e.currentTarget;const r=c.getBoundingClientRect();c.style.transform=`perspective(900px) rotateY(${((e.clientX-r.left)/r.width-.5)*10}deg) rotateX(${-((e.clientY-r.top)/r.height-.5)*8}deg) translateY(-6px) scale(1.04)`};
  const untilt=e=>{e.currentTarget.style.transform=""};
  return <div className="storyReel" ref={ref} style={travel?{height:`calc(100vh + ${travel}px)`}:undefined}>
   <div className="storyReelSticky">
    <div className="reelHead"><span className="reelTag">The journey in motion</span><b className="reelHint">Keep scrolling <span>→</span></b></div>
-   <motion.div className="storyReelTrack" ref={trackRef} style={{x}}>
+   <div className="storyReelTrack" ref={trackRef}>
     {cards.map((c,i)=>c.t==="img"?<div className="reelCard reelImg" key={i} onMouseMove={tilt} onMouseLeave={untilt}><img src={c.img} alt=""/><div className="reelCap"><span className="reelNum">{c.n}</span><b>{c.head}</b><small>{c.d}</small></div></div>:c.t==="gif"?<div className="reelCard reelGif" key={i} onMouseMove={tilt} onMouseLeave={untilt}><img src={c.gif} alt=""/><div className="reelCap reelCapDark"><b>{c.head}</b><small>{c.d}</small></div></div>:<div className="reelCard reelText" key={i}><span className="reelStar">✦</span><b>{c.head}</b><small>{c.d}</small></div>)}
     <div className="reelCard reelEnd"><b>That's my story.</b><small>One commit at a time.</small><a className="titleBtn" href="#contact">Let's build together</a></div>
-   </motion.div>
+   </div>
   </div>
  </div>;
 }
@@ -114,12 +136,15 @@ function StoryReel(){
 function ExpReel({experience,education}){
  const ref=useRef(null);
  const trackRef=useRef(null);
+ const travelRef=useRef(0);
  const [travel,setTravel]=useState(0);
  const imgs=["/about/fitness.jpg","/about/office.jpg","/about/code.jpg"];
  useEffect(()=>{
   const measure=()=>{
    const t=trackRef.current;if(!t)return;
-   setTravel(Math.max(0,(t.scrollWidth||0)-window.innerWidth));
+   const x=Math.max(0,(t.scrollWidth||0)-window.innerWidth);
+   travelRef.current=x;
+   setTravel(x);
   };
   measure();
   const ro=new ResizeObserver(measure);
@@ -128,18 +153,17 @@ function ExpReel({experience,education}){
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>setTimeout(measure,80));
   return ()=>{ro.disconnect();window.removeEventListener("resize",measure)};
  },[]);
- const {scrollYProgress}=useScroll({target:ref,offset:["start start","end end"]});
- const x=useTransform(scrollYProgress,[0,1],[0,-travel]);
+ usePinProgress(ref, trackRef, travelRef);
  return <div className="expReel" ref={ref} style={travel?{height:`calc(100vh + ${travel}px)`}:undefined}>
   <div className="expReelSticky">
-   <motion.div className="expTrack" ref={trackRef} style={{x}}>
+   <div className="expTrack" ref={trackRef}>
     {experience.map((e,i)=><div className="expCard" key={i}>
      <div className="expMedia"><img src={imgs[i%imgs.length]} alt=""/><span className="expPeriod">{e.period}</span></div>
      <div className="expBody"><b>{e.role}</b><small>{e.company}</small><ul>{e.points.map((pt,j)=><li key={j}>{pt}</li>)}</ul></div>
     </div>)}
     {education.map((e,i)=><div className="expCard expEdu" key={"e"+i}><span className="expEduIcon"><GraduationCap size={22}/></span><b>{e.degree}</b><small>{e.school}</small><span className="expPeriod">{e.period}</span></div>)}
     <div className="expCard expEnd"><b>That's the journey so far.</b><small>Always shipping, always learning.</small><a className="titleBtn" href="#projects">See the work →</a></div>
-   </motion.div>
+   </div>
   </div>
  </div>;
 }
