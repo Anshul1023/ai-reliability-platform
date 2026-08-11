@@ -111,24 +111,50 @@
 .abHero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden}
 .abHeroBg{position:absolute;inset:0;z-index:0}
 .abHeroBg .drift-wall{height:100%}
-.abHero::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 72% 62% at 32% 42%,rgba(10,12,22,.52) 0%,rgba(10,12,22,.78) 60%,#0b0c14 100%)}
-.abHero::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(10,12,22,.78) 0%,rgba(10,12,22,.3) 34%,rgba(10,12,22,.3) 66%,#0b0c14 100%)}
-.abHeroInner{position:relative;z-index:2;width:100%;display:grid;grid-template-columns:1.12fr .88fr;gap:clamp(20px,3vw,60px);align-items:center;padding:92px 2.5vw 56px}
-.abHeroText{text-align:left}
-.aboutName{min-height:96px;margin:10px 0 6px}
-.aboutName .fold-text{font-size:clamp(4rem,10vw,8.6rem);letter-spacing:-.03em;text-shadow:0 8px 50px rgba(90,125,255,.45)}
-.aboutTag{margin-bottom:14px;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
-.abHeroText .aboutChips{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-start;margin:34px 0 36px}
-.abHeroText .aboutCta{display:flex;gap:14px;justify-content:flex-start;flex-wrap:wrap}
-/* hero art — free-floating, no boxes */
-.abHeroArt{position:relative;height:clamp(420px,68vh,620px);width:100%}
-.abFloat{position:absolute;border-radius:24px;object-fit:cover;box-shadow:0 40px 80px -30px rgba(0,0,0,.78);border:1px solid rgba(122,162,255,.16)}
-.abFloatCode{width:58%;height:64%;top:6%;right:4%;z-index:1}
-.abFloatMtn{width:34%;height:30%;top:0;left:6%;z-index:3;transform:rotate(-5deg)}
-.abChar{position:absolute;left:2%;bottom:0;z-index:2;display:flex;flex-direction:column;align-items:center;gap:12px;animation:charFloat 3.4s ease-in-out infinite}
-.abChar img{width:clamp(150px,19vw,240px);height:auto;display:block;filter:drop-shadow(0 26px 46px rgba(0,0,0,.6))}
-.abChar span{font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:#8fa0c8}
+.abHero::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 72% 62% at 32% 42%,rgba(10,12,22,.52) 0%,rgba(10,12,22,.78) 60%,#0c0d14 100%)}
+.abHero::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(10,12,22,.78) 0%,rgba(10,12,22,.3) 34%,rgba(10,12,22,.3) 66%,#0c0d14 100%)}
+.abHeroInner{position:relative;z-index:2;width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:80px 3vw 72px}
+/* editorial hero foreground — background untouched */
+.heroEditorial{position:relative;width:100%;max-width:1600px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.heroEyebrow{font-family:"Bodoni Moda",serif;font-style:italic;font-weight:500;font-size:clamp(.9rem,1.4vw,1.2rem);letter-spacing:.32em;text-transform:uppercase;color:#aebcf0;margin:0 0 clamp(16px,2.6vw,30px);opacity:0}
+.heroEyebrow span{color:#5eead4;margin:0 .4em}
+.heroTitle{position:relative;z-index:1;margin:0;font-family:"Bodoni Moda",serif;font-weight:900;text-transform:uppercase;letter-spacing:.015em;line-height:.88;color:#f4f6ff;text-shadow:0 16px 80px rgba(0,0,0,.65)}
+.heroLineWrap{display:block;overflow:hidden;padding-bottom:.05em}
+.heroLine{display:block;font-size:clamp(4rem,16vw,19rem);line-height:.92;transform:translateY(112%)}
+.heroLineAlt{background:linear-gradient(180deg,#ffffff 8%,#c6d2fb 60%,#7aa2ff 118%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.heroArt{position:absolute;inset:0;z-index:2;pointer-events:none}
+.abChar{position:absolute;left:50%;top:50%;transform:translate(-50%,-54%);z-index:2;display:flex;align-items:center;justify-content:center}
+.abCharInner{display:flex;flex-direction:column;align-items:center;gap:12px;animation:charFloat 3.4s ease-in-out infinite}
+.abChar img{width:clamp(140px,19vw,260px);height:auto;display:block;filter:drop-shadow(0 30px 60px rgba(0,0,0,.65))}
+.abChar span{font-family:"Space Grotesk",Inter,sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#8fa0c8}
+.abFloat{position:absolute;border-radius:22px;object-fit:cover;box-shadow:0 40px 80px -30px rgba(0,0,0,.8);border:1px solid rgba(122,162,255,.18)}
+.abFloatCode{width:clamp(170px,18vw,280px);aspect-ratio:4/5;top:13%;right:3%;transform:rotate(4deg);z-index:1}
+.abFloatMtn{width:clamp(140px,14vw,220px);aspect-ratio:1/1;top:22%;left:3%;transform:rotate(-6deg);z-index:3;opacity:.94}
+.heroSub{position:relative;z-index:3;font-family:"Space Grotesk",Inter,sans-serif;font-size:clamp(.95rem,1.35vw,1.12rem);line-height:1.7;color:#c3ceec;max-width:640px;margin:clamp(12px,2.2vw,26px) auto 0;opacity:0}
+.heroCtaRow{position:relative;z-index:3;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:clamp(14px,2vw,24px) 0 0;opacity:0}
+.heroChips{position:relative;z-index:3;margin:clamp(12px,1.8vw,20px) 0 0 !important;justify-content:center !important;opacity:0}
+@media(max-width:900px){
+ .heroLine{font-size:clamp(3rem,18vw,6rem)}
+ .abFloatCode{right:2%;top:12%;width:clamp(110px,24vw,170px)}
+ .abFloatMtn{left:2%;top:20%;width:clamp(95px,20vw,140px)}
+ .abChar img{width:clamp(110px,28vw,180px)}
+ .abHeroInner{padding:64px 5vw 60px}
+}
+@media(max-width:520px){
+ .abFloatCode,.abFloatMtn{opacity:.45}
+ .heroEyebrow{letter-spacing:.2em}
+}
 @keyframes charFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-14px) rotate(2deg)}}
+/* entrance — CSS-driven so the hero always resolves (no JS ticker dependency) */
+.heroLine{animation:heroRise 1.15s cubic-bezier(.22,1,.36,1) .15s both}
+@keyframes heroRise{from{transform:translateY(112%) rotate(2deg)}to{transform:translateY(0) rotate(0)}}
+.heroEyebrow{animation:heroFadeUp .75s cubic-bezier(.22,1,.36,1) .95s both}
+.heroSub{animation:heroFadeUp .75s cubic-bezier(.22,1,.36,1) 1.3s both}
+.heroCtaRow{animation:heroFadeUp .75s cubic-bezier(.22,1,.36,1) 1.45s both}
+.heroChips{animation:heroFadeUp .7s cubic-bezier(.22,1,.36,1) 1.6s both}
+.heroArtEl{animation:heroFadeIn .9s ease .9s both}
+@keyframes heroFadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes heroFadeIn{from{opacity:0}to{opacity:1}}
 .aboutChip{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:99px;border:1px solid rgba(122,162,255,.4);background:rgba(20,26,44,.65);backdrop-filter:blur(8px);color:#dbe6ff;font-size:13.5px;text-decoration:none;transition:.25s}
 .aboutChip:hover{border-color:#5a7dff;background:rgba(42,53,80,.85);transform:translateY(-3px);box-shadow:0 8px 22px rgba(90,125,255,.3)}
 .aboutCta{display:flex;gap:14px;justify-content:flex-start;flex-wrap:wrap}

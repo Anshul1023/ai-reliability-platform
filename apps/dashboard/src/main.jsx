@@ -5,6 +5,9 @@ import {ResponsiveContainer,AreaChart,Area,BarChart,Bar,XAxis,YAxis,Tooltip} fro
 import {motion,useInView,useScroll,useTransform} from "framer-motion";
 import {MaskedHeading,FoldText,ScrollExpand,CircularGallery} from "./reactbits";
 import {SplitText,DepthText,DriftWall,Folder,OptionWheel} from "./aboutbits";
+import {gsap} from "gsap";
+import {ScrollTrigger} from "gsap/ScrollTrigger";
+gsap.registerPlugin(ScrollTrigger);
 import {api,API_WS,getApiKey,setApiKey} from "./services/api";
 import "./styles.css";
 import "./about.css";
@@ -223,7 +226,21 @@ function AboutPage(){
  const [sent,setSent]=useState(false);
  const [busy,setBusy]=useState(false);
  const [skill,setSkill]=useState(null);
+ const heroRef=useRef(null);
  useEffect(()=>{api.profile().then(setP).catch(()=>{})},[]);
+ useEffect(()=>{
+  if(!p||!heroRef.current)return;
+  const ctx=gsap.context(()=>{
+   gsap.to(".heroTitle",{yPercent:-9,ease:"none",scrollTrigger:{trigger:heroRef.current,start:"top top",end:"bottom top",scrub:1.2}});
+   gsap.to(".heroArt",{yPercent:12,ease:"none",scrollTrigger:{trigger:heroRef.current,start:"top top",end:"bottom top",scrub:1.2}});
+  },heroRef);
+  const settle=setTimeout(()=>{
+   const root=heroRef.current;if(!root)return;
+   root.querySelectorAll(".heroLine").forEach(el=>{el.style.animation="none";el.style.transform="translateY(0)"});
+   root.querySelectorAll(".heroEyebrow,.heroSub,.heroCtaRow,.heroChips,.heroArtEl").forEach(el=>{el.style.animation="none";el.style.opacity="1"});
+  },2800);
+  return ()=>{clearTimeout(settle);ctx.revert();};
+ },[p]);
  useEffect(()=>{api.projects().then(list=>{setAllProjects(list.filter(x=>x.repo&&x.repo.includes("/")).map((x,i)=>({label:x.name,text:x.name,image:imageForRepo(x.repo,i),link:`https://github.com/${x.repo}`,title:x.name}))) }).catch(()=>{})},[]);
  const tilt=e=>{const c=e.currentTarget;const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5;const y=(e.clientY-r.top)/r.height-.5;c.style.transform=`perspective(800px) rotateY(${x*7}deg) rotateX(${-y*7}deg) translateY(-4px)`};
  const untilt=e=>{e.currentTarget.style.transform=""};
@@ -239,27 +256,30 @@ function AboutPage(){
  const driftItems=["/about/mask.jpg","/about/story.jpg","/about/abstract.jpg","/about/desk.jpg","/about/mountain.jpg","/about/space.jpg","/about/office.jpg","/about/code.jpg","/about/ai.jpg","/about/fitness.jpg"].map((img,i)=>({image:img,title:`tile${i}`}));
 
  return <div className="about">
-  <section className="abHero" id="top">
+  <section className="abHero" id="top" ref={heroRef}>
    <div className="abHeroBg"><DriftWall items={driftItems} columns={5} tileWidth={210} tileHeight={140} gap={16} speed={36} fade={0.55} dim={0.82} tilt={14} turn={-12} overlayColor="#080a14"/></div>
    <div className="abHeroInner">
-    <div className="abHeroText">
-     <motion.span initial={{opacity:0,scale:.85}} animate={{opacity:1,scale:1}} transition={{duration:.5}} className="badge aboutTag">Full Stack Developer</motion.span>
-     <h1 className="aboutName"><FoldText text="Anshul Rawat" hinge="bottom" trigger="mount" splitBy="char" duration={0.7} stagger={0.06} fontSize="clamp(4rem,10vw,8.6rem)" fontWeight={800} color="#eaf0ff"/></h1>
-     <div className="aboutMaskWrap"><MaskedHeading text="BUILDING THINGS THAT LAST" align="left" fill="linear-gradient(90deg,#7aa2ff 0%,#5eead4 45%,#9db4ff 70%,#5b7cff 100%)" trigger="view" reveal="rise" duration={1.2} stagger={0.09} textScale={0.11} weight={900} tracking={-0.03} fillScale={1.15} parallax={28} drift={22}/></div>
-     <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:.9,duration:.7}} className="aboutChips">
+    <div className="heroEditorial">
+     <p className="heroEyebrow">Full Stack Developer <span>·</span> Portfolio MMXXVI</p>
+     <h1 className="heroTitle" aria-label="Anshul Rawat">
+      <span className="heroLineWrap"><span className="heroLine">Anshul</span></span>
+      <span className="heroLineWrap"><span className="heroLine heroLineAlt">Rawat</span></span>
+     </h1>
+     <div className="heroArt">
+      <div className="abChar heroArtEl"><div className="abCharInner"><img src="/about/cat.gif" alt=""/><span>always shipping</span></div></div>
+      <img className="abFloat abFloatCode heroArtEl" src="/about/code.jpg" alt=""/>
+      <img className="abFloat abFloatMtn heroArtEl" src="/about/mountain.jpg" alt=""/>
+     </div>
+     <p className="heroSub">I build fast, resilient web apps. From pixel-perfect React to async FastAPI backends with Docker, Redis and real observability.</p>
+     <div className="heroCtaRow"><a className="titleBtn" href="#contact">💬 Work with me</a><a className="titleBtn ghost" href={p.links.portfolio} target="_blank" rel="noreferrer">View my portfolio ↗</a></div>
+     <div className="aboutChips heroChips">
       <a className="aboutChip" href={`tel:${p.phone.replace(/\s/g,"")}`}><Phone size={13}/>{p.phone}</a>
       <a className="aboutChip" href={`mailto:${p.email}`}><Mail size={13}/>{p.email}</a>
       <span className="aboutChip"><MapPin size={13}/>{p.location}</span>
       <a className="aboutChip" href={p.links.github} target="_blank" rel="noreferrer"><Github size={13}/>GitHub</a>
       <a className="aboutChip" href={p.links.linkedin} target="_blank" rel="noreferrer"><Linkedin size={13}/>LinkedIn</a>
-     </motion.div>
-     <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:1.05,duration:.7}} className="aboutCta"><a className="titleBtn" href="#contact">💬 Work with me</a><a className="titleBtn ghost" href={p.links.portfolio} target="_blank" rel="noreferrer">View my portfolio ↗</a></motion.div>
+     </div>
     </div>
-    <motion.div initial={{opacity:0,x:70}} animate={{opacity:1,x:0}} transition={{delay:.5,duration:.9,ease:[.22,1,.36,1]}} className="abHeroArt">
-     <img className="abFloat abFloatCode" src="/about/code.jpg" alt=""/>
-     <img className="abFloat abFloatMtn" src="/about/mountain.jpg" alt=""/>
-     <div className="abChar"><img src="/about/cat.gif" alt=""/><span>always shipping</span></div>
-    </motion.div>
    </div>
    <div className="abHeroScroll">SCROLL<span>↓</span></div>
   </section>
