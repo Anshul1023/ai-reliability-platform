@@ -175,8 +175,10 @@
 .storyDot{background:linear-gradient(180deg,#5eead4,#7aa2ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .storyLead{font-family:"Syne",Inter,sans-serif;font-weight:700;font-size:clamp(1.55rem,3.6vw,2.7rem);line-height:1.24;margin:0 0 6px;background:linear-gradient(92deg,#eaf0ff,#b9c8f2 55%,#9db4ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .storyLead span{background:linear-gradient(92deg,#5eead4,#7aa2ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.storyParas{display:flex;flex-direction:column;gap:clamp(16px,2.4vw,26px);width:100%;max-width:1020px;align-items:center}
-.storyParaWrap{width:100%}
+.storyParas{display:flex;flex-direction:column;gap:clamp(16px,2.4vw,26px);width:100%;max-width:1150px;align-items:center}
+.storyBigLines{display:flex;flex-direction:column;gap:clamp(12px,2vw,24px);width:100%;align-items:center}
+.storyBigLine{font-family:"Bodoni Moda",serif;font-weight:600;font-size:clamp(2.4rem,5.8vw,5.2rem);line-height:1.16;letter-spacing:.01em;color:#e8eeff;margin:0;text-align:center;text-wrap:balance}
+.storyBigHl{background:linear-gradient(92deg,#5eead4,#7aa2ff 72%,#9db4ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .curved{width:100%}
 .curved svg{display:block;overflow:visible;-webkit-mask-image:linear-gradient(90deg,#000 94%,transparent 100%);mask-image:linear-gradient(90deg,#000 94%,transparent 100%)}
 .curved text{font-family:"Space Grotesk",Inter,sans-serif;font-weight:500;fill:#cdd8f5}

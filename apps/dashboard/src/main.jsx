@@ -271,7 +271,7 @@ function AboutPage(){
  },[p]);
  useEffect(()=>{
   const force=()=>{
-   document.querySelectorAll(".abSec,.secTitle,.storyTitle,.storyLead,.storyParaWrap,.storyCta").forEach(el=>{
+   document.querySelectorAll(".abSec,.secTitle,.storyTitle,.storyLead,.storyBigLine,.storyCta").forEach(el=>{
     const r=el.getBoundingClientRect();
     if(r.top<window.innerHeight&&r.bottom>0&&parseFloat(getComputedStyle(el).opacity)<.5){
      el.style.setProperty("opacity","1","important");
@@ -330,7 +330,12 @@ function AboutPage(){
     <motion.h2 className="storyTitle" initial={{x:-300,opacity:0,filter:"blur(10px)"}} whileInView={{x:0,opacity:1,filter:"blur(0px)"}} viewport={{once:false,amount:.4}} transition={{duration:.95,ease:[.22,1,.36,1]}}>MY STORY<span className="storyDot">.</span></motion.h2>
     <motion.h3 className="storyLead" initial={{x:300,opacity:0,filter:"blur(8px)"}} whileInView={{x:0,opacity:1,filter:"blur(0px)"}} viewport={{once:false,amount:.4}} transition={{duration:.95,delay:.12,ease:[.22,1,.36,1]}}>I turn ideas into products<br/>that <span>feel fast</span> and <span>never break</span></motion.h3>
     <div className="storyParas">
-     <motion.div className="storyParaWrap" initial={{x:-220,opacity:0}} whileInView={{x:0,opacity:1}} viewport={{once:false,amount:.3}} transition={{duration:.9,delay:.1,ease:[.22,1,.36,1]}}><CurvedText text={p.summary} size={21} curve={12} className="storyCurve"/></motion.div>
+     <div className="storyBigLines">
+      {p.summary.split(/\.\s+/).map(s=>s.trim()).filter(Boolean).map((s,i)=>{
+       const hl=["feel fast","never break"];
+       return <motion.p key={i} className="storyBigLine" initial={{y:120,opacity:0,filter:"blur(8px)"}} whileInView={{y:0,opacity:1,filter:"blur(0px)"}} viewport={{once:false,amount:.45}} transition={{duration:.9,delay:i*.14,ease:[.22,1,.36,1]}}>{s.split(/(feel fast|never break)/g).map((t,j)=>hl.includes(t)?<span className="storyBigHl" key={j}>{t}</span>:t)}</motion.p>;
+      })}
+     </div>
     </div>
     <motion.div className="storyCta" initial={{x:-240,opacity:0}} whileInView={{x:0,opacity:1}} viewport={{once:false,amount:.4}} transition={{duration:.85,delay:.25,ease:[.22,1,.36,1]}}><a className="titleBtn" href="#contact">Let's build something</a></motion.div>
    </div>
