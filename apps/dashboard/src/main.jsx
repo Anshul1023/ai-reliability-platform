@@ -279,7 +279,7 @@ function AboutPage(){
 
  return <div className="about">
   <section className="abHero" id="top" ref={heroRef}>
-   <div className="abHeroBg"><DriftWall items={driftItems} columns={5} tileWidth={210} tileHeight={140} gap={16} speed={36} fade={0.55} dim={0.82} tilt={14} turn={-12} overlayColor="#080a14"/></div>
+   <div className="abHeroBg"><DriftWall items={driftItems} columns={7} tileWidth={210} tileHeight={140} gap={16} speed={36} fade={0.55} dim={0.82} tilt={14} turn={-12} overlayColor="#080a14"/></div>
    <div className="abHeroInner">
     <div className="heroEditorial">
      <p className="heroEyebrow">Full Stack Developer <span>·</span> Portfolio MMXXVI</p>
@@ -287,11 +287,6 @@ function AboutPage(){
       <span className="heroLineWrap"><span className="heroLine">Anshul</span></span>
       <span className="heroLineWrap"><span className="heroLine heroLineAlt">Rawat</span></span>
      </h1>
-     <div className="heroArt">
-      <div className="abChar heroArtEl"><div className="abCharInner"><img src="/about/cat.gif" alt=""/><span>always shipping</span></div></div>
-      <img className="abFloat abFloatCode heroArtEl" src="/about/code.jpg" alt=""/>
-      <img className="abFloat abFloatMtn heroArtEl" src="/about/mountain.jpg" alt=""/>
-     </div>
      <p className="heroSub">I build fast, resilient web apps. From pixel-perfect React to async FastAPI backends with Docker, Redis and real observability.</p>
      <div className="heroCtaRow"><a className="titleBtn" href="#contact">💬 Work with me</a><a className="titleBtn ghost" href={p.links.portfolio} target="_blank" rel="noreferrer">View my portfolio ↗</a></div>
      <div className="aboutChips heroChips">

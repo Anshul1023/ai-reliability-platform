@@ -112,17 +112,17 @@
 /* hero */
 .abHero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden}
 .abHeroBg{position:absolute;inset:0;z-index:0}
-.abHeroBg .drift-wall{height:100%}
+.abHeroBg .drift-wall{height:100%;-webkit-mask-image:none;mask-image:none}
 .abHero::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 72% 62% at 32% 42%,rgba(10,12,22,.52) 0%,rgba(10,12,22,.78) 60%,#0c0d14 100%)}
 .abHero::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(10,12,22,.78) 0%,rgba(10,12,22,.3) 34%,rgba(10,12,22,.3) 66%,#0c0d14 100%)}
-.abHeroInner{position:relative;z-index:2;width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:80px 3vw 72px}
+.abHeroInner{position:relative;z-index:2;width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:72px 1.5vw 64px;container-type:inline-size}
 /* editorial hero foreground — background untouched */
 .heroEditorial{position:relative;width:100%;max-width:1600px;display:flex;flex-direction:column;align-items:center;text-align:center}
 .heroEyebrow{font-family:"Bodoni Moda",serif;font-style:italic;font-weight:500;font-size:clamp(.9rem,1.4vw,1.2rem);letter-spacing:.32em;text-transform:uppercase;color:#aebcf0;margin:0 0 clamp(16px,2.6vw,30px);opacity:0}
 .heroEyebrow span{color:#5eead4;margin:0 .4em}
 .heroTitle{position:relative;z-index:1;margin:0;font-family:"Bodoni Moda",serif;font-weight:900;text-transform:uppercase;letter-spacing:.015em;line-height:.88;color:#f4f6ff;text-shadow:0 16px 80px rgba(0,0,0,.65)}
 .heroLineWrap{display:block;overflow:hidden;padding-bottom:.05em}
-.heroLine{display:block;font-size:clamp(4rem,16vw,19rem);line-height:.92;transform:translateY(112%)}
+.heroLine{display:block;font-size:clamp(4rem,22cqi,26rem);line-height:.92;transform:translateY(112%)}
 .heroLineAlt{background:linear-gradient(180deg,#ffffff 8%,#c6d2fb 60%,#7aa2ff 118%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .heroArt{position:absolute;inset:0;z-index:2;pointer-events:none}
 .abChar{position:absolute;left:50%;top:50%;transform:translate(-50%,-54%);z-index:2;display:flex;align-items:center;justify-content:center}
