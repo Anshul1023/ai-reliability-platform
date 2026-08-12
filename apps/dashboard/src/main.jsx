@@ -14,45 +14,63 @@ import "./styles.css";
 import "./about.css";const demo=[{time:"09:00",error:1.1},{time:"10:00",error:1.4},{time:"11:00",error:1.2},{time:"12:00",error:2.1},{time:"13:00",error:3.2},{time:"14:00",error:2.4},{time:"15:00",error:1.1}];
 function HReel({children,className=""}){
  const viewRef=useRef(null);
+ const trackRef=useRef(null);
  const drag=useRef(null);
  const snapT=useRef(null);
- const targetRef=useRef(0);
- const rafRef=useRef(null);
+ const posRef=useRef(0);     /* current translate (px) */
+ const targetRef=useRef(0);   /* eased destination (px) */
+ const maxRef=useRef(0);      /* max travel */
+ const loopT=useRef(null);
  const canLRef=useRef(false);
  const canRRef=useRef(false);
  const [canL,setCanL]=useState(false);
  const [canR,setCanR]=useState(false);
- /* Eased momentum scrolling: wheel input never teleports the track.
-    Each frame we lerp scrollLeft toward a target, so even a chunky
-    mouse-wheel notch glides instead of stepping. */
- const stopLoop=()=>{if(rafRef.current){clearTimeout(rafRef.current);rafRef.current=null}};
+ /* The track moves via transform, NOT scrollLeft. Setting scrollLeft from
+    JS forces a synchronous layout pass every frame (that's the choppiness);
+    a transform is compositor-only — the same reason GSAP and native page
+    scroll are smooth. */
+ const apply=()=>{const t=trackRef.current;if(!t)return;t.style.transform=`translate3d(${(-posRef.current).toFixed(2)}px,0,0)`};
+ const updateBtns=()=>{
+  const l=posRef.current>2;
+  const r=posRef.current<maxRef.current-2;
+  if(l!==canLRef.current){canLRef.current=l;setCanL(l)}
+  if(r!==canRRef.current){canRRef.current=r;setCanR(r)}
+ };
+ const measure=()=>{
+  const w=viewRef.current,t=trackRef.current;
+  if(!w||!t)return;
+  maxRef.current=Math.max(0,t.scrollWidth-w.clientWidth);
+  posRef.current=Math.min(posRef.current,maxRef.current);
+  targetRef.current=Math.min(targetRef.current,maxRef.current);
+  apply();updateBtns();
+ };
+ const stopLoop=()=>{if(loopT.current){clearTimeout(loopT.current);loopT.current=null}};
  const startLoop=()=>{
-  if(rafRef.current)return;
+  if(loopT.current)return;
   let last=performance.now();
   const step=()=>{
-   rafRef.current=null;
-   const v=viewRef.current;
-   if(!v)return;
-   const max=v.scrollWidth-v.clientWidth;
-   const t=Math.max(0,Math.min(max,targetRef.current));
-   targetRef.current=t;
-   const cur=v.scrollLeft;
-   const diff=t-cur;
-   if(Math.abs(diff)<0.6){v.scrollLeft=t;return}
-   /* time-based ease: identical glide at 30, 60 or 144fps */
+   loopT.current=null;
+   const diff=targetRef.current-posRef.current;
+   if(Math.abs(diff)<0.5){posRef.current=targetRef.current;apply();updateBtns();return}
    const now=performance.now();
    const dt=Math.min(120,Math.max(4,now-last));
    last=now;
-   v.scrollLeft=cur+diff*(1-Math.exp(-dt/70));
-   rafRef.current=setTimeout(step,16);
+   posRef.current+=diff*(1-Math.exp(-dt/75));
+   apply();
+   loopT.current=setTimeout(step,16);
   };
-  rafRef.current=setTimeout(step,16);
+  loopT.current=setTimeout(step,16);
  };
+ const cardStep=()=>{const t=trackRef.current;const c=t?t.querySelector(".hCard"):null;const gap=parseFloat(getComputedStyle(t||document.body).gap||"24");return(c?c.getBoundingClientRect().width:420)+gap};
  const snapTo=()=>{
-  const v=viewRef.current;if(!v)return;
-  const cards=[...v.querySelectorAll(".hCard")];
+  /* Only snap once the glide has actually settled — snapping mid-glide
+     yanks the track backward and feels like a stutter. */
+  if(Math.abs(targetRef.current-posRef.current)>8){scheduleSnap();return}
+  const w=viewRef.current,t=trackRef.current;
+  if(!w||!t)return;
+  const cards=[...t.querySelectorAll(".hCard")];
   if(!cards.length)return;
-  const vc=v.clientWidth/2;
+  const vc=w.clientWidth/2;
   let best=null,bestD=1e9;
   for(const c of cards){
    const r=c.getBoundingClientRect();
@@ -60,49 +78,71 @@ function HReel({children,className=""}){
    if(d<bestD){bestD=d;best=r}
   }
   if(!best)return;
-  const target=v.scrollLeft+(best.left+best.width/2-vc);
-  targetRef.current=Math.max(0,Math.min(v.scrollWidth-v.clientWidth,target));
+  targetRef.current=Math.max(0,Math.min(maxRef.current,posRef.current+(best.left+best.width/2-vc)));
   startLoop();
  };
  const scheduleSnap=()=>{clearTimeout(snapT.current);snapT.current=setTimeout(snapTo,150)};
  useEffect(()=>{
-  const v=viewRef.current;if(!v)return;
-  /* Only touch React state when a button's state actually flips — a
-     setState per scroll frame re-renders the whole track and makes
-     horizontal scrolling feel choppy. */
-  const update=()=>{
-   const l=v.scrollLeft>2;
-   const r=v.scrollLeft<v.scrollWidth-v.clientWidth-2;
-   if(l!==canLRef.current){canLRef.current=l;setCanL(l)}
-   if(r!==canRRef.current){canRRef.current=r;setCanR(r)}
-  };
-  update();
-  v.addEventListener("scroll",update,{passive:true});
+  const w=viewRef.current;if(!w)return;
+  measure();
+  const ro=new ResizeObserver(measure);
+  ro.observe(w);
+  if(trackRef.current)ro.observe(trackRef.current);
   const onWheel=e=>{
    const d=Math.abs(e.deltaY)>Math.abs(e.deltaX)?e.deltaY:e.deltaX;
    if(!d)return;
-   const max=v.scrollWidth-v.clientWidth;
-   if(max<=0)return;
-   const atL=v.scrollLeft<=0&&d<0;
-   const atR=v.scrollLeft>=max-1&&d>0;
+   if(maxRef.current<=0)return;
+   const atL=posRef.current<=0&&d<0;
+   const atR=posRef.current>=maxRef.current-1&&d>0;
    if((atL||atR)&&Math.abs(e.deltaX)<=Math.abs(e.deltaY))return;
    e.preventDefault();
-   targetRef.current=Math.max(0,Math.min(max,targetRef.current+d));
+   targetRef.current=Math.max(0,Math.min(maxRef.current,targetRef.current+d));
    startLoop();
    scheduleSnap();
   };
-  v.addEventListener("wheel",onWheel,{passive:false});
-  const ro=new ResizeObserver(update);
-  ro.observe(v);
-  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(update).catch(()=>{});
-  return ()=>{clearTimeout(snapT.current);stopLoop();v.removeEventListener("scroll",update);v.removeEventListener("wheel",onWheel);ro.disconnect()};
+  w.addEventListener("wheel",onWheel,{passive:false});
+  const onKey=e=>{
+   if(e.key!=="ArrowLeft"&&e.key!=="ArrowRight")return;
+   e.preventDefault();
+   const step=cardStep();
+   targetRef.current=Math.max(0,Math.min(maxRef.current,targetRef.current+(e.key==="ArrowRight"?step:-step)));
+   startLoop();
+  };
+  w.addEventListener("keydown",onKey);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>setTimeout(measure,80)).catch(()=>{});
+  return ()=>{clearTimeout(snapT.current);stopLoop();ro.disconnect();w.removeEventListener("wheel",onWheel);w.removeEventListener("keydown",onKey)};
  },[]);
- const startDrag=e=>{const v=viewRef.current;if(!v)return;clearTimeout(snapT.current);stopLoop();targetRef.current=v.scrollLeft;drag.current={x:e.clientX,l:v.scrollLeft,id:e.pointerId};try{v.setPointerCapture(e.pointerId)}catch(_){/* synthetic / edge pointers */}v.classList.add("dragging")};
- const moveDrag=e=>{const v=viewRef.current;const d=drag.current;if(!d||!v)return;v.scrollLeft=d.l-(e.clientX-d.x);targetRef.current=v.scrollLeft};
- const endDrag=e=>{const v=viewRef.current;const d=drag.current;if(!d||!v)return;if(v.hasPointerCapture(e.pointerId))v.releasePointerCapture(e.pointerId);drag.current=null;v.classList.remove("dragging");scheduleSnap()};
- const nudge=dir=>{const v=viewRef.current;if(!v)return;const c=v.querySelector(".hCard");const gap=parseFloat(getComputedStyle(v).gap||"24");const step=(c?c.getBoundingClientRect().width:420)+gap;targetRef.current=Math.max(0,Math.min(v.scrollWidth-v.clientWidth,v.scrollLeft+dir*step));startLoop();setTimeout(snapTo,380)};
+ const startDrag=e=>{
+  const w=viewRef.current;if(!w)return;
+  clearTimeout(snapT.current);stopLoop();
+  drag.current={x:e.clientX,p:posRef.current,id:e.pointerId};
+  try{w.setPointerCapture(e.pointerId)}catch(_){/* synthetic / edge pointers */}
+  w.classList.add("dragging");
+ };
+ const moveDrag=e=>{
+  const w=viewRef.current;const d=drag.current;
+  if(!d||!w)return;
+  posRef.current=Math.max(0,Math.min(maxRef.current,d.p-(e.clientX-d.x)));
+  targetRef.current=posRef.current;
+  apply();
+ };
+ const endDrag=e=>{
+  const w=viewRef.current;const d=drag.current;
+  if(!d||!w)return;
+  if(w.hasPointerCapture(e.pointerId))w.releasePointerCapture(e.pointerId);
+  drag.current=null;w.classList.remove("dragging");
+  scheduleSnap();
+ };
+ const nudge=dir=>{
+  const step=cardStep();
+  targetRef.current=Math.max(0,Math.min(maxRef.current,targetRef.current+dir*step));
+  startLoop();
+  setTimeout(snapTo,380);
+ };
  return <div className={"hReel "+className}>
-  <div className="hReelView" ref={viewRef} onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>{children}</div>
+  <div className="hReelView" ref={viewRef} tabIndex={0} onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
+   <div className="hReelTrack" ref={trackRef}>{children}</div>
+  </div>
   <button className="hNav hPrev" onClick={()=>nudge(-1)} disabled={!canL} aria-label="Scroll left">‹</button>
   <button className="hNav hNext" onClick={()=>nudge(1)} disabled={!canR} aria-label="Scroll right">›</button>
  </div>;

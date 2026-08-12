@@ -155,10 +155,12 @@
 .reelHint{font-family:"Syne",Inter,sans-serif;font-size:clamp(1rem,1.8vw,1.4rem);color:#eaf0ff;display:flex;align-items:center;gap:12px}
 .reelHint span{color:#5eead4;animation:bobSoft 1.8s ease-in-out infinite;display:inline-block}
 .hReel{position:relative}
-.hReelView{display:flex;gap:clamp(16px,2.2vw,30px);align-items:stretch;overflow-x:auto;overflow-y:hidden;padding:12px clamp(8px,1.2vw,18px) 26px;cursor:grab;scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-y;-webkit-overflow-scrolling:touch}
-.hReelView::-webkit-scrollbar{display:none}
+.hReelView{position:relative;overflow:hidden;padding:12px clamp(8px,1.2vw,18px) 26px;cursor:grab;touch-action:pan-y;outline:none}
+.hReelView:focus-visible{outline:2px solid rgba(122,162,255,.5);outline-offset:2px;border-radius:14px}
+.hReelTrack{display:flex;gap:clamp(16px,2.2vw,30px);align-items:stretch;width:max-content;will-change:transform;transform:translate3d(0,0,0)}
+.hReelTrack>*{flex:0 0 auto}
 .hReelView.dragging{cursor:grabbing}
-.hReelView>*{flex:0 0 auto}
+.hReelView.dragging .hReelTrack{transition:none}
 .hNav{position:absolute;top:50%;transform:translateY(-50%);z-index:6;width:42px;height:42px;border-radius:50%;border:1px solid rgba(122,162,255,.45);background:rgba(14,18,32,.88);backdrop-filter:blur(8px);color:#cfe0ff;font-size:20px;line-height:1;display:grid;place-items:center;cursor:pointer;transition:.22s;box-shadow:0 6px 18px rgba(0,0,0,.35)}
 .hNav:hover:not(:disabled){background:#5a7dff;color:#fff;border-color:#5a7dff}
 .hNav:disabled{opacity:.22;cursor:default}
