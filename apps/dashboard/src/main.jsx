@@ -180,7 +180,7 @@ function imageForRepo(repo,i){
 }
 
 function SecTitle({children}){
- return <motion.h2 className="secTitle" initial={{y:80,opacity:0,filter:"blur(8px)"}} whileInView={{y:0,opacity:1,filter:"blur(0px)"}} viewport={{once:false,amount:.3}} transition={{duration:.9,ease:[.22,1,.36,1]}}>{children}</motion.h2>;
+ return <motion.h2 className="secTitle" initial={{y:64,opacity:0}} whileInView={{y:0,opacity:1}} viewport={{once:false,amount:.3}} transition={{duration:.8,ease:[.22,1,.36,1]}}>{children}</motion.h2>;
 }
 
 function AboutPage(){
@@ -205,22 +205,28 @@ function AboutPage(){
   return ()=>{clearTimeout(settle);ctx.revert();};
  },[p]);
  useEffect(()=>{
+  /* rAF-throttled, once-per-element settle guard: no layout/style reads per frame,
+     no interval — keeps scrolling compositor-smooth while still never leaving
+     an in-view reveal stuck hidden. */
+  let ticking=false;
   const force=()=>{
+   ticking=false;
    document.querySelectorAll(".abSec,.secTitle,.storyTitle,.storyLead,.storyBigLine,.storyCta").forEach(el=>{
+    if(el.dataset.settled)return;
     const r=el.getBoundingClientRect();
     if(r.top<window.innerHeight&&r.bottom>0&&parseFloat(getComputedStyle(el).opacity)<.5){
+     el.dataset.settled="1";
      el.style.setProperty("opacity","1","important");
      if(el.classList.contains("secTitle")||el.classList.contains("storyTitle")||el.classList.contains("storyLead")){
       el.style.setProperty("transform","none","important");
-      el.style.setProperty("filter","none","important");
      }
     }
    });
   };
-  window.addEventListener("scroll",force,{passive:true});
-  const t=setTimeout(force,4000);
-  const iv=setInterval(force,3000);
-  return ()=>{window.removeEventListener("scroll",force);clearTimeout(t);clearInterval(iv)};
+  const onScroll=()=>{if(!ticking){ticking=true;requestAnimationFrame(force)}};
+  window.addEventListener("scroll",onScroll,{passive:true});
+  const t=setTimeout(force,4500);
+  return ()=>{window.removeEventListener("scroll",onScroll);clearTimeout(t)};
  },[]);
  useEffect(()=>{api.projects().then(list=>{setAllProjects(list.filter(x=>x.repo&&x.repo.includes("/")).map((x,i)=>({label:x.name,text:x.name,image:imageForRepo(x.repo,i),link:`https://github.com/${x.repo}`,title:x.name}))) }).catch(()=>{})},[]);
  const tilt=e=>{const c=e.currentTarget;const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5;const y=(e.clientY-r.top)/r.height-.5;c.style.transform=`perspective(800px) rotateY(${x*7}deg) rotateX(${-y*7}deg) translateY(-4px)`};
@@ -232,7 +238,7 @@ function AboutPage(){
   setBusy(false);
  };
  if(!p)return <div className="page"><p className="muted">Loading profile…</p></div>;
- const secAnim={initial:{opacity:0,y:120,scale:.93,filter:"blur(6px)"},whileInView:{opacity:1,y:0,scale:1,filter:"blur(0px)"},viewport:{once:false,margin:"-40px",amount:0.15},transition:{duration:.85,ease:[.22,1,.36,1]}};
+ const secAnim={initial:{opacity:0,y:56,scale:.98},whileInView:{opacity:1,y:0,scale:1},viewport:{once:false,margin:"-40px",amount:0.15},transition:{duration:.8,ease:[.22,1,.36,1]}};
  
  const driftItems=["/about/mask.jpg","/about/story.jpg","/about/abstract.jpg","/about/desk.jpg","/about/mountain.jpg","/about/space.jpg","/about/office.jpg","/about/code.jpg","/about/ai.jpg","/about/fitness.jpg"].map((img,i)=>({image:img,title:`tile${i}`}));
 
@@ -262,13 +268,13 @@ function AboutPage(){
   <section className="abSec abStory" id="story">
    <div className="abSecInner storyText">
     <div className="storyScroll">Scroll<span>↓</span></div>
-    <motion.h2 className="storyTitle" initial={{x:-300,opacity:0,filter:"blur(10px)"}} whileInView={{x:0,opacity:1,filter:"blur(0px)"}} viewport={{once:false,amount:.4}} transition={{duration:.95,ease:[.22,1,.36,1]}}>MY STORY<span className="storyDot">.</span></motion.h2>
-    <motion.h3 className="storyLead" initial={{x:300,opacity:0,filter:"blur(8px)"}} whileInView={{x:0,opacity:1,filter:"blur(0px)"}} viewport={{once:false,amount:.4}} transition={{duration:.95,delay:.12,ease:[.22,1,.36,1]}}>I turn ideas into products<br/>that <span>feel fast</span> and <span>never break</span></motion.h3>
+    <motion.h2 className="storyTitle" initial={{x:-220,opacity:0}} whileInView={{x:0,opacity:1}} viewport={{once:false,amount:.4}} transition={{duration:.85,ease:[.22,1,.36,1]}}>MY STORY<span className="storyDot">.</span></motion.h2>
+    <motion.h3 className="storyLead" initial={{x:220,opacity:0}} whileInView={{x:0,opacity:1}} viewport={{once:false,amount:.4}} transition={{duration:.85,delay:.1,ease:[.22,1,.36,1]}}>I turn ideas into products<br/>that <span>feel fast</span> and <span>never break</span></motion.h3>
     <div className="storyParas">
      <div className="storyBigLines">
       {p.summary.split(/\.\s+/).map(s=>s.trim()).filter(Boolean).map((s,i)=>{
        const hl=["feel fast","never break"];
-       return <motion.p key={i} className="storyBigLine" initial={{y:120,opacity:0,filter:"blur(8px)"}} whileInView={{y:0,opacity:1,filter:"blur(0px)"}} viewport={{once:false,amount:.45}} transition={{duration:.9,delay:i*.14,ease:[.22,1,.36,1]}}>{s.split(/(feel fast|never break)/g).map((t,j)=>hl.includes(t)?<span className="storyBigHl" key={j}>{t}</span>:t)}</motion.p>;
+       return <motion.p key={i} className="storyBigLine" initial={{y:48,opacity:0}} whileInView={{y:0,opacity:1}} viewport={{once:false,amount:.45}} transition={{duration:.8,delay:i*.12,ease:[.22,1,.36,1]}}>{s.split(/(feel fast|never break)/g).map((t,j)=>hl.includes(t)?<span className="storyBigHl" key={j}>{t}</span>:t)}</motion.p>;
       })}
      </div>
     </div>

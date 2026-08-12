@@ -392,8 +392,26 @@ export function DriftWall({
       }
       rafRef.current = requestAnimationFrame(animate);
     };
+    /* Only run the rAF loop while the wall is on screen — saves the GPU
+       (and keeps page scroll smooth) when it's scrolled out of view. */
+    let running = true;
     rafRef.current = requestAnimationFrame(animate);
+    const io = new IntersectionObserver((entries) => {
+      const visible = entries[0]?.isIntersecting;
+      if (visible && !running) {
+        running = true;
+        lastTsRef.current = null;
+        rafRef.current = requestAnimationFrame(animate);
+      } else if (!visible && running) {
+        running = false;
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    }, { rootMargin: "160px" });
+    if (containerRef.current) io.observe(containerRef.current);
     return () => {
+      running = false;
+      io.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
       lastTsRef.current = null;

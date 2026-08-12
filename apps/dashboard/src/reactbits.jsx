@@ -857,6 +857,7 @@ class CGApp {
     this.onResize();
     this.createGeometry();
     this.createMedias(items, bend, textColor, borderRadius, font);
+    this.visible = true;
     this.update();
     this.addEventListeners();
   }
@@ -925,7 +926,17 @@ class CGApp {
     if (this.medias) this.medias.forEach((media) => media.update(this.scroll, direction));
     this.renderer.render({ scene: this.scene, camera: this.camera });
     this.scroll.last = this.scroll.current;
-    this.raf = window.requestAnimationFrame(this.update.bind(this));
+    this.raf = this.visible ? window.requestAnimationFrame(this.update.bind(this)) : 0;
+  }
+  setVisible(visible) {
+    if (visible === this.visible) return;
+    this.visible = visible;
+    if (visible && !this.raf) {
+      this.raf = window.requestAnimationFrame(this.update.bind(this));
+    } else if (!visible && this.raf) {
+      window.cancelAnimationFrame(this.raf);
+      this.raf = 0;
+    }
   }
   addEventListeners() {
     this.boundOnResize = this.onResize.bind(this);
@@ -979,9 +990,16 @@ export function CircularGallery({
       if (!isMounted || !containerRef.current) return;
       app = new CGApp(containerRef.current, { items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase });
     }, 60);
+    /* Pause the WebGL render loop while the gallery is off screen — it
+       otherwise renders every frame forever and janks page scroll. */
+    const io = new IntersectionObserver((entries) => {
+      if (app) app.setVisible(entries[0]?.isIntersecting ?? true);
+    }, { rootMargin: "300px" });
+    if (containerRef.current) io.observe(containerRef.current);
     return () => {
       isMounted = false;
       clearTimeout(timer);
+      io.disconnect();
       app?.destroy();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
