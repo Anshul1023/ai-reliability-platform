@@ -164,7 +164,7 @@
 .hNav:disabled{opacity:.22;cursor:default}
 .hPrev{left:2px}
 .hNext{right:2px}
-.reelCard{flex:0 0 auto;width:clamp(300px,36vw,440px);height:clamp(310px,48vh,450px);border-radius:20px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;transform-style:preserve-3d;transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s}
+.reelCard{flex:0 0 auto;width:clamp(300px,36vw,440px);height:clamp(310px,48vh,450px);border-radius:20px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;transform-style:preserve-3d;transition:transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s;will-change:transform}
 .reelImg{background:#141a2b;box-shadow:0 30px 60px -22px rgba(0,0,0,.65)}
 .reelImg img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.9) contrast(1.05)}
 .reelImg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(8,10,20,.92))}
@@ -194,7 +194,7 @@
 .swCount{font-family:"Syne",Inter,sans-serif;font-size:14.5px;font-weight:700;letter-spacing:.32em;color:#7aa2ff}
 .skillWheelCenter small{color:#7f90bd;font-size:14.5px;letter-spacing:.08em}
 
-.expCard{flex:0 0 auto;width:clamp(330px,40vw,520px);background:linear-gradient(165deg,rgba(26,33,56,.9),rgba(15,19,33,.95));border:1px solid rgba(90,125,255,.16);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 30px 60px -24px rgba(0,0,0,.6);transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s}
+.expCard{flex:0 0 auto;width:clamp(330px,40vw,520px);background:linear-gradient(165deg,rgba(26,33,56,.9),rgba(15,19,33,.95));border:1px solid rgba(90,125,255,.16);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 30px 60px -24px rgba(0,0,0,.6);transition:transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s;will-change:transform}
 .expCard:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 44px 80px -24px rgba(90,125,255,.35);border-color:rgba(90,125,255,.4)}
 .expMedia{position:relative;height:200px;overflow:hidden}
 .expMedia img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.9)}
