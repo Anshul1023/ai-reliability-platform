@@ -95,17 +95,17 @@
 
 /* ===== About page: full-bleed layout (no cards) ===== */
 .about{max-width:none;margin:0;padding:0}
-.abSec{position:relative;width:100%;padding:clamp(44px,6vw,84px) clamp(18px,6vw,84px);overflow:hidden}
+.abSec{position:relative;width:100%;padding:clamp(34px,4.5vw,60px) clamp(16px,4vw,56px);overflow:hidden}
 /* section titles — editorial Bodoni, same voice as the hero */
 .secTitle{font-family:"Bodoni Moda",serif;font-weight:900;text-transform:uppercase;font-size:clamp(3.6rem,9.5vw,8.5rem);line-height:.95;letter-spacing:.01em;text-align:center;margin:clamp(6px,1.2vw,14px) 0 clamp(14px,3vw,32px);background:linear-gradient(92deg,#7aa2ff 0%,#5eead4 40%,#9db4ff 66%,#5b7cff 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 90px rgba(94,234,212,.25)}
 .abWordmark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:.5;z-index:0;transform:scale(1.08)}
 .abWordmark .depth-text{font-size:clamp(4rem,14vw,11rem)}
-.abSecInner{position:relative;z-index:2}
-.abHeadWrap{margin-bottom:clamp(28px,5vw,56px)}
+.abSecInner{position:relative;z-index:2;width:100%;max-width:1360px;margin:0 auto}
+.abHeadWrap{text-align:center;margin-bottom:clamp(18px,2.6vw,34px)}
 .abHead{font-family:"Syne",Inter,sans-serif;font-size:clamp(2.2rem,5.5vw,4.4rem);font-weight:800;letter-spacing:-.02em;color:#eaf0ff}
 .abHead em{font-style:normal;background:linear-gradient(90deg,#7aa2ff,#5eead4);-webkit-background-clip:text;background-clip:text;color:transparent}
 .abHead .accent{background:linear-gradient(90deg,#7aa2ff,#5eead4 60%,#5b7cff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.abSub{font-family:"Space Grotesk",Inter,sans-serif;font-size:clamp(1.2rem,2vw,1.55rem);color:#bcc8e6;max-width:840px;margin:16px 0 0;line-height:1.7}
+.abSub{font-family:"Space Grotesk",Inter,sans-serif;font-size:clamp(1.2rem,2vw,1.55rem);color:#bcc8e6;max-width:820px;margin:16px auto 0;line-height:1.65}
 .abSub b{color:#eaf0ff;font-weight:700}
 .abSub .hl{color:#5eead4;font-weight:700}
 .abSub .hl2{color:#7aa2ff;font-weight:700}
@@ -164,10 +164,9 @@
 .aboutHighlights span{white-space:nowrap}
 .abHeroScroll{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:2;color:#8fa0c8;font-size:12px;letter-spacing:.12em;display:flex;flex-direction:column;align-items:center;gap:6px;animation:bob 2.2s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,7px)}}
-/* story — full-page curved text */
-.abStory{background:radial-gradient(ellipse 72% 58% at 50% 36%,rgba(90,125,255,.12),transparent 72%)}
-.storyText{padding-top:clamp(56px,8vw,96px)}
-.storyText{max-width:1200px;width:100%;margin:0 auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:clamp(20px,3.4vw,34px);padding:clamp(48px,7vw,90px) 0}
+/* story — big editorial lines + native horizontal reel */
+.abStory{background:radial-gradient(ellipse 72% 58% at 50% 36%,rgba(90,125,255,.12),transparent 72%);overflow:visible}
+.storyText{max-width:1180px;width:100%;margin:0 auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:clamp(14px,2.2vw,24px);padding:clamp(24px,3.6vw,48px) 0}
 .storyScroll{color:#7f90bd;font-size:11px;letter-spacing:.4em;text-transform:uppercase;display:flex;align-items:center;gap:12px;animation:bobSoft 2.4s ease-in-out infinite}
 .storyScroll span{font-size:16px;color:#5eead4;letter-spacing:0}
 @keyframes bobSoft{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
@@ -175,19 +174,11 @@
 .storyDot{background:linear-gradient(180deg,#5eead4,#7aa2ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .storyLead{font-family:"Syne",Inter,sans-serif;font-weight:700;font-size:clamp(1.55rem,3.6vw,2.7rem);line-height:1.24;margin:0 0 6px;background:linear-gradient(92deg,#eaf0ff,#b9c8f2 55%,#9db4ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .storyLead span{background:linear-gradient(92deg,#5eead4,#7aa2ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.storyParas{display:flex;flex-direction:column;gap:clamp(16px,2.4vw,26px);width:100%;max-width:1150px;align-items:center}
-.storyBigLines{display:flex;flex-direction:column;gap:clamp(12px,2vw,24px);width:100%;align-items:center}
-.storyBigLine{font-family:"Bodoni Moda",serif;font-weight:600;font-size:clamp(2.4rem,5.8vw,5.2rem);line-height:1.16;letter-spacing:.01em;color:#e8eeff;margin:0;text-align:center;text-wrap:balance}
+.storyParas{display:flex;flex-direction:column;gap:clamp(10px,1.6vw,18px);width:100%;max-width:1100px;align-items:center}
+.storyBigLines{display:flex;flex-direction:column;gap:clamp(8px,1.2vw,14px);width:100%;align-items:center}
+.storyBigLine{font-family:"Bodoni Moda",serif;font-weight:600;font-size:clamp(1.9rem,4.2vw,3.6rem);line-height:1.2;letter-spacing:.01em;color:#e8eeff;margin:0;text-align:center;text-wrap:balance}
 .storyBigHl{background:linear-gradient(92deg,#5eead4,#7aa2ff 72%,#9db4ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.curved{width:100%}
-.curved svg{display:block;overflow:visible;-webkit-mask-image:linear-gradient(90deg,#000 94%,transparent 100%);mask-image:linear-gradient(90deg,#000 94%,transparent 100%)}
-.curved text{font-family:"Space Grotesk",Inter,sans-serif;font-weight:500;fill:#cdd8f5}
-.storyCurveMore text{fill:#b6c4ea}
-.storyStats{display:flex;flex-wrap:wrap;gap:clamp(34px,7vw,84px);justify-content:center;align-items:baseline;margin:12px 0 4px}
-.storyStat{text-align:center}
-.storyStat b{display:block;font-family:"Syne",Inter,sans-serif;font-size:clamp(2.6rem,5.4vw,4.4rem);font-weight:800;letter-spacing:-.03em;background:linear-gradient(135deg,#9db4ff,#5b7cff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.storyStat span{font-size:clamp(.85rem,1.5vw,1.1rem);color:#93a5cf;letter-spacing:.16em;text-transform:uppercase;display:block;margin-top:6px}
-.storyCta{margin-top:6px}
+.storyCta{margin-top:2px}
 .storyText .titleBtn{box-shadow:0 8px 26px rgba(90,125,255,.5)}
 /* experience */
 .abExp{background:#0c0d14}
@@ -231,14 +222,22 @@
  .abWordmark{opacity:.3}
 }
 
-/* story reel — pinned horizontal 3D filmstrip (exact travel: no page scroll until it completes) */
-.storyReel{position:relative}
-.storyReelSticky{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;justify-content:center;overflow:hidden;padding-top:64px}
-.reelHead{display:flex;align-items:baseline;justify-content:space-between;padding:0 clamp(18px,5vw,60px);margin-bottom:clamp(16px,3vw,28px)}
+/* horizontal reels — native scroll (works in every browser, no pinning) */
+.abReelWrap{position:relative;margin-top:clamp(10px,1.6vw,20px)}
+.reelHead{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:0 clamp(14px,3vw,40px);margin-bottom:clamp(10px,1.6vw,18px)}
 .reelTag{font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:#7f90bd}
 .reelHint{font-family:"Syne",Inter,sans-serif;font-size:clamp(1rem,1.8vw,1.4rem);color:#eaf0ff;display:flex;align-items:center;gap:12px}
 .reelHint span{color:#5eead4;animation:bobSoft 1.8s ease-in-out infinite;display:inline-block}
-.storyReelTrack{display:flex;gap:clamp(16px,2.4vw,30px);align-items:center;padding:0 clamp(18px,5vw,60px);width:max-content;will-change:transform}
+.hReel{position:relative}
+.hReelView{display:flex;gap:clamp(16px,2.2vw,30px);align-items:stretch;overflow-x:auto;overflow-y:hidden;padding:12px clamp(14px,3vw,40px) 26px;cursor:grab;scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-y;-webkit-overflow-scrolling:touch}
+.hReelView::-webkit-scrollbar{display:none}
+.hReelView.dragging{cursor:grabbing}
+.hReelView>*{flex:0 0 auto}
+.hNav{position:absolute;top:50%;transform:translateY(-50%);z-index:6;width:42px;height:42px;border-radius:50%;border:1px solid rgba(122,162,255,.45);background:rgba(14,18,32,.88);backdrop-filter:blur(8px);color:#cfe0ff;font-size:20px;line-height:1;display:grid;place-items:center;cursor:pointer;transition:.22s;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.hNav:hover:not(:disabled){background:#5a7dff;color:#fff;border-color:#5a7dff}
+.hNav:disabled{opacity:.22;cursor:default}
+.hPrev{left:2px}
+.hNext{right:2px}
 .reelCard{flex:0 0 auto;width:clamp(300px,36vw,440px);height:clamp(310px,48vh,450px);border-radius:20px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;transform-style:preserve-3d;transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s}
 .reelImg{background:#141a2b;box-shadow:0 30px 60px -22px rgba(0,0,0,.65)}
 .reelImg img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.9) contrast(1.05)}
@@ -264,15 +263,11 @@
 /* skills — OptionWheel */
 .skillWheel{position:relative;height:min(74vh,660px);margin-top:12px}
 .skillWheel .option-wheel{position:absolute;inset:0;width:100%;height:100%;cursor:grab}
-.skillWheelCenter{position:absolute;right:4%;top:50%;transform:translateY(-50%);text-align:left;pointer-events:none;max-width:46%}
+.skillWheelCenter{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;max-width:min(58%,560px)}
 .swTag{font-size:11px;letter-spacing:.36em;text-transform:uppercase;color:#5eead4;display:block;margin-bottom:12px}
 .swName{font-family:"Syne",Inter,sans-serif;font-weight:800;font-size:clamp(2.2rem,5vw,4.2rem);line-height:1.05;display:block;background:linear-gradient(92deg,#eaf0ff,#7aa2ff 60%,#5eead4);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:14px;word-break:break-word}
 .skillWheelCenter small{color:#7f90bd;font-size:13px;letter-spacing:.06em}
 
-/* experience — pinned horizontal scroll track */
-.expReel{position:relative}
-.expReelSticky{position:sticky;top:0;height:100vh;display:flex;align-items:center;overflow:hidden;padding-top:64px}
-.expTrack{display:flex;gap:clamp(18px,2.6vw,34px);align-items:center;padding:0 clamp(18px,5vw,60px);width:max-content;will-change:transform}
 .expCard{flex:0 0 auto;width:clamp(330px,40vw,520px);background:linear-gradient(165deg,rgba(26,33,56,.9),rgba(15,19,33,.95));border:1px solid rgba(90,125,255,.16);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 30px 60px -24px rgba(0,0,0,.6);transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s}
 .expCard:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 44px 80px -24px rgba(90,125,255,.35);border-color:rgba(90,125,255,.4)}
 .expMedia{position:relative;height:200px;overflow:hidden}

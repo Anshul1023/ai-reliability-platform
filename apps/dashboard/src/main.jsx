@@ -2,99 +2,73 @@ import React,{useEffect,useRef,useState} from "react";
 import {createRoot} from "react-dom/client";
 import {LayoutDashboard,Box,AlertTriangle,Bot,Settings,Activity,Github,ChevronRight,Plus,Search,Bell,CheckCircle2,Sparkles,MessageSquare,RefreshCw,User,BarChart3,Phone,Mail,MapPin,Linkedin,GraduationCap,Send} from "lucide-react";
 import {ResponsiveContainer,AreaChart,Area,BarChart,Bar,XAxis,YAxis,Tooltip} from "recharts";
-import {motion,useInView} from "framer-motion";
-import {MaskedHeading,FoldText,ScrollExpand,CircularGallery} from "./reactbits";
+import {motion} from "framer-motion";
+import {CircularGallery} from "./reactbits";
 import {SplitText,DriftWall,Folder,OptionWheel} from "./aboutbits";
 import {gsap} from "gsap";
 import {ScrollTrigger} from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 import {api,API_WS,getApiKey,setApiKey} from "./services/api";
 import "./styles.css";
-import "./about.css";
-
-const demo=[{time:"09:00",error:1.1},{time:"10:00",error:1.4},{time:"11:00",error:1.2},{time:"12:00",error:2.1},{time:"13:00",error:3.2},{time:"14:00",error:2.4},{time:"15:00",error:1.1}];
-function StoryCount({to,suffix="",duration=1.4}){
- const ref=useRef(null);
- const inView=useInView(ref,{once:true,amount:.5});
- const [v,setV]=useState(0);
+import "./about.css";const demo=[{time:"09:00",error:1.1},{time:"10:00",error:1.4},{time:"11:00",error:1.2},{time:"12:00",error:2.1},{time:"13:00",error:3.2},{time:"14:00",error:2.4},{time:"15:00",error:1.1}];
+function HReel({children,className=""}){
+ const viewRef=useRef(null);
+ const drag=useRef(null);
+ const snapT=useRef(null);
+ const [canL,setCanL]=useState(false);
+ const [canR,setCanR]=useState(false);
+ const snapTo=()=>{
+  const v=viewRef.current;if(!v)return;
+  const cards=[...v.querySelectorAll(".hCard")];
+  if(!cards.length)return;
+  const vc=v.clientWidth/2;
+  let best=null,bestD=1e9;
+  for(const c of cards){
+   const r=c.getBoundingClientRect();
+   const d=Math.abs(r.left+r.width/2-vc);
+   if(d<bestD){bestD=d;best=r}
+  }
+  if(!best)return;
+  const target=v.scrollLeft+(best.left+best.width/2-vc);
+  const max=v.scrollWidth-v.clientWidth;
+  v.scrollTo({left:Math.max(0,Math.min(max,target)),behavior:"smooth"});
+ };
+ const scheduleSnap=()=>{clearTimeout(snapT.current);snapT.current=setTimeout(snapTo,160)};
  useEffect(()=>{
-  if(!inView)return;
-  let raf;const t0=performance.now();
-  const tick=t=>{const p=Math.min(1,(t-t0)/(duration*1000));const e=1-Math.pow(1-p,3);setV(Math.round(to*e));if(p<1)raf=requestAnimationFrame(tick)};
-  raf=requestAnimationFrame(tick);
-  return ()=>cancelAnimationFrame(raf);
- },[inView,to,duration]);
- return <b>{v}{suffix}</b>;
-}
-
-function CurvedText({text,className="",size=20,curve=26}){
- const ref=useRef(null);
- const uid=React.useId().replace(/[^a-zA-Z0-9]/g,"");
- const [state,setState]=useState(null);
- useEffect(()=>{
-  const el=ref.current;if(!el)return;
-  let alive=true;
-  const build=()=>{
-   if(!alive)return;
-   const w=el.clientWidth;if(!w)return;
-   const s=w<560?Math.round(size*.72):w<900?Math.round(size*.88):size;
-   const ctx=document.createElement("canvas").getContext("2d");
-   ctx.font=`500 ${s}px "Space Grotesk",Inter,sans-serif`;
-   const words=text.split(/\s+/);
-   const lines=[];let cur=[];
-   const wid=t=>ctx.measureText(t).width;
-   for(const word of words){
-    if(cur.length&&wid([...cur,word].join(" "))>w){lines.push({text:cur.join(" "),w:wid(cur.join(" "))});cur=[word]}
-    else cur.push(word);
-   }
-   if(cur.length)lines.push({text:cur.join(" "),w:wid(cur.join(" "))});
-   setState({w,lines,s});
+  const v=viewRef.current;if(!v)return;
+  const update=()=>{setCanL(v.scrollLeft>2);setCanR(v.scrollLeft<v.scrollWidth-v.clientWidth-2)};
+  update();
+  v.addEventListener("scroll",update,{passive:true});
+  const onWheel=e=>{
+   const d=Math.abs(e.deltaY)>Math.abs(e.deltaX)?e.deltaY:e.deltaX;
+   if(!d)return;
+   const max=v.scrollWidth-v.clientWidth;
+   if(max<=0)return;
+   const atL=v.scrollLeft<=0&&d<0;
+   const atR=v.scrollLeft>=max-1&&d>0;
+   if((atL||atR)&&Math.abs(e.deltaX)<=Math.abs(e.deltaY))return;
+   e.preventDefault();
+   v.scrollLeft+=d;
+   scheduleSnap();
   };
-  build();
-  const ro=new ResizeObserver(build);
-  ro.observe(el);
-  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(build);
-  return ()=>{alive=false;ro.disconnect()};
- },[text,size]);
- if(!state||!state.lines.length)return <div ref={ref} className={"curved "+className} style={{visibility:"hidden"}}>{text}</div>;
- const {w,lines,s}=state;
- const lh=Math.round(s*1.45);
- const n=lines.length;
- const h=Math.ceil(n*lh+curve*1.3+8);
- const paths=lines.map((ln,i)=>{const y=i*lh+8;const depth=curve*((i+1)/n);return `M 0 ${y} C ${ln.w*.68} ${y}, ${ln.w*.94} ${y+depth*.5}, ${ln.w} ${y+depth}`});
- return <div ref={ref} className={"curved "+className}>
-  <svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-   <defs>{paths.map((d,i)=><path key={i} id={`${uid}-p${i}`} d={d}/>)}</defs>
-   {lines.map((ln,i)=><text key={i} fontSize={s}><textPath href={`#${uid}-p${i}`}>{ln.text}</textPath></text>)}
-  </svg>
+  v.addEventListener("wheel",onWheel,{passive:false});
+  const ro=new ResizeObserver(update);
+  ro.observe(v);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(update).catch(()=>{});
+  return ()=>{clearTimeout(snapT.current);v.removeEventListener("scroll",update);v.removeEventListener("wheel",onWheel);ro.disconnect()};
+ },[]);
+ const startDrag=e=>{const v=viewRef.current;if(!v)return;clearTimeout(snapT.current);drag.current={x:e.clientX,l:v.scrollLeft,id:e.pointerId};try{v.setPointerCapture(e.pointerId)}catch(_){/* synthetic / edge pointers */}v.classList.add("dragging")};
+ const moveDrag=e=>{const v=viewRef.current;const d=drag.current;if(!d||!v)return;v.scrollLeft=d.l-(e.clientX-d.x)};
+ const endDrag=e=>{const v=viewRef.current;const d=drag.current;if(!d||!v)return;if(v.hasPointerCapture(e.pointerId))v.releasePointerCapture(e.pointerId);drag.current=null;v.classList.remove("dragging");scheduleSnap()};
+ const nudge=dir=>{const v=viewRef.current;if(!v)return;const c=v.querySelector(".hCard");const gap=parseFloat(getComputedStyle(v).gap||"24");const step=(c?c.getBoundingClientRect().width:420)+gap;v.scrollBy({left:dir*step,behavior:"smooth"});setTimeout(snapTo,340)};
+ return <div className={"hReel "+className}>
+  <div className="hReelView" ref={viewRef} onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>{children}</div>
+  <button className="hNav hPrev" onClick={()=>nudge(-1)} disabled={!canL} aria-label="Scroll left">‹</button>
+  <button className="hNav hNext" onClick={()=>nudge(1)} disabled={!canR} aria-label="Scroll right">›</button>
  </div>;
 }
 
-function usePinProgress(ref, trackRef, travelRef){
- useEffect(()=>{
-  const measure=()=>{
-   const el=ref.current;const t=trackRef.current;
-   if(!el||!t)return;
-   const r=el.getBoundingClientRect();
-   const range=r.height-window.innerHeight;
-   const p=range>0?Math.min(1,Math.max(0,-r.top/range)):0;
-   const tr=travelRef.current||0;
-   t.style.transform=`translate3d(${(-tr*p).toFixed(2)}px,0,0)`;
-  };
-  const onScroll=()=>measure();
-  window.addEventListener("scroll",onScroll,{passive:true});
-  window.addEventListener("resize",onScroll);
-  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(onScroll).catch(()=>{});
-  measure();
-  return ()=>{window.removeEventListener("scroll",onScroll);window.removeEventListener("resize",onScroll)};
- },[ref,trackRef,travelRef]);
-}
-
 function StoryReel(){
- const ref=useRef(null);
- const trackRef=useRef(null);
- const travelRef=useRef(0);
- const [travel,setTravel]=useState(0);
  const cards=[
   {t:"img",img:"/about/mask.jpg",n:"01",head:"Ship fast",d:"Fast products win. I obsess over every millisecond, every frame."},
   {t:"gif",gif:"/about/cat.gif",head:"I build with AI",d:"RAG agents, vector search and automation at Odds Fitness — the boring work does itself."},
@@ -105,66 +79,28 @@ function StoryReel(){
   {t:"img",img:"/about/office.jpg",n:"04",head:"Team player",d:"From startup to agency — I ship alongside great people."},
   {t:"txt",head:"Scale quietly",d:"Simple systems that hold up under load."}
  ];
- useEffect(()=>{
-  const measure=()=>{
-   const t=trackRef.current;if(!t)return;
-   const x=Math.max(0,(t.scrollWidth||0)-window.innerWidth);
-   travelRef.current=x;
-   setTravel(x);
-  };
-  measure();
-  const ro=new ResizeObserver(measure);
-  if(trackRef.current)ro.observe(trackRef.current);
-  window.addEventListener("resize",measure);
-  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>setTimeout(measure,80));
-  return ()=>{ro.disconnect();window.removeEventListener("resize",measure)};
- },[]);
- usePinProgress(ref, trackRef, travelRef);
  const tilt=e=>{const c=e.currentTarget;const r=c.getBoundingClientRect();c.style.transform=`perspective(900px) rotateY(${((e.clientX-r.left)/r.width-.5)*10}deg) rotateX(${-((e.clientY-r.top)/r.height-.5)*8}deg) translateY(-6px) scale(1.04)`};
  const untilt=e=>{e.currentTarget.style.transform=""};
- return <div className="storyReel" ref={ref} style={travel?{height:`calc(100vh + ${travel}px)`}:undefined}>
-  <div className="storyReelSticky">
-   <div className="reelHead"><span className="reelTag">The journey in motion</span><b className="reelHint">Keep scrolling <span>→</span></b></div>
-   <div className="storyReelTrack" ref={trackRef}>
-    {cards.map((c,i)=>c.t==="img"?<div className="reelCard reelImg" key={i} onMouseMove={tilt} onMouseLeave={untilt}><img src={c.img} alt=""/><div className="reelCap"><span className="reelNum">{c.n}</span><b>{c.head}</b><small>{c.d}</small></div></div>:c.t==="gif"?<div className="reelCard reelGif" key={i} onMouseMove={tilt} onMouseLeave={untilt}><img src={c.gif} alt=""/><div className="reelCap reelCapDark"><b>{c.head}</b><small>{c.d}</small></div></div>:<div className="reelCard reelText" key={i}><span className="reelStar">✦</span><b>{c.head}</b><small>{c.d}</small></div>)}
-    <div className="reelCard reelEnd"><b>That's my story.</b><small>One commit at a time.</small><a className="titleBtn" href="#contact">Let's build together</a></div>
-   </div>
-  </div>
+ return <div className="abReelWrap">
+  <div className="reelHead"><span className="reelTag">The journey in motion</span><b className="reelHint">Drag · scroll <span>→</span></b></div>
+  <HReel>
+   {cards.map((c,i)=>c.t==="img"?<div className="reelCard hCard reelImg" key={i} onMouseMove={tilt} onMouseLeave={untilt}><img src={c.img} alt=""/><div className="reelCap"><span className="reelNum">{c.n}</span><b>{c.head}</b><small>{c.d}</small></div></div>:c.t==="gif"?<div className="reelCard hCard reelGif" key={i} onMouseMove={tilt} onMouseLeave={untilt}><img src={c.gif} alt=""/><div className="reelCap reelCapDark"><b>{c.head}</b><small>{c.d}</small></div></div>:<div className="reelCard hCard reelText" key={i}><span className="reelStar">✦</span><b>{c.head}</b><small>{c.d}</small></div>)}
+   <div className="reelCard hCard reelEnd"><b>That's my story.</b><small>One commit at a time.</small><a className="titleBtn" href="#contact">Let's build together</a></div>
+  </HReel>
  </div>;
 }
 
 function ExpReel({experience,education}){
- const ref=useRef(null);
- const trackRef=useRef(null);
- const travelRef=useRef(0);
- const [travel,setTravel]=useState(0);
  const imgs=["/about/fitness.jpg","/about/office.jpg","/about/code.jpg"];
- useEffect(()=>{
-  const measure=()=>{
-   const t=trackRef.current;if(!t)return;
-   const x=Math.max(0,(t.scrollWidth||0)-window.innerWidth);
-   travelRef.current=x;
-   setTravel(x);
-  };
-  measure();
-  const ro=new ResizeObserver(measure);
-  if(trackRef.current)ro.observe(trackRef.current);
-  window.addEventListener("resize",measure);
-  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>setTimeout(measure,80));
-  return ()=>{ro.disconnect();window.removeEventListener("resize",measure)};
- },[]);
- usePinProgress(ref, trackRef, travelRef);
- return <div className="expReel" ref={ref} style={travel?{height:`calc(100vh + ${travel}px)`}:undefined}>
-  <div className="expReelSticky">
-   <div className="expTrack" ref={trackRef}>
-    {experience.map((e,i)=><div className="expCard" key={i}>
-     <div className="expMedia"><img src={imgs[i%imgs.length]} alt=""/><span className="expPeriod">{e.period}</span></div>
-     <div className="expBody"><b>{e.role}</b><small>{e.company}</small><ul>{e.points.map((pt,j)=><li key={j}>{pt}</li>)}</ul></div>
-    </div>)}
-    {education.map((e,i)=><div className="expCard expEdu" key={"e"+i}><span className="expEduIcon"><GraduationCap size={22}/></span><b>{e.degree}</b><small>{e.school}</small><span className="expPeriod">{e.period}</span></div>)}
-    <div className="expCard expEnd"><b>That's the journey so far.</b><small>Always shipping, always learning.</small><a className="titleBtn" href="#projects">See the work →</a></div>
-   </div>
-  </div>
+ return <div className="abReelWrap">
+  <HReel>
+   {experience.map((e,i)=><div className="expCard hCard" key={i}>
+    <div className="expMedia"><img src={imgs[i%imgs.length]} alt=""/><span className="expPeriod">{e.period}</span></div>
+    <div className="expBody"><b>{e.role}</b><small>{e.company}</small><ul>{e.points.map((pt,j)=><li key={j}>{pt}</li>)}</ul></div>
+   </div>)}
+   {education.map((e,i)=><div className="expCard hCard expEdu" key={"e"+i}><span className="expEduIcon"><GraduationCap size={22}/></span><b>{e.degree}</b><small>{e.school}</small><span className="expPeriod">{e.period}</span></div>)}
+   <div className="expCard hCard expEnd"><b>That's the journey so far.</b><small>Always shipping, always learning.</small><a className="titleBtn" href="#projects">See the work →</a></div>
+  </HReel>
  </div>;
 }
 
@@ -260,7 +196,6 @@ function AboutPage(){
   if(!p||!heroRef.current)return;
   const ctx=gsap.context(()=>{
    gsap.to(".heroTitle",{yPercent:-9,ease:"none",scrollTrigger:{trigger:heroRef.current,start:"top top",end:"bottom top",scrub:1.2}});
-   gsap.to(".heroArt",{yPercent:12,ease:"none",scrollTrigger:{trigger:heroRef.current,start:"top top",end:"bottom top",scrub:1.2}});
   },heroRef);
   const settle=setTimeout(()=>{
    const root=heroRef.current;if(!root)return;
@@ -344,14 +279,14 @@ function AboutPage(){
   <motion.section {...secAnim} className="abSec abExp" id="experience">
    <SecTitle>EXPERIENCE</SecTitle>
    <div className="abSecInner">
-    <div className="abHeadWrap"><SplitText text="Where I've Worked" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub"><span className="hl">Three roles</span>, one obsession: building products that <b>feel fast</b> and never break. Keep scrolling — the road keeps moving <span className="hl2">→</span></p></div>
+    <div className="abHeadWrap"><SplitText text="Where I've Worked" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="center"/><p className="abSub"><span className="hl">Three roles</span>, one obsession: building products that <b>feel fast</b> and never break. Keep scrolling — the road keeps moving <span className="hl2">→</span></p></div>
     <ExpReel experience={p.experience} education={p.education}/>
    </div>
   </motion.section>
   <motion.section {...secAnim} className="abSec abSkills" id="skills">
    <SecTitle>SKILLS</SecTitle>
    <div className="abSecInner">
-    <div className="abHeadWrap"><SplitText text="The Stack I Ship With" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">A <span className="hl2">living wheel</span> of the tools I use daily — <b>{p.skills.length} technologies</b>, from React to Redis. Scroll, drag or click to spin it.</p></div>
+    <div className="abHeadWrap"><SplitText text="The Stack I Ship With" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="center"/><p className="abSub">A <span className="hl2">living wheel</span> of the tools I use daily — <b>{p.skills.length} technologies</b>, from React to Redis. Scroll, drag or click to spin it.</p></div>
     <div className="skillWheel">
      <OptionWheel items={p.skills} side="left" fontSize={1.55} spacing={1.32} tilt={9} blur={1.4} fade={0.26} minOpacity={0.05} inset={30} textColor="#7d8cb5" activeColor="#eaf0ff" onChange={(i,l)=>setSkill(l)}/>
      <div className="skillWheelCenter"><span className="swTag">✦ SELECTED</span><b className="swName">{skill||p.skills[Math.floor(p.skills.length/2)]}</b><small>scroll · drag · click</small></div>
@@ -362,7 +297,7 @@ function AboutPage(){
   <motion.section {...secAnim} className="abSec abProjects" id="projects">
    <SecTitle>PROJECTS</SecTitle>
    <div className="abSecInner">
-    <div className="abHeadWrap"><SplitText text="Every Project, One Place" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">Spin through <b>all {allProjects.length}</b> repos from my GitHub — every card carries the <span className="hl2">repo name</span>, border-free. Click any to open it.</p></div>
+    <div className="abHeadWrap"><SplitText text="Every Project, One Place" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="center"/><p className="abSub">Spin through <b>all {allProjects.length}</b> repos from my GitHub — every card carries the <span className="hl2">repo name</span>, border-free. Click any to open it.</p></div>
     <div className="carouselWrap cgFree">{allProjects.length?<CircularGallery items={allProjects} bend={2.4} textColor="#cfe0ff" borderRadius={0.08} font="bold 26px Inter, system-ui, sans-serif" scrollSpeed={3} scrollEase={0.03}/>:<p className="muted">Loading projects…</p>}</div>
     <div className="abProjectsMeta">{allProjects.slice(0,8).map((x,i)=><span className="aboutChip" key={i} onClick={()=>window.open(x.link,"_blank")} style={{cursor:"pointer"}}>{x.label}</span>)}</div>
    </div>
@@ -370,7 +305,7 @@ function AboutPage(){
   <motion.section {...secAnim} className="abSec abContact" id="contact">
    <SecTitle>CONTACT</SecTitle>
    <div className="abSecInner">
-    <div className="abHeadWrap"><SplitText text="Let's Build Together" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="left"/><p className="abSub">Have a project, a role, or just want to say hi? Your message lands <b>straight in my inbox</b> — I reply within 24 hours.</p></div>
+    <div className="abHeadWrap"><SplitText text="Let's Build Together" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="center"/><p className="abSub">Have a project, a role, or just want to say hi? Your message lands <b>straight in my inbox</b> — I reply within 24 hours.</p></div>
     <div className="contactWrap">
      <div className="contactInfo">
       <div className="contactLines">
@@ -783,6 +718,6 @@ function App(){
  },[]);
  const nav=[["Overview",LayoutDashboard],["Projects",Box],["Incidents",AlertTriangle],["AI Investigation",Bot],["AI Chat",MessageSquare],["About",User],["Analytics",BarChart3],["Settings",Settings]];
  let content=selected?<ProjectDetails p={selected} back={()=>setSelected(null)} liveTick={liveTick}/>:page==="Overview"?<Overview liveTick={liveTick}/>:page==="Projects"?<Projects open={setSelected} liveTick={liveTick}/>:page==="Incidents"?<Incidents liveTick={liveTick}/>:page==="AI Investigation"?<AIPage/>:page==="AI Chat"?<ChatPage/>:page==="About"?<AboutPage/>:page==="Analytics"?<AnalyticsPage/>:<SettingsPage/>;
- return <div className="app"><aside><div className="brand"><Activity size={18}/> PulseOps</div><div className="workspace"><b>Acme Engineering</b><small>Production</small></div><nav>{nav.map(([n,I])=><button className={page===n&&!selected?"active":""} onClick={()=>{setPage(n);setSelected(null)}} key={n}><I size={17}/>{n}</button>)}</nav><div className="user">AS · Ansh Sharma</div></aside> <main><header><span>{selected?.name||page}</span><div className="top">{isOwner?<Badge tone="green">Owner</Badge>:<Badge tone="blue">Public view</Badge>}<div className="topSearch"><Search size={14}/><input placeholder="Search…"/></div><button className="fbBtn" onClick={()=>setFbOpen(true)} title="Leave your name so I know who visited"><MessageSquare size={13}/> Feedback</button><Bell size={17}/><span className="avatar">AS</span></div></header>{content}</main><button className="chatFab" onClick={()=>setChatOpen(true)} title="Ask the AI about any project"><MessageSquare size={17}/> Ask AI</button>{chatOpen?<ChatDrawer onClose={()=>setChatOpen(false)}/>:null}<FeedbackModal open={fbOpen} setOpen={setFbOpen}/></div>
+ return <div className="app"><aside><div className="brand"><Activity size={18}/> PulseOps</div><div className="workspace"><b>Acme Engineering</b><small>Production</small></div><nav>{nav.map(([n,I])=><button className={page===n&&!selected?"active":""} onClick={()=>{setPage(n);setSelected(null)}} key={n}><I size={17}/>{n}</button>)}</nav><div className="user">AS · Ansh Sharma</div></aside> <main><header><span>{selected?.name||page}</span><span className="liveBadge"><i/>LIVE</span><div className="top">{isOwner?<Badge tone="green">Owner</Badge>:<Badge tone="blue">Public view</Badge>}<div className="topSearch"><Search size={14}/><input placeholder="Search…"/></div><button className="fbBtn" onClick={()=>setFbOpen(true)} title="Leave your name so I know who visited"><MessageSquare size={13}/> Feedback</button><Bell size={17}/><span className="avatar">AS</span></div></header>{content}</main><button className="chatFab" onClick={()=>setChatOpen(true)} title="Ask the AI about any project"><MessageSquare size={17}/> Ask AI</button>{chatOpen?<ChatDrawer onClose={()=>setChatOpen(false)}/>:null}<FeedbackModal open={fbOpen} setOpen={setFbOpen}/></div>
 }
 createRoot(document.getElementById("root")).render(<App/>);
