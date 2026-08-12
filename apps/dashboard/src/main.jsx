@@ -7,7 +7,8 @@ import {CircularGallery} from "./reactbits";
 import {SplitText,DriftWall,Folder,OptionWheel} from "./aboutbits";
 import {gsap} from "gsap";
 import {ScrollTrigger} from "gsap/ScrollTrigger";
-gsap.registerPlugin(ScrollTrigger);
+import {SplitText as GSAPSplitText} from "gsap/SplitText";
+gsap.registerPlugin(ScrollTrigger, GSAPSplitText);
 import {api,API_WS,getApiKey,setApiKey} from "./services/api";
 import "./styles.css";
 import "./about.css";const demo=[{time:"09:00",error:1.1},{time:"10:00",error:1.4},{time:"11:00",error:1.2},{time:"12:00",error:2.1},{time:"13:00",error:3.2},{time:"14:00",error:2.4},{time:"15:00",error:1.1}];
@@ -15,6 +16,8 @@ function HReel({children,className=""}){
  const viewRef=useRef(null);
  const drag=useRef(null);
  const snapT=useRef(null);
+ const canLRef=useRef(false);
+ const canRRef=useRef(false);
  const [canL,setCanL]=useState(false);
  const [canR,setCanR]=useState(false);
  const snapTo=()=>{
@@ -36,7 +39,15 @@ function HReel({children,className=""}){
  const scheduleSnap=()=>{clearTimeout(snapT.current);snapT.current=setTimeout(snapTo,160)};
  useEffect(()=>{
   const v=viewRef.current;if(!v)return;
-  const update=()=>{setCanL(v.scrollLeft>2);setCanR(v.scrollLeft<v.scrollWidth-v.clientWidth-2)};
+  /* Only touch React state when a button's state actually flips — a
+     setState per scroll frame re-renders the whole track and makes
+     horizontal scrolling feel choppy. */
+  const update=()=>{
+   const l=v.scrollLeft>2;
+   const r=v.scrollLeft<v.scrollWidth-v.clientWidth-2;
+   if(l!==canLRef.current){canLRef.current=l;setCanL(l)}
+   if(r!==canRRef.current){canRRef.current=r;setCanR(r)}
+  };
   update();
   v.addEventListener("scroll",update,{passive:true});
   const onWheel=e=>{
@@ -183,6 +194,30 @@ function SecTitle({children}){
  return <motion.h2 className="secTitle" initial={{y:64,opacity:0}} whileInView={{y:0,opacity:1}} viewport={{once:false,amount:.3}} transition={{duration:.8,ease:[.22,1,.36,1]}}>{children}</motion.h2>;
 }
 
+function StoryLine({text,idx}){
+ const ref=useRef(null);
+ const align=["slLeft","slRight","slCenter"][idx%3];
+ useEffect(()=>{
+  const el=ref.current;if(!el)return;
+  let split=null,tween=null;
+  const run=()=>{
+   try{
+    split=new GSAPSplitText(el,{type:"chars",charsClass:"slChar"});
+    tween=gsap.fromTo(split.chars,
+     {yPercent:130,opacity:0,rotateX:-55},
+     {yPercent:0,opacity:1,rotateX:0,duration:.9,ease:"power3.out",stagger:.026,
+      scrollTrigger:{trigger:el,start:"top 88%",once:true}});
+   }catch(e){/* split failed — text stays visible */}
+  };
+  if(document.fonts&&document.fonts.status==="loaded")run();
+  else if(document.fonts&&document.fonts.ready)document.fonts.ready.then(run).catch(()=>run());
+  else run();
+  return ()=>{try{if(tween){tween.scrollTrigger?.kill();tween.kill()}if(split)split.revert()}catch(e){}};
+ },[]);
+ const hl=["feel fast","never break"];
+ return <p ref={ref} className={"storyBigLine "+align}>{text.split(/(feel fast|never break)/g).map((t,j)=>hl.includes(t)?<span className="storyBigHl" key={j}>{t}</span>:t)}</p>;
+}
+
 function AboutPage(){
  const [p,setP]=useState(null);
  const [allProjects,setAllProjects]=useState([]);
@@ -272,10 +307,7 @@ function AboutPage(){
     <motion.h3 className="storyLead" initial={{x:220,opacity:0}} whileInView={{x:0,opacity:1}} viewport={{once:false,amount:.4}} transition={{duration:.85,delay:.1,ease:[.22,1,.36,1]}}>I turn ideas into products<br/>that <span>feel fast</span> and <span>never break</span></motion.h3>
     <div className="storyParas">
      <div className="storyBigLines">
-      {p.summary.split(/\.\s+/).map(s=>s.trim()).filter(Boolean).map((s,i)=>{
-       const hl=["feel fast","never break"];
-       return <motion.p key={i} className="storyBigLine" initial={{y:48,opacity:0}} whileInView={{y:0,opacity:1}} viewport={{once:false,amount:.45}} transition={{duration:.8,delay:i*.12,ease:[.22,1,.36,1]}}>{s.split(/(feel fast|never break)/g).map((t,j)=>hl.includes(t)?<span className="storyBigHl" key={j}>{t}</span>:t)}</motion.p>;
-      })}
+      {p.summary.split(/\.\s+/).map(s=>s.trim()).filter(Boolean).map((s,i)=><StoryLine key={i} text={s} idx={i}/>)}
      </div>
     </div>
     <motion.div className="storyCta" initial={{x:-240,opacity:0}} whileInView={{x:0,opacity:1}} viewport={{once:false,amount:.4}} transition={{duration:.85,delay:.25,ease:[.22,1,.36,1]}}><a className="titleBtn" href="#contact">Let's build something</a></motion.div>
@@ -295,7 +327,7 @@ function AboutPage(){
     <div className="abHeadWrap"><SplitText text="The Stack I Ship With" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="center"/><p className="abSub">A <span className="hl2">living wheel</span> of the tools I use daily — <b>{p.skills.length} technologies</b>, from React to Redis. Scroll, drag or click to spin it.</p></div>
     <div className="skillWheel">
      <OptionWheel items={p.skills} side="left" fontSize={1.55} spacing={1.32} tilt={9} blur={1.4} fade={0.26} minOpacity={0.05} inset={30} textColor="#7d8cb5" activeColor="#eaf0ff" onChange={(i,l)=>setSkill({name:l,idx:i})}/>
-     <div className="skillWheelCenter"><span className="swTag">✦ SELECTED SKILL</span><b className="swName">{skill?.name||p.skills[Math.floor(p.skills.length/2)]}</b><div className="swMeta"><span className="swCount">{String((skill?.idx??Math.floor(p.skills.length/2))+1).padStart(2,"0")} / {String(p.skills.length).padStart(2,"0")}</span><small>scroll · drag · click to spin</small></div></div>
+     {(()=>{const idx=skill?.idx??Math.floor(p.skills.length/2);const name=skill?.name||p.skills[idx];return <div className="skillWheelCenter"><span className="swTag">✦ SELECTED SKILL</span><div className="swNameWrap"><motion.span key={name} className="swName" initial={{y:46,opacity:0,rotateX:-55}} animate={{y:0,opacity:1,rotateX:0}} transition={{duration:.5,ease:[.22,1,.36,1]}}>{name}</motion.span><motion.span key={"u"+name} className="swUnder" initial={{scaleX:0}} animate={{scaleX:1}} transition={{duration:.7,delay:.16,ease:[.22,1,.36,1]}}/></div><div className="swMeta"><motion.span key={"c"+name} className="swCount" initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{duration:.4,delay:.08}}>{String(idx+1).padStart(2,"0")} / {String(p.skills.length).padStart(2,"0")}</motion.span><small>scroll · drag · click to spin</small></div></div>})()}
     </div>
     <div className="langRow" style={{marginTop:26}}>{p.languages.map((l,i)=><span className="lang" key={i}>🗣 {l}</span>)}</div>
    </div>

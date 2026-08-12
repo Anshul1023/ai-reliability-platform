@@ -108,9 +108,13 @@
 .storyLead{font-family:"Syne",Inter,sans-serif;font-weight:700;font-size:clamp(1.55rem,3.6vw,2.7rem);line-height:1.24;margin:0 0 6px;background:linear-gradient(92deg,#eaf0ff,#b9c8f2 55%,#9db4ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .storyLead span{background:linear-gradient(92deg,#5eead4,#7aa2ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .storyParas{display:flex;flex-direction:column;gap:clamp(10px,1.6vw,18px);width:100%;max-width:1100px;align-items:center}
-.storyBigLines{display:flex;flex-direction:column;gap:clamp(8px,1.2vw,14px);width:100%;align-items:center}
-.storyBigLine{font-family:"Bodoni Moda",serif;font-weight:600;font-size:clamp(1.9rem,4.2vw,3.6rem);line-height:1.2;letter-spacing:.01em;color:#e8eeff;margin:0;text-align:center;text-wrap:balance}
-.storyBigHl{background:linear-gradient(92deg,#5eead4,#7aa2ff 72%,#9db4ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.storyBigLines{display:flex;flex-direction:column;gap:clamp(10px,1.6vw,22px);width:100%;align-items:stretch}
+.storyBigLine{font-family:"Bodoni Moda",serif;font-weight:600;font-size:clamp(1.9rem,4.2vw,3.6rem);line-height:1.24;letter-spacing:.01em;color:#e8eeff;margin:0;perspective:700px;text-wrap:balance}
+.storyBigLine.slLeft{text-align:left;max-width:86%}
+.storyBigLine.slRight{text-align:right;align-self:flex-end;max-width:86%}
+.storyBigLine.slCenter{text-align:center;align-self:center;max-width:94%}
+.slChar{display:inline-block;will-change:transform;transform-origin:50% 100%}
+.storyBigHl{color:#5eead4;font-weight:700;text-shadow:0 0 34px rgba(94,234,212,.35)}
 .storyCta{margin-top:2px}
 .storyText .titleBtn{box-shadow:0 8px 26px rgba(90,125,255,.5)}
 /* experience */
@@ -181,9 +185,11 @@
 .skillWheel{position:relative;height:min(68vh,600px);margin-top:10px}
 .skillWheel .option-wheel{position:absolute;inset:0;width:100%;height:100%;cursor:grab}
 .skillWheelCenter{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;max-width:min(66%,640px);padding:0 14px}
-.swTag{font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:#5eead4;display:block;margin-bottom:16px;opacity:.95}
-.swName{font-family:"Bodoni Moda",serif;font-weight:900;font-size:clamp(2.8rem,6vw,5.4rem);line-height:1.02;display:block;background:linear-gradient(92deg,#eaf0ff,#7aa2ff 55%,#5eead4);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:14px;word-break:break-word;text-shadow:0 0 80px rgba(122,162,255,.3)}
-.swMeta{display:flex;flex-direction:column;align-items:center;gap:7px}
+.swTag{font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:#5eead4;display:block;margin-bottom:18px;opacity:.95}
+.swNameWrap{position:relative;display:flex;flex-direction:column;align-items:center;margin-bottom:16px;perspective:700px}
+.swName{font-family:"Bodoni Moda",serif;font-style:italic;font-weight:900;font-size:clamp(3rem,6.4vw,5.8rem);line-height:1;display:inline-block;background:linear-gradient(94deg,#ffffff 0%,#cfe0ff 32%,#7aa2ff 68%,#5eead4 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;word-break:break-word;will-change:transform,opacity}
+.swUnder{display:block;height:3px;width:74%;border-radius:99px;background:linear-gradient(90deg,transparent,#5eead4,#7aa2ff,transparent);margin-top:14px;transform-origin:center;box-shadow:0 0 18px rgba(94,234,212,.5)}
+.swMeta{display:flex;flex-direction:column;align-items:center;gap:8px}
 .swCount{font-family:"Syne",Inter,sans-serif;font-size:13px;font-weight:700;letter-spacing:.32em;color:#7aa2ff}
 .skillWheelCenter small{color:#7f90bd;font-size:13px;letter-spacing:.08em}
 
