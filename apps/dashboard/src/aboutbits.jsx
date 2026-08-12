@@ -1161,18 +1161,23 @@ export function OptionWheel({
       onPointerCancel={handlePointerEnd}
       onKeyDown={handleKeyDown}
     >
-      {items.map((label, index) => (
-        <div
-          key={`${label}-${index}`}
-          ref={el => { itemRefs.current[index] = el; }}
-          role="option"
-          aria-selected={selectedIndex === index}
-          className={`option-wheel__item${selectedIndex === index ? " option-wheel__item--selected" : ""}`}
-          onClick={() => handleItemClick(index)}
-        >
-          {label}
-        </div>
-      ))}
+      {items.map((item, index) => {
+        const label = typeof item === "string" ? item : item.name;
+        const icon = typeof item === "object" && item.icon ? item.icon : null;
+        return (
+          <div
+            key={`${label}-${index}`}
+            ref={el => { itemRefs.current[index] = el; }}
+            role="option"
+            aria-selected={selectedIndex === index}
+            className={`option-wheel__item${selectedIndex === index ? " option-wheel__item--selected" : ""}`}
+            onClick={() => handleItemClick(index)}
+          >
+            {icon ? <img className="ow-icon" src={icon} alt="" loading="lazy" draggable={false}/> : null}
+            <span className="ow-label">{label}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }
