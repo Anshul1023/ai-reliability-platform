@@ -4,7 +4,7 @@ import {LayoutDashboard,Box,AlertTriangle,Bot,Settings,Activity,Github,ChevronRi
 import {ResponsiveContainer,AreaChart,Area,BarChart,Bar,XAxis,YAxis,Tooltip} from "recharts";
 import {motion} from "framer-motion";
 import {CircularGallery} from "./reactbits";
-import {SplitText,DriftWall,Folder,OptionWheel} from "./aboutbits";
+import {SplitText,DriftWall,Folder} from "./aboutbits";
 import {gsap} from "gsap";
 import {ScrollTrigger} from "gsap/ScrollTrigger";
 import {SplitText as GSAPSplitText} from "gsap/SplitText";
@@ -184,6 +184,105 @@ function ExpReel({experience,education}){
  </div>;
 }
 
+/* SkillsOrbit — circular skill wheel (reference: orbit cards + center panel).
+   Rotation is driven by a CSS variable so scroll/wheel/click never re-render
+   React per frame — keeps it as smooth as the rest of the page. */
+const SKILL_META={
+ "React.js":{display:"React",short:"⚛",color:"#22d3ee",tags:["COMPONENTS","HOOKS","VIRTUAL DOM"],desc:"Component-based library for building fast, interactive interfaces."},
+ "JavaScript (ES6+)":{display:"JavaScript",short:"JS",color:"#facc15",tags:["ES6+","EVENT-DRIVEN","JIT"],desc:"The language of the web — event-driven, dynamic, everywhere."},
+ "TypeScript":{display:"TypeScript",short:"TS",color:"#38bdf8",tags:["TYPED","COMPILE-SAFE","SCALABLE"],desc:"Typed JavaScript that keeps large codebases safe and scalable."},
+ "HTML5":{display:"HTML5",short:"H5",color:"#f97316",tags:["SEMANTIC","ACCESSIBLE","MEDIA"],desc:"Semantic, accessible markup that structures the modern web."},
+ "CSS3":{display:"CSS3",short:"CS",color:"#3b82f6",tags:["FLEXBOX","GRID","ANIMATIONS"],desc:"Flexbox, Grid and animations — the polish behind every pixel."},
+ "Tailwind CSS":{display:"Tailwind CSS",short:"TW",color:"#22d3ee",tags:["UTILITY-FIRST","RESPONSIVE","FAST"],desc:"Utility-first styling for shipping consistent UIs fast."},
+ "Vite":{display:"Vite",short:"V",color:"#646cff",tags:["HMR","DEV-FAST","BUILD"],desc:"Blazing-fast dev server and build tool for modern frontends."},
+ "Python":{display:"Python",short:"PY",color:"#facc15",tags:["VERSATILE","READABLE","ECOSYSTEM"],desc:"Versatile language for backends, automation, AI and data."},
+ "FastAPI":{display:"FastAPI",short:"FA",color:"#22c55e",tags:["ASYNC","PYDANTIC","OPENAPI"],desc:"High-performance async Python framework for production APIs."},
+ "PostgreSQL":{display:"PostgreSQL",short:"PG",color:"#3b82f6",tags:["ACID","EXTENSIBLE","HIGH PERFORMANCE"],desc:"Reliable open-source relational database with advanced features."},
+ "Docker":{display:"Docker",short:"DK",color:"#38bdf8",tags:["CONTAINERS","PORTABLE","ISOLATED"],desc:"Packages apps with their dependencies for consistent deploys."},
+ "Git & GitHub":{display:"Git & GitHub",short:"GH",color:"#ffffff",tags:["VERSIONING","COLLABORATION","CI-READY"],desc:"Version control and collaboration that power every project."},
+ "CI/CD (Basic)":{display:"CI/CD",short:"CI",color:"#22c55e",tags:["AUTOMATED","TESTED","SHIPPED"],desc:"Automated pipelines that test and ship every change."},
+ "Prometheus & Grafana":{display:"Observability",short:"OB",color:"#e6522c",tags:["METRICS","TRACES","ALERTS"],desc:"Metrics, logs and traces — I trust data, not vibes."},
+ "Redis":{display:"Redis",short:"R",color:"#ef4444",tags:["IN-MEMORY","CACHING","SUB-MILLISECOND"],desc:"In-memory store for caching, queues and real-time systems."},
+ "AI Tools: ChatGPT, Copilot, Cursor.dev, LangChain":{display:"AI Tools",short:"AI",color:"#a95cff",tags:["LLMs","RAG","AGENTS"],desc:"LLMs, RAG and agents — AI-powered development workflows."}
+};
+const SPLIT_NAME={"PostgreSQL":["Postgre","SQL"],"FastAPI":["Fast","API"],"JavaScript":["Java","Script"],"TypeScript":["Type","Script"],"Tailwind CSS":["Tailwind ","CSS"],"Git & GitHub":["Git & ","GitHub"],"AI Tools":["AI ","Tools"],"Observability":["Observa","bility"],"CI/CD":["CI","/CD"]};
+function SkillsOrbit({skills}){
+ const data=skills.map(s=>{const m=SKILL_META[s]||{display:s,short:(s[0]||"").toUpperCase(),color:"#7aa2ff",tags:["SHIPPED","MONITORED","SCALED"],desc:`${s} — shipped, monitored, scaled.`};return{name:s,...m}});
+ const [selected,setSelected]=useState(0);
+ const stageRef=useRef(null);
+ const rotRef=useRef(0);
+ const inViewRef=useRef(false);
+ const lastYRef=useRef(0);
+ const lastRunRef=useRef(0);
+ const stepT=useRef(null);
+ const dragRef=useRef(null);
+ const setRot=(deg,animate)=>{const s=stageRef.current;if(!s)return;if(animate){s.classList.add("ow-anim");clearTimeout(stepT.current);stepT.current=setTimeout(()=>s.classList.remove("ow-anim"),520)}s.style.setProperty("--rot",`${deg}deg`)};
+ useEffect(()=>{
+  const stage=stageRef.current;if(!stage)return;
+  const io=new IntersectionObserver(([e])=>{inViewRef.current=e.isIntersecting;if(e.isIntersecting)lastYRef.current=window.scrollY},{threshold:.05});
+  io.observe(stage);
+  lastYRef.current=window.scrollY;
+  const onScroll=()=>{
+   if(!inViewRef.current)return;
+   /* time-throttled (no rAF dependency — rAF stalls in throttled tabs):
+      direct CSS-var write, no React re-render, keeps scroll buttery */
+   const now=performance.now();
+   if(now-lastRunRef.current<16)return;
+   lastRunRef.current=now;
+   const delta=window.scrollY-lastYRef.current;
+   lastYRef.current=window.scrollY;
+   if(delta)setRot(rotRef.current+delta*0.08);
+  };
+  window.addEventListener("scroll",onScroll,{passive:true});
+  const onResize=()=>{setRot(rotRef.current,false)};
+  window.addEventListener("resize",onResize);
+  return ()=>{io.disconnect();window.removeEventListener("scroll",onScroll);window.removeEventListener("resize",onResize);clearTimeout(stepT.current)};
+ },[]);
+ const handleWheel=e=>{
+  e.preventDefault();
+  const dir=e.deltaY>0?1:-1;
+  rotRef.current+=dir*18;
+  setRot(rotRef.current,true);
+  setSelected(prev=>(prev+dir+data.length)%data.length);
+ };
+ const startDrag=e=>{dragRef.current={x:e.clientX,r:rotRef.current,id:e.pointerId};try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}};
+ const moveDrag=e=>{const d=dragRef.current;if(!d)return;rotRef.current=d.r+(e.clientX-d.x)*0.35;setRot(rotRef.current,false)};
+ const endDrag=e=>{if(!dragRef.current)return;dragRef.current=null};
+ const clickCard=i=>{setSelected(i);rotRef.current-=(i-selected)*12;setRot(rotRef.current,true)};
+ if(!data.length)return null;
+ const s=data[selected];
+ const radius=typeof window!=="undefined"&&window.innerWidth<768?185:285;
+ const split=name=>{const p=SPLIT_NAME[name]||(()=>{const i=name.lastIndexOf(" ");return i>0?[name.slice(0,i+1),name.slice(i+1)]:null})();if(!p)return name;return <>{p[0]}<span>{p[1]}</span></>};
+ return <div className="skills-section">
+  <div className="skills-noise"/><div className="skills-glow skills-glow-one"/><div className="skills-glow skills-glow-two"/>
+  <div className="skills-header">
+   <div className="skills-eyebrow"><span/>MY SKILLS<span/></div>
+   <h2 className="skills-title"><span className="skills-title-ghost">SKILLS</span><span className="skills-title-main">THE <span className="gradient-blue">STACK</span> <span className="divider">|</span> <span className="white">SHIP</span> <span className="gradient-purple">WITH</span></span></h2>
+   <p className="skills-description">A living wheel of the tools I use daily — <strong>{data.length} technologies</strong>, from React to Redis.<br/><span>Scroll, drag or click</span> to spin it.</p>
+  </div>
+  <div className="skills-stage" ref={stageRef} onWheel={handleWheel} onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
+   <div className="radial-ring ring-one"/><div className="radial-ring ring-two"/><div className="radial-ring ring-three"/>
+   <div className="skills-wheel">
+    {data.map((skill,i)=>{const angle=(i/data.length)*360-90;const x=Math.cos(angle*Math.PI/180)*radius;const y=Math.sin(angle*Math.PI/180)*radius;return(
+     <button key={skill.name} className={"skill-card"+(selected===i?" skill-card-active":"")} style={{"--x":`${x}px`,"--y":`${y}px`,"--skill-color":skill.color}} onClick={()=>clickCard(i)}>
+      <div className="skill-icon" style={{color:skill.color,textShadow:`0 0 24px ${skill.color}`}}>{skill.short}</div>
+      <span>{skill.display}</span>
+      {selected===i?<div className="skill-card-line"/>:null}
+     </button>)})}
+   </div>
+   <div className="skill-info">
+    <div className="selected-label"><span className="selected-star">✦</span>SELECTED SKILL<span className="selected-star">✦</span></div>
+    <h3>{split(s.display)}</h3>
+    <p>{s.desc}</p>
+    <div className="skill-tags">{s.tags.map(t=><div className="skill-tag" key={t}><span>◈</span>{t}</div>)}</div>
+    <div className="skill-progress"><div className="progress-line"/><span>{String(selected+1).padStart(2,"0")} / {String(data.length).padStart(2,"0")}</span><div className="progress-line progress-right"/></div>
+    <div className="skill-instruction"><span className="mouse-icon">⌁</span>scroll · drag · click to spin</div>
+   </div>
+  </div>
+  <div className="skills-cta">EXPLORE THE WHEEL<span>↓</span></div>
+ </div>;
+}
+
 function Badge({children,tone="neutral"}){return <span className={"badge "+tone}>{children}</span>}
 function Card({title,children,action}){return <section className="card"><div className="head"><h3>{title}</h3>{action}</div>{children}</section>}
 function useCountUp(target,dur=650){
@@ -293,7 +392,6 @@ function AboutPage(){
  const [form,setForm]=useState({name:"",topic:"",email:"",message:""});
  const [sent,setSent]=useState(false);
  const [busy,setBusy]=useState(false);
- const [skill,setSkill]=useState(null);
  const heroRef=useRef(null);
  useEffect(()=>{api.profile().then(setP).catch(()=>{})},[]);
  useEffect(()=>{
@@ -345,8 +443,6 @@ function AboutPage(){
  const secAnim={initial:{opacity:0,y:56,scale:.98},whileInView:{opacity:1,y:0,scale:1},viewport:{once:false,margin:"-40px",amount:0.15},transition:{duration:.8,ease:[.22,1,.36,1]}};
  
  const driftItems=["/about/mask.jpg","/about/story.jpg","/about/abstract.jpg","/about/desk.jpg","/about/mountain.jpg","/about/space.jpg","/about/office.jpg","/about/code.jpg","/about/ai.jpg","/about/fitness.jpg"].map((img,i)=>({image:img,title:`tile${i}`}));
- const LOGOS={"React.js":"react","JavaScript (ES6+)":"javascript","TypeScript":"typescript","HTML5":"html5","CSS3":"css","Tailwind CSS":"tailwindcss","Vite":"vite","Python":"python","FastAPI":"fastapi","PostgreSQL":"postgresql","Docker":"docker","Git & GitHub":"github","CI/CD (Basic)":"githubactions","Prometheus & Grafana":"prometheus","Redis":"redis","AI Tools: ChatGPT, Copilot, Cursor.dev, LangChain":"langchain"};
- const skillItems=p.skills.map(s=>({name:s,icon:`/about/logos/${LOGOS[s]||"github"}.svg`}));
 
  return <div className="about">
   <section className="abHero" id="top" ref={heroRef}>
@@ -394,15 +490,7 @@ function AboutPage(){
    </div>
   </motion.section>
   <motion.section {...secAnim} className="abSec abSkills" id="skills">
-   <SecTitle>SKILLS</SecTitle>
-   <div className="abSecInner">
-    <div className="abHeadWrap"><SplitText text="The Stack I Ship With" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="center"/><p className="abSub">A <span className="hl2">living wheel</span> of the tools I use daily — <b>{p.skills.length} technologies</b>, from React to Redis. Scroll, drag or click to spin it.</p></div>
-    <div className="skillWheel">
-     <OptionWheel items={skillItems} side="left" fontSize={1.3} spacing={1.4} tilt={9} blur={1.4} fade={0.26} minOpacity={0.05} inset={30} textColor="#7d8cb5" activeColor="#eaf0ff" onChange={(i,l)=>setSkill({name:l.name,idx:i})}/>
-     {(()=>{const idx=skill?.idx??Math.floor(p.skills.length/2);const name=skill?.name||p.skills[idx];const icon=skillItems[idx].icon;return <div className="skillWheelCenter"><span className="swTag">✦ SELECTED SKILL</span><div className="swNameWrap"><motion.img key={"i"+name} className="swLogo" src={icon} alt="" initial={{y:26,opacity:0,scale:.7,rotate:-8}} animate={{y:0,opacity:1,scale:1,rotate:0}} transition={{duration:.45,ease:[.22,1,.36,1]}}/><motion.span key={name} className="swName" initial={{y:46,opacity:0,rotateX:-55}} animate={{y:0,opacity:1,rotateX:0}} transition={{duration:.5,ease:[.22,1,.36,1]}}>{name}</motion.span><motion.span key={"u"+name} className="swUnder" initial={{scaleX:0}} animate={{scaleX:1}} transition={{duration:.7,delay:.16,ease:[.22,1,.36,1]}}/></div><div className="swMeta"><motion.span key={"c"+name} className="swCount" initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{duration:.4,delay:.08}}>{String(idx+1).padStart(2,"0")} / {String(p.skills.length).padStart(2,"0")}</motion.span><small>scroll · drag · click to spin</small></div></div>})()}
-    </div>
-    <div className="langRow" style={{marginTop:26}}>{p.languages.map((l,i)=><span className="lang" key={i}>🗣 {l}</span>)}</div>
-   </div>
+   <SkillsOrbit skills={p.skills}/>
   </motion.section>
   <motion.section {...secAnim} className="abSec abProjects" id="projects">
    <SecTitle>PROJECTS</SecTitle>
