@@ -70,28 +70,28 @@ function HReel({children,className=""}){
 
 function StoryReel(){
  const cards=[
-  {t:"img",img:"/about/mask.jpg",n:"01",head:"Ship fast",d:"Fast products win. I obsess over every millisecond, every frame."},
+  {t:"img",img:"/about/fast.jpg",n:"01",head:"Ship fast",d:"Fast products win. I obsess over every millisecond, every frame."},
   {t:"gif",gif:"/about/cat.gif",head:"I build with AI",d:"RAG agents, vector search and automation at Odds Fitness — the boring work does itself."},
-  {t:"img",img:"/about/desk.jpg",n:"02",head:"Own the full stack",d:"From React pixels to Postgres queries — the whole path is mine."},
-  {t:"txt",head:"Observe everything",d:"Prometheus, Grafana, error rates. I trust metrics, not vibes."},
-  {t:"img",img:"/about/code.jpg",n:"03",head:"Production first",d:"Docker, CI/CD, Redis caching — shipped and monitored, never just demoed."},
+  {t:"img",img:"/about/stack.jpg",n:"02",head:"Own the full stack",d:"From React pixels to Postgres queries — the whole path is mine."},
+  {t:"img",img:"/about/metrics.jpg",n:"03",head:"Observe everything",d:"Prometheus, Grafana, error rates. I trust metrics, not vibes."},
+  {t:"img",img:"/about/servers.jpg",n:"04",head:"Production first",d:"Docker, CI/CD, Redis caching — shipped and monitored, never just demoed."},
   {t:"gif",gif:"/about/yes.gif",head:"And when it works",d:"That feeling when the deploy goes green and latency drops."},
-  {t:"img",img:"/about/office.jpg",n:"04",head:"Team player",d:"From startup to agency — I ship alongside great people."},
-  {t:"txt",head:"Scale quietly",d:"Simple systems that hold up under load."}
+  {t:"img",img:"/about/team.jpg",n:"05",head:"Team player",d:"From startup to agency — I ship alongside great people."},
+  {t:"img",img:"/about/cloud.jpg",n:"06",head:"Scale quietly",d:"Simple systems that hold up under load."}
  ];
  const tilt=e=>{const c=e.currentTarget;const r=c.getBoundingClientRect();c.style.transform=`perspective(900px) rotateY(${((e.clientX-r.left)/r.width-.5)*10}deg) rotateX(${-((e.clientY-r.top)/r.height-.5)*8}deg) translateY(-6px) scale(1.04)`};
  const untilt=e=>{e.currentTarget.style.transform=""};
  return <div className="abReelWrap">
   <div className="reelHead"><span className="reelTag">The journey in motion</span><b className="reelHint">Drag · scroll <span>→</span></b></div>
   <HReel>
-   {cards.map((c,i)=>c.t==="img"?<div className="reelCard hCard reelImg" key={i} onMouseMove={tilt} onMouseLeave={untilt}><img src={c.img} alt=""/><div className="reelCap"><span className="reelNum">{c.n}</span><b>{c.head}</b><small>{c.d}</small></div></div>:c.t==="gif"?<div className="reelCard hCard reelGif" key={i} onMouseMove={tilt} onMouseLeave={untilt}><img src={c.gif} alt=""/><div className="reelCap reelCapDark"><b>{c.head}</b><small>{c.d}</small></div></div>:<div className="reelCard hCard reelText" key={i}><span className="reelStar">✦</span><b>{c.head}</b><small>{c.d}</small></div>)}
+   {cards.map((c,i)=>c.t==="img"?<div className="reelCard hCard reelImg" key={i} onMouseMove={tilt} onMouseLeave={untilt}><img src={c.img} alt=""/><div className="reelCap"><span className="reelNum">{c.n}</span><b>{c.head}</b><small>{c.d}</small></div></div>:<div className="reelCard hCard reelGif" key={i} onMouseMove={tilt} onMouseLeave={untilt}><img src={c.gif} alt=""/><div className="reelCap reelCapDark"><b>{c.head}</b><small>{c.d}</small></div></div>)}
    <div className="reelCard hCard reelEnd"><b>That's my story.</b><small>One commit at a time.</small><a className="titleBtn" href="#contact">Let's build together</a></div>
   </HReel>
  </div>;
 }
 
 function ExpReel({experience,education}){
- const imgs=["/about/fitness.jpg","/about/office.jpg","/about/code.jpg"];
+ const imgs=["/about/fitness.jpg","/about/sgson.jpg","/about/interpe.jpg"];
  return <div className="abReelWrap">
   <HReel>
    {experience.map((e,i)=><div className="expCard hCard" key={i}>
@@ -175,7 +175,7 @@ function imageForRepo(repo,i){
  const k=(repo||"").toLowerCase();
  const map=[["portfolio","/about/portfolio.jpg"],["reliability","/about/pulseops.jpg"],["fastapi","/about/fastapi.jpg"],["camera","/about/camera.jpg"],["snake","/about/game.jpg"],["agentflow","/about/ai.jpg"],["agent","/about/ai.jpg"],["interview","/about/office.jpg"],["adaptive","/about/space.jpg"],["engine","/about/space.jpg"],["school","/about/office.jpg"],["billing","/about/pulseops.jpg"],["workflow","/about/code.jpg"],["crafty","/about/portfolio.jpg"],["canvas","/about/portfolio.jpg"],["resume","/about/code.jpg"],["audio","/about/desk.jpg"],["browser","/about/camera.jpg"],["usage","/about/mountain.jpg"],["download","/about/mountain.jpg"]];
  for(const [key,img] of map){if(k.includes(key))return img}
- const pool=["/about/mask.jpg","/about/story.jpg","/about/abstract.jpg","/about/desk.jpg","/about/mountain.jpg","/about/space.jpg","/about/office.jpg","/about/code.jpg","/about/ai.jpg"];
+ const pool=["/about/mask.jpg","/about/story.jpg","/about/abstract.jpg","/about/fast.jpg","/about/stack.jpg","/about/metrics.jpg","/about/servers.jpg","/about/team.jpg","/about/rocket.jpg","/about/cloud.jpg","/about/arch.jpg","/about/peak.jpg","/about/dark.jpg","/about/space.jpg","/about/desk.jpg","/about/ai.jpg"];
  return pool[(i||0)%pool.length];
 }
 
@@ -294,8 +294,8 @@ function AboutPage(){
    <div className="abSecInner">
     <div className="abHeadWrap"><SplitText text="The Stack I Ship With" tag="h2" className="abHead" splitType="words" delay={80} duration={1} textAlign="center"/><p className="abSub">A <span className="hl2">living wheel</span> of the tools I use daily — <b>{p.skills.length} technologies</b>, from React to Redis. Scroll, drag or click to spin it.</p></div>
     <div className="skillWheel">
-     <OptionWheel items={p.skills} side="left" fontSize={1.55} spacing={1.32} tilt={9} blur={1.4} fade={0.26} minOpacity={0.05} inset={30} textColor="#7d8cb5" activeColor="#eaf0ff" onChange={(i,l)=>setSkill(l)}/>
-     <div className="skillWheelCenter"><span className="swTag">✦ SELECTED</span><b className="swName">{skill||p.skills[Math.floor(p.skills.length/2)]}</b><small>scroll · drag · click</small></div>
+     <OptionWheel items={p.skills} side="left" fontSize={1.55} spacing={1.32} tilt={9} blur={1.4} fade={0.26} minOpacity={0.05} inset={30} textColor="#7d8cb5" activeColor="#eaf0ff" onChange={(i,l)=>setSkill({name:l,idx:i})}/>
+     <div className="skillWheelCenter"><span className="swTag">✦ SELECTED SKILL</span><b className="swName">{skill?.name||p.skills[Math.floor(p.skills.length/2)]}</b><div className="swMeta"><span className="swCount">{String((skill?.idx??Math.floor(p.skills.length/2))+1).padStart(2,"0")} / {String(p.skills.length).padStart(2,"0")}</span><small>scroll · drag · click to spin</small></div></div>
     </div>
     <div className="langRow" style={{marginTop:26}}>{p.languages.map((l,i)=><span className="lang" key={i}>🗣 {l}</span>)}</div>
    </div>
