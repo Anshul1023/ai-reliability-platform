@@ -304,6 +304,7 @@ function AboutPage(){
    <div className="abSecInner storyText">
     <div className="storyScroll">Scroll<span>↓</span></div>
     <motion.h2 className="storyTitle" initial={{x:-220,opacity:0}} whileInView={{x:0,opacity:1}} viewport={{once:false,amount:.4}} transition={{duration:.85,ease:[.22,1,.36,1]}}>MY STORY<span className="storyDot">.</span></motion.h2>
+    <span className="storyRule"/>
     <motion.h3 className="storyLead" initial={{x:220,opacity:0}} whileInView={{x:0,opacity:1}} viewport={{once:false,amount:.4}} transition={{duration:.85,delay:.1,ease:[.22,1,.36,1]}}>I turn ideas into products<br/>that <span>feel fast</span> and <span>never break</span></motion.h3>
     <div className="storyParas">
      <div className="storyBigLines">
