@@ -42,8 +42,8 @@ async function del(path){
 }
 export const api={
   health:()=>get("/health"),
-  projects:()=>get("/projects"),
-  summary:()=>get("/projects/summary"),
+  projects:async()=>{try{return await get("/projects")}catch(e){const r=await fetch("/api/projects");if(!r.ok)return[];return r.json()}},
+  summary:async()=>{try{return await get("/projects/summary")}catch(e){const r=await fetch("/api/summary");if(!r.ok)return{services:{},deployments:{},incidents:{}};return r.json()}},
   incidents:()=>get("/incidents"),
   project:id=>get(`/projects/${id}`),
   deleteProject:id=>del(`/projects/${id}`),
