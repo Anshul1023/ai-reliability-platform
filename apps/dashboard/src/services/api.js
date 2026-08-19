@@ -1,10 +1,32 @@
-const BASE=import.meta.env.VITE_API_URL||"http://localhost:8000";
+const BASE=import.meta.env.VITE_API_URL||"http://localhost:8010";
 export const API_BASE=BASE;
 export const API_WS=BASE.replace(/^http/,"ws");
 const KEY_STORE="pulseops_api_key";
 
+const FALLBACK_PROFILE={
+  name:"Anshul Rawat",
+  title:"Full Stack Developer",
+  tagline:"I build fast, resilient web apps. From pixel-perfect React frontends to async FastAPI backends with Docker, Redis and real observability.",
+  summary:"Full Stack Developer with hands-on experience building scalable, high-performance, responsive web apps. Skilled in React.js, FastAPI, PostgreSQL, Docker, CI/CD and modern DevOps practices.",
+  about:["I build fast, resilient web apps.","I turn ideas into products that feel fast and never break."],
+  phone:"+91 9953540593",
+  email:"anshulrawat5124@gmail.com",
+  location:"Faridabad, Haryana, India",
+  links:{
+    github:"https://github.com/Anshul1023",
+    linkedin:"https://www.linkedin.com/in/anshul-rawat-235019290",
+    portfolio:"https://anshul-rawat-portfolio.vercel.app"
+  },
+  skills:["React.js","JavaScript (ES6+)","TypeScript","HTML5","CSS3","Vite","Python","FastAPI","PostgreSQL","Docker","Redis"],
+  experience:[],
+  projects:[],
+  education:[],
+  languages:["Hindi","English"]
+};
+
 export function getApiKey(){return localStorage.getItem(KEY_STORE)||""}
 export function setApiKey(k){k?localStorage.setItem(KEY_STORE,k):localStorage.removeItem(KEY_STORE)}
+export function isOwner(){return !!(getApiKey()||localStorage.getItem("pulseops_owner_email"))}
 
 async function get(path){const r=await fetch(BASE+path);if(!r.ok)throw new Error(await r.text());return r.json()}
 async function authHeaders(json){const headers={};const key=getApiKey();if(key)headers.Authorization=`Bearer ${key}`;if(json)headers["Content-Type"]="application/json";return headers}
@@ -42,7 +64,7 @@ export const api={
   listFeedback:()=>get("/feedback"),
   contact:(data)=>post("/contact",data),
   listContacts:()=>get("/contact"),
-  profile:()=>get("/profile"),
+  profile:async()=>{try{return await get("/profile")}catch(e){return FALLBACK_PROFILE}},
   sync:()=>post("/projects/sync"),
   investigate:id=>post(`/incidents/${id}/investigate`)
 }

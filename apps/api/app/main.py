@@ -70,5 +70,7 @@ async def health():
 async def prometheus():
     return Response(generate_latest(),media_type=CONTENT_TYPE_LATEST)
 
-for router in [auth.router,projects.router,services.router,incidents.router,deployments.router,metrics.router,github.router,ai.router,analytics.router,ws_router]:
+from app.auth.routes import router as jwt_auth_router
+
+for router in [auth.router,jwt_auth_router,projects.router,services.router,incidents.router,deployments.router,metrics.router,github.router,ai.router,analytics.router,ws_router]:
     app.include_router(router)

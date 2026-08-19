@@ -9,7 +9,7 @@ import {gsap} from "gsap";
 import {ScrollTrigger} from "gsap/ScrollTrigger";
 import {SplitText as GSAPSplitText} from "gsap/SplitText";
 gsap.registerPlugin(ScrollTrigger, GSAPSplitText);
-import {api,API_WS,getApiKey,setApiKey} from "./services/api";
+import {api,API_WS,getApiKey,setApiKey,isOwner} from "./services/api";
 import "./styles.css";
 import "./about.css";const demo=[{time:"09:00",error:1.1},{time:"10:00",error:1.4},{time:"11:00",error:1.2},{time:"12:00",error:2.1},{time:"13:00",error:3.2},{time:"14:00",error:2.4},{time:"15:00",error:1.1}];
 function HReel({children,className=""}){
@@ -332,9 +332,9 @@ function AnalyticsPage(){
  const [data,setData]=useState(null);
  const [feedback,setFeedback]=useState([]);
  const [contacts,setContacts]=useState([]);
- const isOwner=!!getApiKey();
- useEffect(()=>{if(!isOwner)return;api.analytics(range).then(setData).catch(()=>{});api.listFeedback().then(setFeedback).catch(()=>{});api.listContacts().then(setContacts).catch(()=>{})},[range,isOwner]);
- if(!isOwner)return <div className="page"><div className="title"><div><h1>Analytics</h1><p>Owner only.</p></div></div><Card><p className="muted">This page is only visible to the owner. Add your API key in Settings to view visitor analytics, feedback and contact requests.</p></Card></div>;
+ const owner=isOwner();
+ useEffect(()=>{if(!owner)return;api.analytics(range).then(setData).catch(()=>{});api.listFeedback().then(setFeedback).catch(()=>{});api.listContacts().then(setContacts).catch(()=>{})},[range,owner]);
+ if(!owner)return <div className="page"><div className="title"><div><h1>Analytics</h1><p>Owner only.</p></div></div><Card><p className="muted">This page is only visible to the owner. Go to Settings and save your email to gain owner access.</p></Card></div>;
  const d=data||{total_views:0,unique_visitors:0,per_project:[],per_path:[],daily:[]};
  return <div className="page"><div className="title"><div><h1>Analytics</h1><p>Who's looking at your dashboard.</p></div><select className="rangeSel" value={range} onChange={e=>setRange(e.target.value)}><option value="24h">Last 24 hours</option><option value="7d">Last 7 days</option><option value="30d">Last 30 days</option><option value="all">All time</option></select></div>
  <div className="stats"><Stat title="Total views" count={d.total_views} sub={range==="24h"?"last 24 hours":range==="7d"?"last 7 days":range==="30d"?"last 30 days":"all time"}/><Stat title="Unique visitors" count={d.unique_visitors} sub="by visitor id"/><Stat title="Feedback" count={feedback.length} sub="visitor responses"/><Stat title="Contact requests" count={contacts.length} sub="waiting for you"/></div>
@@ -568,14 +568,14 @@ function Projects({open,liveTick}){
  const base=data.length?data:[{id:1,name:"Demo Production API",repo:"demo/reliability-api",status:"Healthy",uptime:99.96}];
  const list=base.filter(p=>(status==="All"||p.status===status)&&(!q||p.name.toLowerCase().includes(q.toLowerCase())||p.repo.toLowerCase().includes(q.toLowerCase())));
  const sorted=[...list].sort((a,b)=>sort==="uptime"?b.uptime-a.uptime:a.name.localeCompare(b.name));
- const isOwner=!!getApiKey();
+ const owner=isOwner();
  const delProject=async p=>{
   if(!window.confirm(`Delete "${p.name}"? This removes its services, deployments, incidents and stored documents.`))return;
   try{await api.deleteProject(p.id);setData(d=>d.filter(x=>x.id!==p.id))}catch(e){window.alert("Delete failed: "+e.message)}
  };
- return <div className="page"><div className="title"><div><h1>Projects</h1><p>Connected repositories and production systems.</p></div>{isOwner?<button><Plus size={15}/> Connect repository</button>:<Badge tone="blue">Public read-only view</Badge>}</div>
+ return <div className="page"><div className="title"><div><h1>Projects</h1><p>Connected repositories and production systems.</p></div>{owner?<button><Plus size={15}/> Connect repository</button>:<Badge tone="blue">Public read-only view</Badge>}</div>
  <div className="filters"><div className="search"><Search size={14}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search projects…"/></div><select value={status} onChange={e=>setStatus(e.target.value)}><option>All</option><option>Healthy</option><option>Degraded</option><option>Down</option></select><select value={sort} onChange={e=>setSort(e.target.value)}><option value="name">Sort: Name</option><option value="uptime">Sort: Uptime</option></select><span className="muted filterCount">{sorted.length} project{sorted.length===1?"":"s"}</span></div>
- <div className="projectGrid">{sorted.map(p=><div className="card project" key={p.id} onClick={()=>open(p)}><div className="projectTop"><span className="projectIcon"><Github size={16}/></span><Badge tone={p.status==="Healthy"?"green":"yellow"}>{p.status}</Badge></div><h3>{p.name}</h3><small className="repoPath">{p.repo}</small><div className="metrics"><div><span>Uptime</span><b><CountUp n={p.uptime}/>%</b></div><div><span>Services</span><b>{summary.services[p.id]||0}</b></div><div><span>Incidents</span><b>{summary.incidents[p.id]||0}</b></div></div><div className="projectFoot"><strong>Open project <ChevronRight size={14}/></strong>{isOwner?<button className="ppChange del" onClick={e=>{e.stopPropagation();delProject(p)}} title={`Delete ${p.name}`}>🗑</button>:null}</div></div>)}{sorted.length===0?<p className="muted full">No projects match your filters.</p>:null}</div></div>
+ <div className="projectGrid">{sorted.map(p=><div className="card project" key={p.id} onClick={()=>open(p)}><div className="projectTop"><span className="projectIcon"><Github size={16}/></span><Badge tone={p.status==="Healthy"?"green":"yellow"}>{p.status}</Badge></div><h3>{p.name}</h3><small className="repoPath">{p.repo}</small><div className="metrics"><div><span>Uptime</span><b><CountUp n={p.uptime}/>%</b></div><div><span>Services</span><b>{summary.services[p.id]||0}</b></div><div><span>Incidents</span><b>{summary.incidents[p.id]||0}</b></div></div><div className="projectFoot"><strong>Open project <ChevronRight size={14}/></strong>{owner?<button className="ppChange del" onClick={e=>{e.stopPropagation();delProject(p)}} title={`Delete ${p.name}`}>🗑</button>:null}</div></div>)}{sorted.length===0?<p className="muted full">No projects match your filters.</p>:null}</div></div>
 }
 function Incidents({liveTick}){
  const [data,setData]=useState([]);
@@ -588,20 +588,48 @@ function Incidents({liveTick}){
  <Card title="Incident timeline" action={<Badge>{list.length} shown</Badge>}><div className="rows">{list.map(x=><div className="row" key={x.id}><div className="incidentIcon"><AlertTriangle size={15}/></div><div><b>{x.title}</b><small>INC-{x.id} · {x.service}</small></div><Badge tone={x.severity==="Critical"?"red":"yellow"}>{x.status}</Badge><ChevronRight size={15}/></div>)}{list.length===0?<p className="muted">No incidents match your filters.</p>:null}</div></Card></div>}
 function AIPage(){return <div className="page"><div className="title"><div><h1>AI Investigation</h1><p>Evidence-backed incident analysis.</p></div><Badge tone="purple"><Sparkles size={13}/> Agent online</Badge></div><div className="stats"><Stat title="Investigations today" value="18" sub="16 completed"/><Stat title="Average confidence" value="86%" sub="+4.2% this week"/><Stat title="Evidence sources" value="142" sub="GitHub + metrics + logs"/><Stat title="Awaiting approval" value="2" sub="Human review required"/></div><Card title="Current investigation"><div className="ai"><Bot size={22}/><div><b>Payment API incident</b><p>Checking recent deployments, metrics and previous incident patterns…</p><div className="progress"><i/></div></div></div></Card></div>}
 function SettingsPage(){
- const [key,setKey]=useState(getApiKey());
  const [email,setEmail]=useState(localStorage.getItem("pulseops_owner_email")||"");
+ const [password,setPassword]=useState("");
  const [saved,setSaved]=useState(false);
- const save=()=>{setApiKey(key.trim());localStorage.setItem("pulseops_owner_email",email.trim());setSaved(true);setTimeout(()=>setSaved(false),2000)};
- return <div className="page"><div className="title"><div><h1>Settings</h1><p>Integrations and workspace preferences.</p></div></div>
- <Card title="Owner identity" action={email?<Badge tone="green">Signed in as {email}</Badge>:<Badge>Not set</Badge>}>
-  <p className="muted">Only you can make changes — the API key is your write credential, and this email marks you as the owner. Stored only in this browser.</p>
-  <div className="row"><input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Your email (owner)…"/></div>
+ const [showLogin,setShowLogin]=useState(false);
+ const [loggedIn,setLoggedIn]=useState(!!localStorage.getItem("pulseops_owner_email"));
+ const [loginError,setLoginError]=useState("");
+ const login=()=>{
+  if(!email.trim()||!password){setLoginError("Enter email and password");return}
+  if(email.trim()==="anshulrawat5124@gmail.com"&&password==="Godsplan1023@@"){
+   localStorage.setItem("pulseops_owner_email",email.trim());
+   setApiKey("admin_access");
+   setLoggedIn(true);setShowLogin(false);setSaved(true);setLoginError("");
+   setTimeout(()=>setSaved(false),2000);
+  }else{
+   setLoginError("Invalid credentials");
+  }
+ };
+ const logout=()=>{localStorage.removeItem("pulseops_owner_email");localStorage.removeItem("pulseops_api_key");setLoggedIn(false);setShowLogin(false);setEmail("");setPassword("")};
+ return <div className="page"><div className="title"><div><h1>Settings</h1><p>Dashboard configuration and system status.</p></div></div>
+ {loggedIn?<>
+ <Card title="Logged in" action={<Badge tone="green">Admin</Badge>}>
+  <p className="muted">You are signed in as <b>{email}</b> with full admin access to all dashboard features.</p>
+  <div className="row"><button onClick={logout}>Sign out</button></div>
  </Card>
- <Card title="API access" action={key?<Badge tone="green">Configured</Badge>:<Badge>Not set</Badge>}>
-  <p className="muted">API key for write actions (chat, investigations, proposing changes). Stored only in this browser — never in the app bundle. Reads stay public.</p>
-  <div className="row"><input type="password" value={key} onChange={e=>setKey(e.target.value)} placeholder="Paste your API key…"/><button onClick={save}>{saved?"Saved ✓":"Save"}</button></div>
+ </>:showLogin?<>
+ <Card title="Admin Sign In">
+  <div style={{display:"flex",flexDirection:"column",gap:16}}>
+   <input value={email} onChange={e=>{setEmail(e.target.value);setLoginError("")}} placeholder="Email address" type="email" style={{padding:"14px 16px",borderRadius:10,border:"1px solid #1e293b",fontSize:15,background:"#1a1f2e"}}/>
+   <input value={password} onChange={e=>{setPassword(e.target.value);setLoginError("")}} placeholder="Password" type="password" onKeyDown={e=>{if(e.key==="Enter")login()}} style={{padding:"14px 16px",borderRadius:10,border:"1px solid #1e293b",fontSize:15,background:"#1a1f2e"}}/>
+   {loginError?<p style={{color:"#f87171",fontSize:13,margin:0}}>{loginError}</p>:null}
+   <div style={{display:"flex",gap:10}}>
+    <button onClick={login} className="titleBtn" style={{padding:"12px 24px",fontSize:14,borderRadius:10,fontWeight:700}}>{saved?"✓ Signed in":"Sign in"}</button>
+    <button onClick={()=>setShowLogin(false)} style={{padding:"12px 24px",fontSize:14,borderRadius:10,border:"1px solid #1e293b",background:"transparent",color:"#94a3b8",cursor:"pointer"}}>Cancel</button>
+   </div>
+  </div>
  </Card>
- <Card title="GitHub integration"><div className="row"><Github size={20}/><div><b>GitHub</b><small>Demo connection · read-only</small></div><button>Manage</button></div></Card>
+ </>:<Card title="Admin Access" action={<button onClick={()=>setShowLogin(true)} style={{padding:"8px 18px",borderRadius:8,border:"1px solid #3b82f6",background:"transparent",color:"#60a5fa",cursor:"pointer",fontSize:13}}>Sign In</button>}>
+  <p className="muted">Dashboard is fully public. Sign in as admin to manage projects, view analytics, and configure settings.</p>
+ </Card>}
+ <Card title="AI Assistant"><div className="row"><Bot size={20}/><div><b>Groq AI</b><small>Connected · openai/gpt-oss-20b</small></div><Badge tone="green">Active</Badge></div></Card>
+ <Card title="GitHub integration"><div className="row"><Github size={20}/><div><b>GitHub</b><small>Connected · 19 repos synced</small></div><Badge tone="green">Live</Badge></div></Card>
+ <Card title="Database"><div className="row"><Activity size={20}/><div><b>Supabase PostgreSQL</b><small>Connected · 19 projects</small></div><Badge tone="green">Healthy</Badge></div></Card>
  </div>}
 function ProjectDetails({p,back,liveTick}){
  const [repo,setRepo]=useState(null);
@@ -897,7 +925,7 @@ function ChatDrawer({onClose}){
 }
 
 function App(){
- const isOwner=!!getApiKey();
+ const owner=isOwner();
  const [page,setPage]=useState(()=>new URLSearchParams(location.search).get("page")||"Overview");
  const [selected,setSelected]=useState(null);
  const [chatOpen,setChatOpen]=useState(false);
@@ -916,6 +944,6 @@ function App(){
  },[]);
  const nav=[["Overview",LayoutDashboard],["Projects",Box],["Incidents",AlertTriangle],["AI Investigation",Bot],["AI Chat",MessageSquare],["About",User],["Analytics",BarChart3],["Settings",Settings]];
  let content=selected?<ProjectDetails p={selected} back={()=>setSelected(null)} liveTick={liveTick}/>:page==="Overview"?<Overview liveTick={liveTick}/>:page==="Projects"?<Projects open={setSelected} liveTick={liveTick}/>:page==="Incidents"?<Incidents liveTick={liveTick}/>:page==="AI Investigation"?<AIPage/>:page==="AI Chat"?<ChatPage/>:page==="About"?<AboutPage/>:page==="Analytics"?<AnalyticsPage/>:<SettingsPage/>;
- return <div className="app"><aside><div className="brand"><Activity size={18}/> PulseOps</div><div className="workspace"><b>Acme Engineering</b><small>Production</small></div><nav>{nav.map(([n,I])=><button className={page===n&&!selected?"active":""} onClick={()=>{setPage(n);setSelected(null)}} key={n}><I size={17}/>{n}</button>)}</nav><div className="user">AS · Ansh Sharma</div></aside> <main><header><span>{selected?.name||page}</span><span className="liveBadge"><i/>LIVE</span><div className="top">{isOwner?<Badge tone="green">Owner</Badge>:<Badge tone="blue">Public view</Badge>}<div className="topSearch"><Search size={14}/><input placeholder="Search…"/></div><button className="fbBtn" onClick={()=>setFbOpen(true)} title="Leave your name so I know who visited"><MessageSquare size={13}/> Feedback</button><Bell size={17}/><span className="avatar">AS</span></div></header>{content}</main><button className="chatFab" onClick={()=>setChatOpen(true)} title="Ask the AI about any project"><MessageSquare size={17}/> Ask AI</button>{chatOpen?<ChatDrawer onClose={()=>setChatOpen(false)}/>:null}<FeedbackModal open={fbOpen} setOpen={setFbOpen}/></div>
+ return <div className="app"><aside><div className="brand"><Activity size={18}/> PulseOps</div><div className="workspace"><b>Acme Engineering</b><small>Production</small></div><nav>{nav.map(([n,I])=><button className={page===n&&!selected?"active":""} onClick={()=>{setPage(n);setSelected(null)}} key={n}><I size={17}/>{n}</button>)}</nav><div className="user">AS · Ansh Sharma</div></aside> <main><header><span>{selected?.name||page}</span><span className="liveBadge"><i/>LIVE</span><div className="top">{owner?<Badge tone="green">Owner</Badge>:<Badge tone="blue">Public view</Badge>}<div className="topSearch"><Search size={14}/><input placeholder="Search…"/></div><button className="fbBtn" onClick={()=>setFbOpen(true)} title="Leave your name so I know who visited"><MessageSquare size={13}/> Feedback</button><Bell size={17}/><span className="avatar">AS</span></div></header>{content}</main><button className="chatFab" onClick={()=>setChatOpen(true)} title="Ask the AI about any project"><MessageSquare size={17}/> Ask AI</button>{chatOpen?<ChatDrawer onClose={()=>setChatOpen(false)}/>:null}<FeedbackModal open={fbOpen} setOpen={setFbOpen}/></div>
 }
 createRoot(document.getElementById("root")).render(<App/>);

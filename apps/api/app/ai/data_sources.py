@@ -123,12 +123,7 @@ DATA_SOURCES = [
 
 def catalog_markdown() -> str:
     """Compact catalog for the AI system prompt — tells the agent where data lives."""
-    lines = ["Data sources available to you (where each fact comes from):"]
-    for s in DATA_SOURCES:
-        loc = s["location"]
-        fields = ", ".join(s["fields"])
-        lines.append(f"- {s['label']} [{s['key']}]: {s['description']} Location: {loc}. Fields: {fields}.")
-    return "\n".join(lines)
+    return "Data: projects(name,repo,status,tech,svc,dep,inc), services(name,status,latency,uptime), deployments(sha,message,status), incidents(title,severity,status,summary). You have all registered projects with their tech stacks."
 
 
 # ---------------------------------------------------------------------------
@@ -270,23 +265,22 @@ async def build_global_context(db) -> dict:
         out_projects = []
         for p in projects:
             repo_doc = (docs_by_project.get(p.id) or {}).get("repository") or {}
+            tech_doc = (docs_by_project.get(p.id) or {}).get("tech") or {}
+            tech_list = (tech_doc.get("tech") or [])[:6]  # max 6 tech per project
+            desc = (repo_doc.get("description") or "")[:60]  # max 60 chars desc
             entry = {
                 "id": p.id,
                 "name": p.name,
                 "repo": p.repo,
                 "status": p.status,
-                "uptime": p.uptime,
-                "services": svc_counts.get(p.id, 0),
-                "deployments": dep_counts.get(p.id, 0),
-                "incidents": inc_counts.get(p.id, 0),
-                "stored_documents": sorted((docs_by_project.get(p.id) or {}).keys()),
+                "lang": repo_doc.get("language", ""),
+                "tech": tech_list,
+                "svc": svc_counts.get(p.id, 0),
+                "dep": dep_counts.get(p.id, 0),
+                "inc": inc_counts.get(p.id, 0),
             }
-            if repo_doc:
-                entry["description"] = repo_doc.get("description")
-                entry["language"] = repo_doc.get("language")
-                entry["homepage"] = repo_doc.get("homepage")
-            tech_doc = (docs_by_project.get(p.id) or {}).get("tech") or {}
-            entry["tech"] = tech_doc.get("tech") or []
+            if desc:
+                entry["desc"] = desc
             out_projects.append(entry)
         return {"projects": out_projects}
     except Exception:  # noqa: BLE001 - global context is best-effort

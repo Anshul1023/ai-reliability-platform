@@ -76,50 +76,44 @@ def _fmt_global_projects(projects) -> str:
     lines = []
     for p in projects:
         tech = p.get("tech") or []
-        lines.append(
-            f"- #{p['id']} {p['name']} ({p['repo']}) — status {p['status']}, uptime {p['uptime']}%"
-            + (f", {p['language']}" if p.get("language") else "")
-            + (f" — {p['description']}" if p.get("description") else "")
-            + (f" | tech: {', '.join(tech)}" if tech else "")
-            + f" | services={p.get('services', 0)}, deployments={p.get('deployments', 0)}, incidents={p.get('incidents', 0)}"
-            + f" | stored docs: {', '.join(p.get('stored_documents') or []) or 'none'}"
-        )
+        lang = p.get("lang", "")
+        desc = p.get("desc", "")
+        svc = p.get("svc", 0)
+        dep = p.get("dep", 0)
+        inc = p.get("inc", 0)
+        line = f"- #{p['id']} {p['name']} ({p['repo']}) — {p['status']}"
+        if lang:
+            line += f", {lang}"
+        if desc:
+            line += f" — {desc}"
+        if tech:
+            line += f" | tech: {', '.join(tech)}"
+        line += f" | svc={svc} dep={dep} inc={inc}"
+        lines.append(line)
     return "\n".join(lines) or "- none"
 
 
 def _format_context(ctx: dict) -> str:
     parts = []
     if ctx.get("projects"):
-        parts.append(
-            "All registered projects (source: projects table + repository documents):\n"
-            + _fmt_global_projects(ctx["projects"])
-        )
+        parts.append("Projects:\n" + _fmt_global_projects(ctx["projects"]))
     proj = ctx.get("project")
     if proj:
-        parts.append(
-            f"Project: {proj['name']} | repo={proj['repo']} | status={proj['status']} | uptime={proj['uptime']}%"
-        )
+        parts.append(f"Project: {proj['name']} | {proj['repo']} | {proj['status']} | {proj['uptime']}%")
     repo = ctx.get("repository")
     if repo:
-        parts.append(
-            f"Repository: {repo['full_name']} | {repo.get('description') or 'no description'} "
-            f"| language={repo.get('language')} | default branch={repo.get('default_branch')}"
-        )
+        parts.append(f"Repo: {repo['full_name']} | {repo.get('language', '')}")
     if ctx.get("readme"):
-        parts.append(f"README:\n{ctx['readme'][:2500]}")
-    if ctx.get("files"):
-        parts.append(f"Files ({len(ctx['files'])}):\n" + "\n".join(ctx["files"][:80]))
-    if ctx.get("documents"):
-        parts.append("Stored JSON documents (data_type → summary):\n" + _fmt_documents(ctx["documents"]))
+        parts.append(f"README:\n{ctx['readme'][:600]}")
     if ctx.get("tech"):
-        parts.append("Technologies detected (source: tech document, from dependency manifests + README):\n- " + ", ".join(ctx["tech"]))
+        parts.append("Tech: " + ", ".join(ctx["tech"][:8]))
     if ctx.get("services"):
-        parts.append("Monitored services (source: services table):\n" + _fmt_services(ctx["services"]))
+        parts.append("Services: " + _fmt_services(ctx["services"]))
     if ctx.get("deployments"):
-        parts.append("Deployments (source: deployments table):\n" + _fmt_deployments(ctx["deployments"]))
+        parts.append("Deploys: " + _fmt_deployments(ctx["deployments"]))
     if ctx.get("incidents"):
-        parts.append("Incidents (source: incidents / incident_events / agent_runs tables):\n" + _fmt_incidents(ctx["incidents"]))
-    return "\n\n".join(parts)
+        parts.append("Incidents: " + _fmt_incidents(ctx["incidents"]))
+    return "\n".join(parts)
 
 
 def _fmt_documents(documents: dict) -> str:
