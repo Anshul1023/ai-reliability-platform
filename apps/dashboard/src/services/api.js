@@ -55,7 +55,7 @@ export const api={
   commits:repo=>get(`/github/commits?repo=${encodeURIComponent(repo)}`),
   contents:(repo,path="")=>get(`/github/contents?repo=${encodeURIComponent(repo)}&path=${encodeURIComponent(path)}`),
   proposeChange:(data)=>post("/github/change-proposal",data),
-  chat:(messages,projectId)=>post("/ai/chat",{messages,project_id:projectId}),
+  chat:async(messages,projectId)=>{try{return await post("/ai/chat",{messages,project_id:projectId})}catch(e){const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages,project_id:projectId})});if(!r.ok)throw new Error(await r.text());return r.json()}},
   chatHistory:(projectId)=>get(`/ai/chat/history${projectId?`?project_id=${projectId}`:""}`),
   clearChat:(projectId)=>del(`/ai/chat/history${projectId?`?project_id=${projectId}`:""}`),
   recordView:(data)=>post("/analytics/view",data),
