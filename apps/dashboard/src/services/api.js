@@ -1,70 +1,100 @@
-const BASE=import.meta.env.VITE_API_URL||"http://localhost:8010";
-export const API_BASE=BASE;
-export const API_WS=BASE.replace(/^http/,"ws");
-const KEY_STORE="pulseops_api_key";
+// API service — all calls go to Vercel serverless functions (/api/*)
+// No external backend dependency
 
-const FALLBACK_PROFILE={
-  name:"Anshul Rawat",
-  title:"Full Stack Developer",
-  tagline:"I build fast, resilient web apps. From pixel-perfect React frontends to async FastAPI backends with Docker, Redis and real observability.",
-  summary:"Full Stack Developer with hands-on experience building scalable, high-performance, responsive web apps. Skilled in React.js, FastAPI, PostgreSQL, Docker, CI/CD and modern DevOps practices.",
-  about:["I build fast, resilient web apps.","I turn ideas into products that feel fast and never break."],
-  phone:"+91 9953540593",
-  email:"anshulrawat5124@gmail.com",
-  location:"Faridabad, Haryana, India",
-  links:{
-    github:"https://github.com/Anshul1023",
-    linkedin:"https://www.linkedin.com/in/anshul-rawat-235019290",
-    portfolio:"https://anshul-rawat-portfolio.vercel.app"
+export const API_BASE = "";
+export const API_WS = "";
+const KEY_STORE = "pulseops_api_key";
+
+const FALLBACK_PROFILE = {
+  name: "Anshul Rawat",
+  title: "Full Stack Developer",
+  tagline: "I build fast, resilient web apps. From pixel-perfect React frontends to async FastAPI backends with Docker, Redis and real observability.",
+  summary: "Full Stack Developer with hands-on experience building scalable, high-performance, responsive web apps. Skilled in React.js, FastAPI, PostgreSQL, Docker, CI/CD and modern DevOps practices.",
+  about: ["I build fast, resilient web apps.", "I turn ideas into products that feel fast and never break."],
+  phone: "+91 9953540593",
+  email: "anshulrawat5124@gmail.com",
+  location: "Faridabad, Haryana, India",
+  links: {
+    github: "https://github.com/Anshul1023",
+    linkedin: "https://www.linkedin.com/in/anshul-rawat-235019290",
+    portfolio: "https://anshul-rawat-portfolio.vercel.app"
   },
-  skills:["React.js","JavaScript (ES6+)","TypeScript","HTML5","CSS3","Vite","Python","FastAPI","PostgreSQL","Docker","Redis"],
-  experience:[],
-  projects:[],
-  education:[],
-  languages:["Hindi","English"]
+  skills: ["React.js", "JavaScript (ES6+)", "TypeScript", "HTML5", "CSS3", "Vite", "Python", "FastAPI", "PostgreSQL", "Docker", "Redis"],
+  experience: [],
+  projects: [],
+  education: [],
+  languages: ["Hindi", "English"]
 };
 
-export function getApiKey(){return localStorage.getItem(KEY_STORE)||""}
-export function setApiKey(k){k?localStorage.setItem(KEY_STORE,k):localStorage.removeItem(KEY_STORE)}
-export function isOwner(){return !!(getApiKey()||localStorage.getItem("pulseops_owner_email"))}
+export function getApiKey() { return localStorage.getItem(KEY_STORE) || "" }
+export function setApiKey(k) { k ? localStorage.setItem(KEY_STORE, k) : localStorage.removeItem(KEY_STORE) }
+export function isOwner() { return !!(getApiKey() || localStorage.getItem("pulseops_owner_email")) }
 
-async function get(path){const r=await fetch(BASE+path);if(!r.ok)throw new Error(await r.text());return r.json()}
-async function authHeaders(json){const headers={};const key=getApiKey();if(key)headers.Authorization=`Bearer ${key}`;if(json)headers["Content-Type"]="application/json";return headers}
-async function post(path,json){
-  const r=await fetch(BASE+path,{method:"POST",headers:await authHeaders(json),...(json?{body:JSON.stringify(json)}:{})});
-  if(!r.ok)throw new Error(await r.text());
+// Local fetch helpers — hit /api/* serverless functions
+async function localGet(path) {
+  const r = await fetch("/api" + path);
+  if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
-async function del(path){
-  const r=await fetch(BASE+path,{method:"DELETE",headers:await authHeaders(false)});
-  if(!r.ok)throw new Error(await r.text());
+async function localPost(path, body) {
+  const r = await fetch("/api" + path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
-export const api={
-  health:()=>get("/health"),
-  projects:async()=>{try{return await get("/projects")}catch(e){const r=await fetch("/api/projects");if(!r.ok)return[];return r.json()}},
-  summary:async()=>{try{return await get("/projects/summary")}catch(e){const r=await fetch("/api/summary");if(!r.ok)return{services:{},deployments:{},incidents:{}};return r.json()}},
-  incidents:()=>get("/incidents"),
-  project:id=>get(`/projects/${id}`),
-  deleteProject:id=>del(`/projects/${id}`),
-  projectData:id=>get(`/projects/${id}/data`),
-  services:id=>get(`/services/${id}`),
-  deployments:id=>get(`/deployments/${id}`),
-  metrics:id=>get(`/metrics/${id}`),
-  github:repo=>get(`/github/repository?repo=${encodeURIComponent(repo)}`),
-  commits:repo=>get(`/github/commits?repo=${encodeURIComponent(repo)}`),
-  contents:(repo,path="")=>get(`/github/contents?repo=${encodeURIComponent(repo)}&path=${encodeURIComponent(path)}`),
-  proposeChange:(data)=>post("/github/change-proposal",data),
-  chat:async(messages,projectId)=>{try{return await post("/ai/chat",{messages,project_id:projectId})}catch(e){const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages,project_id:projectId})});if(!r.ok)throw new Error(await r.text());return r.json()}},
-  chatHistory:(projectId)=>get(`/ai/chat/history${projectId?`?project_id=${projectId}`:""}`),
-  clearChat:(projectId)=>del(`/ai/chat/history${projectId?`?project_id=${projectId}`:""}`),
-  recordView:(data)=>post("/analytics/view",data),
-  analytics:(range="7d")=>get(`/analytics/views?range=${range}`),
-  feedback:(data)=>post("/feedback",data),
-  listFeedback:()=>get("/feedback"),
-  contact:(data)=>post("/contact",data),
-  listContacts:()=>get("/contact"),
-  profile:async()=>{try{return await get("/profile")}catch(e){return FALLBACK_PROFILE}},
-  sync:()=>post("/projects/sync"),
-  investigate:id=>post(`/incidents/${id}/investigate`)
-}
+
+export const api = {
+  // Projects
+  projects: () => localGet("/projects"),
+  summary: () => localGet("/summary"),
+  project: (id) => localGet("/projects").then(list => list.find(p => p.id === Number(id)) || null),
+  deleteProject: async () => { },
+  projectData: async (id) => [],
+  services: async (id) => [],
+  deployments: async (id) => [],
+  metrics: async (id) => null,
+
+  // Incidents
+  incidents: async () => [],
+
+  // GitHub
+  github: async (repo) => ({ full_name: repo, language: null, default_branch: "main", homepage: null }),
+  commits: async () => [],
+  contents: async () => ({ type: "file", content: "" }),
+  proposeChange: async () => ({ message: "Feature not available without backend" }),
+
+  // AI Chat — serverless function calling Groq
+  chat: async (messages, projectId) => {
+    const r = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages, project_id: projectId })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
+  chatHistory: async () => [],
+  clearChat: async () => { },
+
+  // Analytics
+  recordView: async () => { },
+  analytics: async () => ({
+    total_views: 0, unique_visitors: 0, per_project: [], per_path: [], daily: []
+  }),
+
+  // Feedback & Contact
+  feedback: async () => { },
+  listFeedback: async () => [],
+  contact: async () => { },
+  listContacts: async () => [],
+
+  // Profile
+  profile: async () => FALLBACK_PROFILE,
+
+  // Sync & Investigation
+  sync: async () => ({ added: 0, skipped: 0, repos_found: 0 }),
+  investigate: async () => ({ message: "Feature not available without backend" })
+};
