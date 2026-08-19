@@ -697,7 +697,7 @@ function ChatPage(){
  const boxRef=React.useRef(null);
  useEffect(()=>{const el=boxRef.current;if(el)el.scrollTop=el.scrollHeight},[msgs,busy]);
  const dirty=React.useRef(false);
- useEffect(()=>{dirty.current=false;api.chatHistory(projectId).then(h=>{if(!dirty.current)setMsgs((h||[]).map(m=>({role:m.role,content:m.content,provider:m.provider,time:m.created_at?new Date(m.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):""}))) }).catch(()=>{})},[projectId]);
+ useEffect(()=>{setMsgs([]);dirty.current=false},[projectId]);
  const clearHistory=async()=>{try{await api.clearChat(projectId);dirty.current=true;setMsgs([])}catch(e){}};
  const send=async()=>{
   if(!input.trim()||busy)return;
@@ -891,7 +891,7 @@ function ChatDrawer({onClose}){
  useEffect(()=>{api.projects().then(setProjects).catch(()=>{})},[]);
  useEffect(()=>{const el=boxRef.current;if(el)el.scrollTop=el.scrollHeight},[msgs,busy]);
  useEffect(()=>{if(!projectId){setDocs(null);setCurFile(null);setFolderPath(null);setFileQ("");return}setDocs(null);setCurFile(null);setFolderPath(null);setFileQ("");api.projectData(projectId).then(setDocs).catch(()=>setDocs(null))},[projectId]);
- useEffect(()=>{dirty.current=false;api.chatHistory(projectId).then(h=>{if(!dirty.current)setMsgs((h||[]).map(m=>({role:m.role,content:m.content,provider:m.provider,time:m.created_at?new Date(m.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):""}))) }).catch(()=>{})},[projectId]);
+ useEffect(()=>{setMsgs([]);dirty.current=false},[projectId]);
  const clearHistory=async()=>{try{await api.clearChat(projectId);dirty.current=true;setMsgs([])}catch(e){}};
  const send=async()=>{
   if(!input.trim()||busy)return;

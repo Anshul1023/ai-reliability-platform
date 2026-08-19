@@ -317,10 +317,4 @@ def _demo_reply(messages: list[dict], project, ctx: dict, context_text: str) -> 
         lines.append("Stored JSON documents:\n" + _fmt_documents(ctx["documents"]))
     if not context_text:
         lines.append("No project context could be loaded for this question.")
-    last = messages[-1]["content"] if messages else ""
-    lines.append(f"\nYou asked: {last}")
-    lines.append(
-        "To get real AI answers, set AI_PROVIDER, OPENAI_API_KEY, AI_MODEL and AI_BASE_URL "
-        "(e.g. Groq free tier: https://api.groq.com/openai/v1)."
-    )
     return "\n".join(lines)
