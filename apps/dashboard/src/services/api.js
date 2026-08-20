@@ -20,9 +20,13 @@ const FALLBACK_PROFILE = {
     portfolio: "https://anshul-rawat-portfolio.vercel.app"
   },
   skills: ["React.js", "JavaScript (ES6+)", "TypeScript", "HTML5", "CSS3", "Vite", "Python", "FastAPI", "PostgreSQL", "Docker", "Redis"],
-  experience: [],
+  experience: [
+    { role: "Full Stack Developer", company: "Odds Fitness", period: "2025 — Present", points: ["Built production React + FastAPI features used by real users", "Implemented AI-powered content generation using RAG, vector search, and LLM agents", "Set up Docker, Redis caching, and Prometheus + Grafana monitoring", "Designed RESTful APIs with PostgreSQL, async Python, and WebSockets"] },
+    { role: "Frontend Developer", company: "SGS Onsite Solutions", period: "2024 — 2025", points: ["Developed responsive dashboards and client-facing web apps using React + TypeScript", "Integrated third-party APIs with Redux and Context API state management", "Improved performance by 40% through code splitting and lazy loading", "Collaborated with design teams for pixel-perfect UI from Figma mockups"] },
+    { role: "Web Development Intern", company: "Interpe Inc", period: "2023 — 2024", points: ["Built landing pages using HTML, CSS, JavaScript, and React", "Learned Git workflows, code reviews, and agile sprint methodology", "Contributed to open-source projects and gained CI/CD experience"] }
+  ],
   projects: [],
-  education: [],
+  education: [{ degree: "Bachelor of Technology in Computer Science", school: "Manav Rachna University, Faridabad", period: "2021 — 2025" }],
   languages: ["Hindi", "English"]
 };
 
@@ -33,8 +37,9 @@ export function isOwner() { return !!(getApiKey() || localStorage.getItem("pulse
 // Local fetch helpers — hit /api/* serverless functions
 async function localGet(path) {
   const r = await fetch("/api" + path);
-  if (!r.ok) throw new Error(await r.text());
-  return r.json();
+  if (!r.ok) throw new Error("API error " + r.status);
+  const text = await r.text();
+  try { return JSON.parse(text); } catch { throw new Error("Invalid JSON from API"); }
 }
 async function localPost(path, body) {
   const r = await fetch("/api" + path, {
