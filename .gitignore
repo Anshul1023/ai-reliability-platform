@@ -12,3 +12,5 @@ coverage/
 
 # Freebuff desktop app local data
 .freebuff/
+
+.vercel
