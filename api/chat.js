@@ -2,7 +2,6 @@
 // Calls Groq LLM with project context
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_KEY = process.env.GROQ_API_KEY || "";
 const GROQ_MODEL = process.env.AI_MODEL || "openai/gpt-oss-20b";
 
 const SYSTEM_PROMPT = `You are Dev — a highly experienced senior developer and AI assistant for Anshul Rawat's projects. You know all his repos, tech stacks, and architecture decisions. You talk like a trusted peer: warm, direct, practical. Always try to be genuinely useful.
@@ -40,6 +39,7 @@ module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
+  const GROQ_KEY = process.env.GROQ_API_KEY || "";
   if (!GROQ_KEY) {
     return res.status(500).json({ error: "GROQ_API_KEY not configured" });
   }
