@@ -594,18 +594,21 @@ function SettingsPage(){
  const [showLogin,setShowLogin]=useState(false);
  const [loggedIn,setLoggedIn]=useState(!!localStorage.getItem("pulseops_owner_email"));
  const [loginError,setLoginError]=useState("");
- const login=()=>{
+ const login=async()=>{
   if(!email.trim()||!password){setLoginError("Enter email and password");return}
-  if(email.trim()==="anshulrawat5124@gmail.com"&&password==="Godsplan1023@@"){
+  try{
+   const r=await fetch("/api/auth",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email.trim(),password,action:"login"})});
+   const data=await r.json();
+   if(!r.ok){setLoginError(data.error||"Invalid credentials");return}
    localStorage.setItem("pulseops_owner_email",email.trim());
-   setApiKey("admin_access");
+   localStorage.setItem("pulseops_jwt",data.access_token);
+   localStorage.setItem("pulseops_user",JSON.stringify(data.user));
+   setApiKey(data.access_token);
    setLoggedIn(true);setShowLogin(false);setSaved(true);setLoginError("");
    setTimeout(()=>setSaved(false),2000);
-  }else{
-   setLoginError("Invalid credentials");
-  }
+  }catch(e){setLoginError("Login failed: "+e.message)}
  };
- const logout=()=>{localStorage.removeItem("pulseops_owner_email");localStorage.removeItem("pulseops_api_key");setLoggedIn(false);setShowLogin(false);setEmail("");setPassword("")};
+ const logout=()=>{localStorage.removeItem("pulseops_owner_email");localStorage.removeItem("pulseops_api_key");localStorage.removeItem("pulseops_jwt");localStorage.removeItem("pulseops_user");setLoggedIn(false);setShowLogin(false);setEmail("");setPassword("")};
  return <div className="page"><div className="title"><div><h1>Settings</h1><p>Dashboard configuration and system status.</p></div></div>
  {loggedIn?<>
  <Card title="Logged in" action={<Badge tone="green">Admin</Badge>}>

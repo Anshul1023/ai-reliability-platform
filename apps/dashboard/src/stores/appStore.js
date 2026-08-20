@@ -1,1 +1,0 @@
-export const initialAppState={page:'Overview',selectedProject:null,selectedIncident:null};

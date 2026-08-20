@@ -1,1 +1,0 @@
-export const formatMs=(n)=>`${Math.round(n)} ms`; export const formatPercent=(n)=>`${Number(n).toFixed(2)}%`;

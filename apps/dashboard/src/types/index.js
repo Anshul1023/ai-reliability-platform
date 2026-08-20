@@ -1,1 +1,0 @@
-export const Status={HEALTHY:'Healthy',DEGRADED:'Degraded',CRITICAL:'Critical'};
