@@ -1,9 +1,7 @@
 /* =============================================
-   PULSEOPS — LUXURY MAXIMALIST DASHBOARD
-   Bento grid • Full-width • Serif typography
+   PULSEOPS — PREMIUM DASHBOARD
+   CreativaX-inspired luxury • Video bg • Micro-interactions
    ============================================= */
-
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 *, *::before, *::after{box-sizing:border-box;margin:0;padding:0}
 
@@ -11,11 +9,12 @@
   --bg:#08090e;
   --bg2:#0d0f17;
   --bg3:#12151f;
-  --surface:#161924;
-  --surface2:#1c2030;
-  --border:#1f2538;
+  --surface:#14161f;
+  --surface2:#1a1d2a;
+  --surface3:#1e2133;
+  --border:#1e2236;
   --border2:#2a3050;
-  --text:#e8ecf4;
+  --text:#f0f2f8;
   --text2:#a0aac4;
   --text3:#6b7a9a;
   --accent:#5b7fff;
@@ -26,9 +25,10 @@
   --yellow:#fbbf24;
   --purple:#a78bfa;
   --gold:#f5c542;
-  --serif:'Playfair Display',Georgia,'Times New Roman',serif;
-  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --serif:'Instrument Serif',Georgia,'Times New Roman',serif;
+  --sans:'Plus Jakarta Sans','Inter',-apple-system,BlinkMacSystemFont,sans-serif;
   --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --video:'https://strvid.nyc3.cdn.digitaloceanspaces.com/motionsite/creative_studio_video.mp4'
 }
 
 html{scroll-behavior:smooth}
@@ -37,7 +37,18 @@ button,input,textarea,select{font:inherit}
 button{cursor:pointer}
 a{color:var(--accent);text-decoration:none}
 
-.app{display:flex;min-height:100vh}
+/* ===== BACKGROUND VIDEO ===== */
+.bgVideoWrap{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bgVideoWrap video{width:100%;height:100%;object-fit:cover;opacity:.12;filter:saturate(.3) brightness(.6)}
+.bgVideoWrap::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(8,9,14,.92) 0%,rgba(8,9,14,.78) 40%,rgba(8,9,14,.95) 100%)}
+.app{display:flex;min-height:100vh;position:relative;z-index:1}
+
+/* ===== AMBIENT GRADIENT BLOBS ===== */
+.ambientBlob{position:fixed;border-radius:50%;filter:blur(120px);opacity:.15;pointer-events:none;z-index:0;animation:blobFloat 12s ease-in-out infinite}
+.ambientBlob.b1{width:600px;height:600px;background:#5b7fff;top:-200px;left:-100px}
+.ambientBlob.b2{width:500px;height:500px;background:#7c5cff;bottom:-200px;right:-100px;animation-delay:-4s}
+.ambientBlob.b3{width:400px;height:400px;background:#38bdf8;top:40%;left:50%;animation-delay:-8s}
+@keyframes blobFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-20px) scale(1.05)}66%{transform:translate(-20px,15px) scale(.95)}}
 
 /* ===== SIDEBAR — GLASS + GOLD ACCENTS ===== */
 aside{
