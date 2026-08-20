@@ -579,7 +579,7 @@ function Overview({liveTick}){
  <Card title="Active incidents"><div className="rows">{(incidents.length?incidents:[{id:1042,title:"Payment API latency spike",service:"Payments API",severity:"Critical",status:"Investigating"}]).map(x=><div className="row" key={x.id}><AlertTriangle size={15}/><div><b>{x.title}</b><small>{x.service}</small></div><Badge tone="red">{x.status}</Badge></div>)}</div></Card>
  </div>
 }
-const PG={1:'/gifs/api-monitoring.gif',2:'/gifs/web-design.gif',3:'/gifs/data-analytics.gif',4:'/gifs/ai-brain.gif',5:'/gifs/multi-agent.gif',6:'/gifs/adaptive-engine.gif',7:'/gifs/school-app.gif',8:'/gifs/contact-api.gif',9:'/gifs/github-profile.gif',10:'/gifs/camera-app.gif',11:'/gifs/workflow-builder.gif',12:'/gifs/expense-tracker.gif',13:'/gifs/fastapi-starter.gif',14:'/gifs/audio-downloader.gif',15:'/gifs/billing-system.gif',16:'/gifs/resume-analyzer.gif',17:'/gifs/snake-game.gif'};
+const PG={1:'/images/api-monitoring.jpg',2:'/images/portfolio.jpg',3:'/images/ai-platform.jpg',4:'/images/multi-agent.jpg',5:'/images/adaptive-engine.jpg',6:'/images/school-management.jpg',7:'/images/contact-api.jpg',8:'/images/github-profile.jpg',9:'/images/camera-app.jpg',10:'/images/workflow-builder.jpg',11:'/images/expense-tracker.jpg',12:'/images/fastapi-starter.jpg',13:'/images/audio-downloader.jpg',14:'/images/billing-system.jpg',15:'/images/resume-analyzer.jpg',16:'/images/snake-game.jpg',17:'/images/hello-world.jpg',18:'/images/demo-api.jpg',19:'/images/profile-repo.jpg'};
 function Projects({open,liveTick}){
  const [data,setData]=useState([]);
  const [summary,setSummary]=useState({services:{},deployments:{},incidents:{}});
