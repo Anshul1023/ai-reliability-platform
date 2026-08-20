@@ -214,29 +214,47 @@ header>span:first-child{font-family:var(--serif);font-size:20px;font-style:itali
 .badge.blue{background:rgba(110,168,254,.08);color:var(--accent);border:1px solid rgba(110,168,254,.15)}
 .badge.neutral{background:var(--surface);color:var(--text3);border:1px solid var(--border)}
 
-/* ===== PROJECT GRID ===== */
-.projectGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+/* ===== PROJECT GRID — GLASSMORPHISM + GIF ===== */
+.projectGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .projectGrid>*{animation:cardIn .5s ease both}
 .projectGrid>*:nth-child(2){animation-delay:.04s}
 .projectGrid>*:nth-child(3){animation-delay:.08s}
-.project{cursor:pointer}
-.project:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,.4);border-color:var(--accent)}
+.projectCard{
+  position:relative;border-radius:20px;overflow:hidden;cursor:pointer;
+  min-height:280px;display:flex;flex-direction:column;
+  border:1px solid rgba(255,255,255,.06);
+  transition:all .35s cubic-bezier(.4,0,.2,1)
+}
+.projectCard:hover{transform:translateY(-6px) scale(1.01);box-shadow:0 24px 64px rgba(0,0,0,.5),0 0 40px rgba(110,168,254,.1);border-color:rgba(110,168,254,.2)}
+.projectCardBg{position:absolute;inset:0;z-index:0;overflow:hidden}
+.projectCardBg img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.4,0,.2,1);filter:brightness(.5) saturate(.8)}
+.projectCard:hover .projectCardBg img{transform:scale(1.08);filter:brightness(.6) saturate(1)}
+.projectCardOverlay{
+  position:absolute;inset:0;z-index:1;
+  background:linear-gradient(180deg,rgba(4,6,12,.4) 0%,rgba(4,6,12,.75) 50%,rgba(4,6,12,.92) 100%);
+  backdrop-filter:blur(1px)
+}
+.projectCardContent{
+  position:relative;z-index:2;flex:1;display:flex;flex-direction:column;
+  padding:24px;background:rgba(14,18,32,.3);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)
+}
 .projectTop{display:flex;justify-content:space-between;align-items:center}
 .projectIcon{
   width:42px;height:42px;border-radius:14px;
-  background:linear-gradient(135deg,rgba(110,168,254,.1),rgba(167,139,250,.08));
-  color:var(--accent);display:grid;place-items:center;flex:none;
-  border:1px solid rgba(110,168,254,.1)
+  background:rgba(255,255,255,.08);backdrop-filter:blur(8px);
+  color:var(--text);display:grid;place-items:center;flex:none;
+  border:1px solid rgba(255,255,255,.1)
 }
-.project h3{font-size:20px;margin:18px 0 4px;font-weight:600;color:var(--text);letter-spacing:-.3px}
-.project>small{color:var(--text3);font-size:13px;display:block}
-.metrics{display:grid;grid-template-columns:repeat(3,1fr);border-block:1px solid var(--border);margin:18px 0;padding:14px 0}
+.projectCardContent h3{font-size:20px;margin:16px 0 4px;font-weight:600;color:var(--text);letter-spacing:-.3px;text-shadow:0 2px 8px rgba(0,0,0,.4)}
+.projectCardContent>small{color:rgba(255,255,255,.5);font-size:13px;display:block;text-shadow:0 1px 4px rgba(0,0,0,.4)}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);border-block:1px solid rgba(255,255,255,.06);margin:16px 0;padding:14px 0}
 .metrics div{display:flex;flex-direction:column;gap:4px}
-.metrics span{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
-.metrics b{font-size:16px;font-weight:600;color:var(--text)}
-.projectFoot{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
-.project>strong{font-size:13px;color:var(--accent);display:flex;align-items:center;font-weight:600}
-.repoPath{font-family:var(--mono);font-size:11px;color:var(--text3);display:block;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.metrics span{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.metrics b{font-size:16px;font-weight:600;color:var(--text);text-shadow:0 1px 4px rgba(0,0,0,.3)}
+.projectFoot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px;border-top:1px solid rgba(255,255,255,.06)}
+.projectCardContent>strong{font-size:13px;color:var(--accent);display:flex;align-items:center;font-weight:600}
+.repoPath{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.35);display:block;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 4px rgba(0,0,0,.4)}
 
 /* ===== MINI PROJECTS ===== */
 .topProjects{margin-bottom:14px;animation:cardIn .5s ease both}
