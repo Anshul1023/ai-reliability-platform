@@ -12,11 +12,11 @@ const DAILY_VIEWS = [
 ];
 
 const PER_PROJECT = [
-  { project: "ai-reliability-platform", views: 52 },
-  { project: "anshul-rawat-portfolio", views: 38 },
-  { project: "interview-agent", views: 28 },
-  { project: "school-management", views: 19 },
-  { project: "workflow-builder", views: 14 },
+  { id: 3, name: "ai-reliability-platform", views: 52 },
+  { id: 2, name: "anshul-rawat-portfolio", views: 38 },
+  { id: 4, name: "interview-agent", views: 28 },
+  { id: 7, name: "school-management", views: 19 },
+  { id: 11, name: "workflow-builder", views: 14 },
 ];
 
 const PER_PATH = [

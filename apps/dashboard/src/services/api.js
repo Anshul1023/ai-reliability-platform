@@ -58,12 +58,9 @@ export const api = {
   incidents: () => localGet("/incidents"),
 
   // GitHub
-  github: async (repo) => {
-    // Try the Vercel serverless function, fall back to basic data
-    try { return await localGet("/github?repo=" + encodeURIComponent(repo)); } catch { return { full_name: repo, language: null, default_branch: "main", homepage: null }; }
-  },
-  commits: async () => [],
-  contents: async () => ({ type: "file", content: "" }),
+  github: (repo) => localGet("/github?repo=" + encodeURIComponent(repo)).catch(() => ({ full_name: repo, language: null, default_branch: "main", homepage: null, html_url: "https://github.com/" + repo })),
+  commits: (repo) => localGet("/github?repo=" + encodeURIComponent(repo || "") + "&action=commits").catch(() => []),
+  contents: (repo, path) => localGet("/github?repo=" + encodeURIComponent(repo || "") + "&action=contents&path=" + encodeURIComponent(path || "")).catch(() => ({ type: "file", content: "" })),
   proposeChange: async () => ({ message: "Feature not available in demo mode" }),
 
   // AI Chat — serverless function calling Groq
