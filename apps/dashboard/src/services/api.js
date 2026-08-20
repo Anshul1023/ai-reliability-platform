@@ -84,16 +84,14 @@ export const api = {
   deployments: (id) => localGet("/deployments?project_id=" + id),
 
   // Analytics
-  recordView: async () => { },
-  analytics: async () => ({
-    total_views: 0, unique_visitors: 0, per_project: [], per_path: [], daily: []
-  }),
+  recordView: async () => { try { await localPost('/analytics', { action: 'record' }); } catch {} },
+  analytics: () => localGet('/analytics'),
 
   // Feedback & Contact
-  feedback: async () => { },
-  listFeedback: async () => [],
-  contact: async () => { },
-  listContacts: async () => [],
+  feedback: async (data) => { return localPost('/feedback', data); },
+  listFeedback: () => localGet('/feedback'),
+  contact: async (data) => { return localPost('/contacts', data); },
+  listContacts: () => localGet('/contacts'),
 
   // Profile
   profile: async () => {
