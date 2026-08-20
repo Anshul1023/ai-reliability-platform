@@ -218,7 +218,7 @@ select option{background:#1a2030;color:#e2e8f0}
 @keyframes rowIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
 
 /* ===== GRAPH ===== */
-.pgraph{position:relative;border:1px solid #252d42;border-radius:14px;background:linear-gradient(180deg,#1a2030 0%,#161b26 100%);padding:12px;overflow:hidden;flex:none}
+.pgraph{position:relative;border:1px solid #252d42;border-radius:14px;background:linear-gradient(180deg,#1a2030 0%,#161b26 100%);padding:10px 12px;overflow:hidden;flex:none;max-height:260px}
 .pgraph svg{width:100%;height:auto;display:block}
 .pnode{animation:pgIn .55s cubic-bezier(.2,.7,.3,1) both}
 @keyframes pgIn{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
@@ -341,7 +341,7 @@ select option{background:#1a2030;color:#e2e8f0}
 
 /* ===== ARCHITECTURE CARD ===== */
 .archCard{margin-bottom:20px}
-.archCard .pgraph{max-width:700px;margin:0 auto}
+.archCard .pgraph{max-width:600px;margin:0 auto;max-height:240px}
 .archCard select{flex:0 0 auto;width:auto;min-width:180px}
 
 /* ===== PPROJECT PICKER ===== */

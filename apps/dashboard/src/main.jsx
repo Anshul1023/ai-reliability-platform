@@ -843,35 +843,34 @@ function ProjectGraph({projectId,projectName,docs,onOpenFolder,activeFolder}){
  const dirs={};
  for(const f of files){const i=f.indexOf("/");if(i>0){const d=f.slice(0,i);if(!dirs[d])dirs[d]={files:0,subs:new Set()};const rest=f.slice(i+1);if(rest.indexOf("/")<0)dirs[d].files++;else dirs[d].subs.add(rest.slice(0,rest.indexOf("/")))}}
  const folders=Object.entries(dirs).map(([name,c])=>[name,c.files+c.subs.size]).sort((a,b)=>b[1]-a[1]).slice(0,6);
- const fx=[80,180,280,80,180,280],fy=[200,200,200,252,252,252];
+ const fx=[80,180,280,80,180,280],fy=[155,155,155,195,195,195];
  const short=n=>n.length>11?n.slice(0,10)+"…":n;
  return <div className="pgraph">
-  <svg viewBox="0 0 360 300">
+  <svg viewBox="0 0 360 230" style={{maxHeight:200}}>
    {svcs.map((s,i)=>(<path key={"e"+i} className="pedge" d={i===0?"M180 46 C 220 58, 250 66, 284 85":"M180 46 C 220 70, 250 100, 284 137"}/>))}
    <path className="pedge" d="M180 46 C 140 60, 110 75, 78 93"/>
-   {folders.map((f,i)=>(<path key={"fe"+i} className="pedge" style={{animationDelay:(i*0.12)+"s"}} d={`M180 46 C 180 120, ${fx[i]} 140, ${fx[i]} ${fy[i]-8}`}/>))}
+   {folders.map((f,i)=>(<path key={"fe"+i} className="pedge" style={{animationDelay:(i*0.12)+"s"}} d={`M180 46 C 180 95, ${fx[i]} 115, ${fx[i]} ${fy[i]-8}`}/>))}
    <g className="pnode" style={{animationDelay:"0s"}}>
     <rect x="110" y="6" width="140" height="40" rx="10" fill="#e6ecff" stroke="#bcc9f2"/>
     <circle cx="132" cy="26" r="4" className="pdot" fill="#36a667"/>
     <text x="180" y="25" textAnchor="middle" fontSize="11" fontWeight="700" fill="#3a4a8f">{projectName||(repo.full_name||"Project").split("/").pop()}</text>
     <text x="180" y="38" textAnchor="middle" fontSize="8.5" fill="#7d88b8">{repo.full_name||"loading…"}</text>
-   </g>
-   <g className="pnode pclick" style={{animationDelay:".12s"}} onClick={()=>openUrl(repo.full_name&&"https://github.com/"+repo.full_name)} title={repo.full_name?`Open ${repo.full_name} on GitHub`:"GitHub"}>
-    <rect x="8" y="95" width="130" height="42" rx="10" fill="#fbfdff" stroke="#d5def6"/>
-    <text x="73" y="109" textAnchor="middle" fontSize="10" fontWeight="700" fill="#182234">GitHub</text>
-    <text x="73" y="122" textAnchor="middle" fontSize="8.5" fill="#687386">{repo.language||"—"}</text>
-    <text x="73" y="133" textAnchor="middle" fontSize="8.5" fill="#8992a2">{repo.default_branch?"branch: "+repo.default_branch:""}</text>
+   </g>    <g className="pnode pclick" style={{animationDelay:".12s"}} onClick={()=>openUrl(repo.full_name&&"https://github.com/"+repo.full_name)} title={repo.full_name?`Open ${repo.full_name} on GitHub`:"GitHub"}>
+    <rect x="8" y="75" width="130" height="40" rx="10" fill="#fbfdff" stroke="#d5def6"/>
+    <text x="73" y="89" textAnchor="middle" fontSize="10" fontWeight="700" fill="#182234">GitHub</text>
+    <text x="73" y="100" textAnchor="middle" fontSize="8.5" fill="#687386">{repo.language||"—"}</text>
+    <text x="73" y="111" textAnchor="middle" fontSize="8.5" fill="#8992a2">{repo.default_branch?"branch: "+repo.default_branch:""}</text>
    </g>
    {svcs.map((s,i)=>(<g key={"s"+i} className={"pnode"+(s.check_url?" pclick":"")} style={{animationDelay:`.2${i}s`}} onClick={()=>s.check_url&&openUrl(s.check_url)} title={s.check_url?`Open ${s.name} (${s.check_url})`:s.name}>
-    <rect x="226" y={i===0?88:140} width="126" height="38" rx="10" fill="#fbfdff" stroke="#d5def6"/>
-    <circle cx="240" cy={i===0?103:155} r="4" className="pdot" fill={color(s.status)}/>
-    <text x="256" y={i===0?101:153} fontSize="9.5" fontWeight="700" fill="#182234">{s.name}</text>
-    <text x="256" y={i===0?114:166} fontSize="8.5" fill="#687386">{s.status} · <SvcLatency n={s.latency_ms}/>ms</text>
+    <rect x="226" y={i===0?75:115} width="126" height="34" rx="10" fill="#fbfdff" stroke="#d5def6"/>
+    <circle cx="240" cy={i===0?88:128} r="4" className="pdot" fill={color(s.status)}/>
+    <text x="256" y={i===0?87:127} fontSize="9" fontWeight="700" fill="#182234">{s.name}</text>
+    <text x="256" y={i===0?98:138} fontSize="8" fill="#687386">{s.status} · <SvcLatency n={s.latency_ms}/>ms</text>
    </g>))}
    {folders.map((f,i)=>(<g key={"f"+i} className={"pnode pfolder"+(activeFolder===f[0]?" active":"")} style={{animationDelay:(0.24+i*0.1)+"s"}} onClick={()=>onOpenFolder&&onOpenFolder(f[0])} role="button" title={(activeFolder===f[0]?"Show all files":"Show "+f[0]+" files")}>
-    <rect x={fx[i]-42} y={fy[i]-20} width="84" height="40" rx="9" fill="#fbfdff" stroke="#c9d3f7"/>
-    <text x={fx[i]} y={fy[i]-3} textAnchor="middle" fontSize="9" fontWeight="700" fill="#33405e">📁 {short(f[0])}</text>
-    <text x={fx[i]} y={fy[i]+11} textAnchor="middle" fontSize="8" fill="#7d88b8">{f[1]} files</text>
+    <rect x={fx[i]-42} y={fy[i]-18} width="84" height="36" rx="8" fill="#fbfdff" stroke="#c9d3f7"/>
+    <text x={fx[i]} y={fy[i]-2} textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#33405e">📁 {short(f[0])}</text>
+    <text x={fx[i]} y={fy[i]+10} textAnchor="middle" fontSize="7.5" fill="#7d88b8">{f[1]} files</text>
    </g>))}
   </svg>
   {(tech.length||files.length||incidents.length)?<div className="pchips">{tech.slice(0,7).map((t,i)=><span className="pchip" key={i}>{t}</span>)}{files.length?<span className="pchip ghost">📄 {files.length} files</span>:null}{incidents.length?<span className="pchip warn">⚠ {incidents.length} incident{incidents.length>1?"s":""}</span>:null}</div>:null}
@@ -935,8 +934,9 @@ function App(){
  const [fbOpen,setFbOpen]=useState(false);
  const [liveTick,setLiveTick]=useState(0);
  useEffect(()=>{const id=new URLSearchParams(location.search).get("project");if(id)api.project(id).then(setSelected).catch(()=>{})},[]);
- useEffect(()=>{api.recordView({path:location.pathname+location.search,visitor_id:getVisitorId(),referrer:document.referrer||null}).catch(()=>{})},[]);
+ useEffect(()=>{try{api.recordView({path:location.pathname+location.search,visitor_id:getVisitorId(),referrer:document.referrer||null})}catch(e){}},[]);
  useEffect(()=>{
+  if(!API_WS)return;
   let ws;
   try{
    ws=new WebSocket(`${API_WS}/ws/incidents`);
