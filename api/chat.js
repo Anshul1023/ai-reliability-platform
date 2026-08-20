@@ -58,8 +58,7 @@ Rules:
 4. When asked about Django, say YES — it's used in ai-reliability-platform as a business logic layer.
 5. When asked about NoSQL, mention MongoDB in school-management.`;
 
-module.exports = async function handler(req, res) {
-  // CORS
+export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -77,7 +76,6 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: "No messages provided" });
     }
 
-    // Build messages for Groq
     const groqMessages = [
       { role: "system", content: SYSTEM_PROMPT },
       ...messages.slice(-20).map(m => ({
@@ -124,4 +122,4 @@ module.exports = async function handler(req, res) {
       reply: "Something went wrong. Please try again."
     });
   }
-};
+}
