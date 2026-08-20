@@ -173,7 +173,7 @@ header{height:72px;background:#161b26;border-bottom:1px solid #1e2536;display:fl
 .bBody{display:flex;flex-direction:column;gap:3px;min-width:0}
 .bName{font-size:11px;font-weight:700;color:#7b8ba5}
 .bubble.me .bName{color:#93b4ff;text-align:right}
-.bText{white-space:pre-wrap;word-break:break-word;color:#d5dcea}
+.bText{word-break:break-word;color:#d5dcea}.bText .mdH2{font-size:16px;font-weight:800;color:#e2e8f0;margin:10px 0 4px;border-bottom:1px solid #252d42;padding-bottom:4px}.bText .mdH3{font-size:13.5px;font-weight:700;color:#c5d0e6;margin:8px 0 3px}.bText .mdLi{padding:2px 0 2px 6px;color:#c5d0e6;font-size:13.5px;line-height:1.55;border-left:2px solid #3b4a6b;margin-left:4px}.bText .mdP{margin:2px 0;font-size:13.5px;line-height:1.6;color:#d5dcea}.bText .mdBr{height:6px}.bText .mdCode pre{background:#0d1220;border:1px solid #1e2a42;border-radius:8px;padding:10px 14px;font-size:12px;color:#a0b4d0;overflow-x:auto;margin:6px 0;font-family:'JetBrains Mono',Consolas,monospace;white-space:pre-wrap}.bText .mdInline{background:#1a2436;border:1px solid #252d42;border-radius:4px;padding:1px 5px;font-size:12.5px;color:#8fa5ff;font-family:'JetBrains Mono',Consolas,monospace}.bText .mdTable{font-size:12px;color:#8fa5ff;font-family:'JetBrains Mono',monospace;padding:2px 0}
 .bMeta{color:#4a5568;font-size:10px}
 .typing .dots{display:flex;gap:4px;padding:6px 0}
 .typing .dots i{width:7px;height:7px;border-radius:50%;background:#4a5568;display:inline-block;animation:blink 1.2s ease-in-out infinite}
@@ -218,7 +218,7 @@ select option{background:#1a2030;color:#e2e8f0}
 @keyframes rowIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
 
 /* ===== GRAPH ===== */
-.pgraph{position:relative;border:1px solid #252d42;border-radius:14px;background:linear-gradient(180deg,#1a2030 0%,#161b26 100%);padding:10px 12px;overflow:hidden;flex:none;max-height:260px}
+.pgraph{position:relative;border:1px solid #252d42;border-radius:14px;background:linear-gradient(180deg,#1a2030 0%,#161b26 100%);padding:12px;overflow:hidden;flex:none}
 .pgraph svg{width:100%;height:auto;display:block}
 .pnode{animation:pgIn .55s cubic-bezier(.2,.7,.3,1) both}
 @keyframes pgIn{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
@@ -341,7 +341,7 @@ select option{background:#1a2030;color:#e2e8f0}
 
 /* ===== ARCHITECTURE CARD ===== */
 .archCard{margin-bottom:20px}
-.archCard .pgraph{max-width:600px;margin:0 auto;max-height:240px}
+.archCard .pgraph{max-width:650px;margin:0 auto}
 .archCard select{flex:0 0 auto;width:auto;min-width:180px}
 
 /* ===== PPROJECT PICKER ===== */

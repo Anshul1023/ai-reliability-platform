@@ -297,10 +297,30 @@ function useCountUp(target,dur=650){
 }
 function CountUp({n,dur}){const v=useCountUp(n,dur);return <>{n%1===0?Math.round(v):Math.round(v*100)/100}</>}
 function Stat({title,value,sub,count,suffix}){const v=useCountUp(count??0);return <div className="card stat"><span>{title}</span><b>{count!==undefined?(count%1===0?Math.round(v):Math.round(v*100)/100)+(suffix||""):value}</b><small>{sub}</small></div>}
+/* Simple markdown renderer for AI chat responses */
+function renderMd(text){
+ if(!text)return null;
+ const lines=text.split('\n');
+ const out=[];
+ let inList=false;
+ for(let i=0;i<lines.length;i++){
+  let ln=lines[i];
+  if(ln.match(/^#{2}\s+(.+)/)){out.push(<div className="mdH3" key={i}>{ln.replace(/^#{2}\s+/,'')}</div>);inList=false;continue}
+  if(ln.match(/^#{1}\s+(.+)/)){out.push(<div className="mdH2" key={i}>{ln.replace(/^#\s+/,'')}</div>);inList=false;continue}
+  if(ln.match(/^[-*]\s+/)){out.push(<div className="mdLi" key={i}>• {ln.replace(/^[-*]\s+/,'')}</div>);inList=true;continue}
+  if(ln.match(/^\d+\.\s+/)){out.push(<div className="mdLi" key={i}>{ln.match(/^(\d+\.)/)[1]} {ln.replace(/^\d+\.\s+/,'')}</div>);inList=true;continue}
+  if(ln.match(/^```/)){out.push(<div className="mdCode" key={i}><pre>{lines.slice(i+1,lines.findIndex((l,j)=>j>i&&l.match(/^```/))).join('\n')}</pre></div>);i=lines.findIndex((l,j)=>j>i&&l.match(/^```/));continue}
+  if(ln.match(/^\|(.+)\|$/)){out.push(<div className="mdTable" key={i}><code>{ln}</code></div>);continue}
+  if(ln.trim()===""){out.push(<div key={i} className="mdBr"/>);inList=false;continue}
+  const formatted=ln.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`(.+?)`/g,'<code class="mdInline">$1</code>');
+  out.push(<div className="mdP" key={i} dangerouslySetInnerHTML={{__html:formatted}}/>);
+ }
+ return out;
+}
 function MsgBubble({m}){
  return <div className={"bubble "+(m.role==="user"?"me":"bot")}>
   <span className="bAvatar">{m.role==="user"?<User size={13}/>:<Bot size={13}/>}</span>
-  <div className="bBody"><span className="bName">{m.role==="user"?"You":"Dev"}</span><div className="bText">{m.content}</div>{m.provider?<small className="bMeta">· {m.provider}</small>:null}</div>
+  <div className="bBody"><span className="bName">{m.role==="user"?"You":"Dev"}</span><div className="bText">{m.role==="user"?m.content:renderMd(m.content)}</div>{m.provider?<small className="bMeta">· {m.provider}</small>:null}</div>
  </div>;
 }
 function Typing(){
@@ -843,34 +863,34 @@ function ProjectGraph({projectId,projectName,docs,onOpenFolder,activeFolder}){
  const dirs={};
  for(const f of files){const i=f.indexOf("/");if(i>0){const d=f.slice(0,i);if(!dirs[d])dirs[d]={files:0,subs:new Set()};const rest=f.slice(i+1);if(rest.indexOf("/")<0)dirs[d].files++;else dirs[d].subs.add(rest.slice(0,rest.indexOf("/")))}}
  const folders=Object.entries(dirs).map(([name,c])=>[name,c.files+c.subs.size]).sort((a,b)=>b[1]-a[1]).slice(0,6);
- const fx=[80,180,280,80,180,280],fy=[155,155,155,195,195,195];
+ const fx=[80,180,280,80,180,280],fy=[175,175,175,218,218,218];
  const short=n=>n.length>11?n.slice(0,10)+"…":n;
  return <div className="pgraph">
-  <svg viewBox="0 0 360 230" style={{maxHeight:200}}>
+  <svg viewBox="0 0 360 270" style={{maxHeight:260}}>
    {svcs.map((s,i)=>(<path key={"e"+i} className="pedge" d={i===0?"M180 46 C 220 58, 250 66, 284 85":"M180 46 C 220 70, 250 100, 284 137"}/>))}
    <path className="pedge" d="M180 46 C 140 60, 110 75, 78 93"/>
-   {folders.map((f,i)=>(<path key={"fe"+i} className="pedge" style={{animationDelay:(i*0.12)+"s"}} d={`M180 46 C 180 95, ${fx[i]} 115, ${fx[i]} ${fy[i]-8}`}/>))}
+   {folders.map((f,i)=>(<path key={"fe"+i} className="pedge" style={{animationDelay:(i*0.12)+"s"}} d={`M180 46 C 180 108, ${fx[i]} 128, ${fx[i]} ${fy[i]-8}`}/>))}
    <g className="pnode" style={{animationDelay:"0s"}}>
     <rect x="110" y="6" width="140" height="40" rx="10" fill="#e6ecff" stroke="#bcc9f2"/>
     <circle cx="132" cy="26" r="4" className="pdot" fill="#36a667"/>
     <text x="180" y="25" textAnchor="middle" fontSize="11" fontWeight="700" fill="#3a4a8f">{projectName||(repo.full_name||"Project").split("/").pop()}</text>
     <text x="180" y="38" textAnchor="middle" fontSize="8.5" fill="#7d88b8">{repo.full_name||"loading…"}</text>
    </g>    <g className="pnode pclick" style={{animationDelay:".12s"}} onClick={()=>openUrl(repo.full_name&&"https://github.com/"+repo.full_name)} title={repo.full_name?`Open ${repo.full_name} on GitHub`:"GitHub"}>
-    <rect x="8" y="75" width="130" height="40" rx="10" fill="#fbfdff" stroke="#d5def6"/>
-    <text x="73" y="89" textAnchor="middle" fontSize="10" fontWeight="700" fill="#182234">GitHub</text>
-    <text x="73" y="100" textAnchor="middle" fontSize="8.5" fill="#687386">{repo.language||"—"}</text>
-    <text x="73" y="111" textAnchor="middle" fontSize="8.5" fill="#8992a2">{repo.default_branch?"branch: "+repo.default_branch:""}</text>
+    <rect x="8" y="82" width="130" height="42" rx="10" fill="#fbfdff" stroke="#d5def6"/>
+    <text x="73" y="97" textAnchor="middle" fontSize="10" fontWeight="700" fill="#182234">GitHub</text>
+    <text x="73" y="108" textAnchor="middle" fontSize="8.5" fill="#687386">{repo.language||"—"}</text>
+    <text x="73" y="119" textAnchor="middle" fontSize="8.5" fill="#8992a2">{repo.default_branch?"branch: "+repo.default_branch:""}</text>
    </g>
    {svcs.map((s,i)=>(<g key={"s"+i} className={"pnode"+(s.check_url?" pclick":"")} style={{animationDelay:`.2${i}s`}} onClick={()=>s.check_url&&openUrl(s.check_url)} title={s.check_url?`Open ${s.name} (${s.check_url})`:s.name}>
-    <rect x="226" y={i===0?75:115} width="126" height="34" rx="10" fill="#fbfdff" stroke="#d5def6"/>
-    <circle cx="240" cy={i===0?88:128} r="4" className="pdot" fill={color(s.status)}/>
-    <text x="256" y={i===0?87:127} fontSize="9" fontWeight="700" fill="#182234">{s.name}</text>
-    <text x="256" y={i===0?98:138} fontSize="8" fill="#687386">{s.status} · <SvcLatency n={s.latency_ms}/>ms</text>
+    <rect x="226" y={i===0?82:128} width="126" height="38" rx="10" fill="#fbfdff" stroke="#d5def6"/>
+    <circle cx="240" cy={i===0?97:143} r="4" className="pdot" fill={color(s.status)}/>
+    <text x="256" y={i===0?95:141} fontSize="9.5" fontWeight="700" fill="#182234">{s.name}</text>
+    <text x="256" y={i===0?108:154} fontSize="8.5" fill="#687386">{s.status} · <SvcLatency n={s.latency_ms}/>ms</text>
    </g>))}
    {folders.map((f,i)=>(<g key={"f"+i} className={"pnode pfolder"+(activeFolder===f[0]?" active":"")} style={{animationDelay:(0.24+i*0.1)+"s"}} onClick={()=>onOpenFolder&&onOpenFolder(f[0])} role="button" title={(activeFolder===f[0]?"Show all files":"Show "+f[0]+" files")}>
-    <rect x={fx[i]-42} y={fy[i]-18} width="84" height="36" rx="8" fill="#fbfdff" stroke="#c9d3f7"/>
-    <text x={fx[i]} y={fy[i]-2} textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#33405e">📁 {short(f[0])}</text>
-    <text x={fx[i]} y={fy[i]+10} textAnchor="middle" fontSize="7.5" fill="#7d88b8">{f[1]} files</text>
+    <rect x={fx[i]-42} y={fy[i]-18} width="84" height="38" rx="9" fill="#fbfdff" stroke="#c9d3f7"/>
+    <text x={fx[i]} y={fy[i]-2} textAnchor="middle" fontSize="9" fontWeight="700" fill="#33405e">📁 {short(f[0])}</text>
+    <text x={fx[i]} y={fy[i]+11} textAnchor="middle" fontSize="8" fill="#7d88b8">{f[1]} files</text>
    </g>))}
   </svg>
   {(tech.length||files.length||incidents.length)?<div className="pchips">{tech.slice(0,7).map((t,i)=><span className="pchip" key={i}>{t}</span>)}{files.length?<span className="pchip ghost">📄 {files.length} files</span>:null}{incidents.length?<span className="pchip warn">⚠ {incidents.length} incident{incidents.length>1?"s":""}</span>:null}</div>:null}
