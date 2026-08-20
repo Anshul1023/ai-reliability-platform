@@ -28,7 +28,7 @@ const FALLBACK_PROFILE = {
 
 export function getApiKey() { return localStorage.getItem(KEY_STORE) || "" }
 export function setApiKey(k) { k ? localStorage.setItem(KEY_STORE, k) : localStorage.removeItem(KEY_STORE) }
-export function isOwner() { return !!(getApiKey() || localStorage.getItem("pulseops_owner_email")) }
+export function isOwner() { return !!(getApiKey() || localStorage.getItem("pulseops_owner_email") || localStorage.getItem("pulseops_jwt")) }
 
 // Local fetch helpers — hit /api/* serverless functions
 async function localGet(path) {
@@ -51,20 +51,20 @@ export const api = {
   projects: () => localGet("/projects"),
   summary: () => localGet("/summary"),
   project: (id) => localGet("/projects").then(list => list.find(p => p.id === Number(id)) || null),
+  projectData: (id) => localGet("/project-data?project_id=" + id).catch(() => []),
   deleteProject: async () => { },
-  projectData: async (id) => [],
-  services: async (id) => [],
-  deployments: async (id) => [],
-  metrics: async (id) => null,
 
   // Incidents
-  incidents: async () => [],
+  incidents: () => localGet("/incidents"),
 
   // GitHub
-  github: async (repo) => ({ full_name: repo, language: null, default_branch: "main", homepage: null }),
+  github: async (repo) => {
+    // Try the Vercel serverless function, fall back to basic data
+    try { return await localGet("/github?repo=" + encodeURIComponent(repo)); } catch { return { full_name: repo, language: null, default_branch: "main", homepage: null }; }
+  },
   commits: async () => [],
   contents: async () => ({ type: "file", content: "" }),
-  proposeChange: async () => ({ message: "Feature not available without backend" }),
+  proposeChange: async () => ({ message: "Feature not available in demo mode" }),
 
   // AI Chat — serverless function calling Groq
   chat: async (messages, projectId) => {
@@ -79,6 +79,10 @@ export const api = {
   chatHistory: async () => [],
   clearChat: async () => { },
 
+  // Services & Deployments
+  services: (id) => localGet("/services?project_id=" + id),
+  deployments: (id) => localGet("/deployments?project_id=" + id),
+
   // Analytics
   recordView: async () => { },
   analytics: async () => ({
@@ -92,7 +96,9 @@ export const api = {
   listContacts: async () => [],
 
   // Profile
-  profile: async () => FALLBACK_PROFILE,
+  profile: async () => {
+    try { return await localGet("/profile"); } catch { return FALLBACK_PROFILE; }
+  },
 
   // Sync & Investigation
   sync: async () => ({ added: 0, skipped: 0, repos_found: 0 }),

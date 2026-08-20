@@ -1,10 +1,10 @@
 // Vercel serverless function: GET /api/projects
-// Returns all registered projects with their data
+// Returns all registered projects with their real data
 
 const PROJECTS = [
-  { id: 1, name: "Demo Production API", repo: "demo/reliability-api", status: "Healthy", uptime: 99.96, language: "Python" },
+  { id: 1, name: "Demo Production API", repo: "demo/reliability-api", status: "Healthy", uptime: 99.96, language: "Python", description: "Demo API for testing reliability monitoring" },
   { id: 2, name: "Anshul Rawat Portfolio", repo: "Anshul1023/anshul-rawat-portfolio", status: "Healthy", uptime: 99.99, language: "TypeScript", description: "Personal portfolio built with React, TypeScript, Vite, Tailwind CSS" },
-  { id: 3, name: "ai-reliability-platform", repo: "Anshul1023/ai-reliability-platform", status: "Healthy", uptime: 99.99, language: "Python", description: "Dockerized observability stack: FastAPI + React + Redis" },
+  { id: 3, name: "ai-reliability-platform", repo: "Anshul1023/ai-reliability-platform", status: "Healthy", uptime: 99.99, language: "Python", description: "Dockerized observability stack: FastAPI + React + Redis + PostgreSQL" },
   { id: 4, name: "interview-agent", repo: "Anshul1023/interview-agent", status: "Healthy", uptime: 99.99, language: "JavaScript", description: "Real-time AI interview assistant with hidden overlay" },
   { id: 5, name: "AgentFlow-Ai", repo: "Anshul1023/AgentFlow-Ai", status: "Healthy", uptime: 99.99, language: "Python", description: "Multi-agent business problem-solving system" },
   { id: 6, name: "adaptive_ai_engine", repo: "Anshul1023/adaptive_ai_engine", status: "Healthy", uptime: 99.99, language: "JavaScript", description: "AI Content Engine with FastAPI + React" },
